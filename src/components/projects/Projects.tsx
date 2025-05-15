@@ -12,7 +12,7 @@ const projectImages = [
 const Projects: React.FC = () => {
   return (
     <div className="container mx-auto my-8 ">
-      <h2 className="text-3xl font-bold mb-4 text-gray-500">Some Amazing Projects Executed Across Nigeria</h2>
+      <h2 className="text-3xl font-bold mb-4 text-center">Some Amazing Projects Executed Across Nigeria</h2>
       <Carousel images={projectImages} />
     </div>
   );

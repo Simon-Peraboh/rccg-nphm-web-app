@@ -1,5 +1,6 @@
 import React from 'react';
-import { conf1, conf2, conf3, conf4, conf5, conf6, conf7,conf8 } from '../conference/index';
+import { conf1, conf2, conf3, conf4, conf5, conf6 } from '../conference/index';
+import { Link } from 'react-router-dom';
 
 interface VisitationProps {}
 
@@ -14,70 +15,75 @@ interface VisitedPlace {
 const visitedPlaces: VisitedPlace[] = [
   {
     src: conf1,
-    title: 'Maiden Edition',
-    description: 'Description of Place 1',
+    title: 'Maiden Edition May 1st 2018 Theme: From Hopelessness to Glory',
+    description: '',
   },
   {
     src: conf2,
-    title: 'Second Conference',
+    title: '2nd Conference Theme:',
     description: 'Description of Place 2',
   },
   {
     src: conf3,
-    title: 'Third Conference',
+    title: '3rd Conference 4th May 2022 Theme: Fresh Air For Freedom',
     description: 'Description of Place 3',
   },
   {
     src: conf4,
-    title: 'Fourth Conference',
-    description: 'Description of Place 4',
+    title: '4th Conference 29th April 2023 Theme: Wonders Of Freedom',
+    description: 'Facilitators: Pst Sunday Akande(National Overseer) Pst Oladele Balogun(SATGO ADMIN) Rev Ben-Rabbi Freedman(Controller Of Corrections Center Lagos State Comm) Pst Taiwo Kasumu(Police Area Commander, Agodi Ibadan Oyo State) Dr Olumide Ibode(Medical Director Redeemed Health Center) Pst Ariyo Popoola(National Chairman RCCG PHM) '
   },
   {
     src: conf5,
-    title: 'Fourth Conference',
-    description: 'Description of Place 4',
+    title: '5th Conference 1st June 2024 Theme: Wind Of Divine Repositioning',
+    description: 'There Shall be Divine Repositioning ',
   },
   {
     src: conf6,
-    title: 'Fourth Conference',
-    description: 'Description of Place 4',
-  },
-  {
-    src: conf7,
-    title: 'Fourth Conference',
-    description: 'Description of Place 4',
-  },
-  {
-    src: conf8,
-    title: 'Fourth Conference',
-    description: 'Description of Place 4',
+    title: 'Sixth Edition Loading',
+    description: 'Description of Place 6',
   },
 ];
 
-const Visitation: React.FC<VisitationProps> = () => {
+const Conference: React.FC<VisitationProps> = () => {
   return (
-    <div className="container mx-auto my-8">
-      <h2 className="text-3xl font-bold mb-4 text-center">Past Conferences Photo Gallery</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {/* Render each visited place */}
-        {visitedPlaces.map((place, index) => (
-          <div key={index} className="relative aspect-w-1 aspect-h-1">
-            <div className="w-full h-64 rounded overflow-hidden">
+    <div className="bg-blue-200 py-12"> {/* Background color for the entire section */}
+      <div className="custom-container">
+        <h2 className="text-3xl font-bold mb-8 text-center">Past Conferences Photo Gallery</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-2">
+          {/* Render each visited place */}
+          {visitedPlaces.map((place, index) => (
+            <div
+              key={index}
+              className="relative bg-gray-200 shadow-xl rounded-xl overflow-hidden transition-transform transform hover:scale-105"
+            >
               <img
                 src={place.src}
-                alt={`Visited place ${index + 1}`}
-                className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                alt={`Conference ${index + 1}`}
+                className="w-full h-64 object-cover"
               />
+              <div className="p-4">
+                <h3 className="text-lg font-bold">{place.title}</h3>
+                <p className="text-sm">{place.description}</p>
+              </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white py-2 px-4">
-              <h3 className="text-lg font-bold">{place.title}</h3>
-              <p className="text-sm">{place.description}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <button>
+           <Link to="/dashboard/conference" className="flex items-center ml-2 space-x-2 bg-gray-100 hover:bg-green-500 p-2 rounded">
+          <span>Conference Registration</span>
+          </Link>
+        </button>
+        <div>
+        <button>
+           <Link to="/dashboard/attendance/AttendanceSheet" className="flex items-center ml-2 space-x-2 bg-gray-400 hover:bg-green-500 p-2 rounded">
+          <span>Mark Attendance</span>
+          </Link>
+        </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Visitation;
+export default Conference;

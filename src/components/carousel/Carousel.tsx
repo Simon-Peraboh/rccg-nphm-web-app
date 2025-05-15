@@ -24,7 +24,7 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative p-2">
       {/* Image */}
       <img
         src={images[currentIndex].src}
@@ -32,7 +32,7 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
         className="w-full object-cover h-80"
       />
       {/* Text Caption */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white py-2 px-4 ">
+      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white py-2 px-4 p-2">
         {images[currentIndex].caption}
       </div>
       {/* Buttons */}
