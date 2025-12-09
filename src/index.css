@@ -1,4 +1,74 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind variants;
 
+.custom-container {
+    @apply container mx-auto my-8;
+  }
+  
+  .custom-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
+  }
+  
+  .custom-card {
+    @apply shadow-xl rounded-xl overflow-hidden transition-transform transform hover:scale-105;
+  }
+  
+  .custom-card-content {
+    @apply p-4;
+  }
+
+
+  .custom-header {
+    @apply bg-blue-200 py-4 relative;
+  }
+  
+  .custom-header-logo {
+    @apply flex items-center;
+  }
+  
+  .custom-header-menu {
+    @apply relative text-xl cursor-pointer;
+  }
+  
+  .custom-header-menu-content {
+    @apply absolute bg-blue-200 mt-2 p-2 rounded shadow z-20;
+  }
+  
+  .custom-header-buttons {
+    @apply flex items-center;
+  }
+  
+  .custom-header-button {
+    @apply px-4 py-2 rounded-lg;
+  }
+
+  
+body {
+  font-size: 1rem;
+}
+
+@media (min-width: 640px) {
+  body {
+    font-size: 1.125rem; /* sm:text-lg */
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 1.25rem; /* md:text-xl */
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    font-size: 1.5rem; /* lg:text-2xl */
+  }
+}
+
+@media (min-width: 1280px) {
+  body {
+    font-size: 1.75rem; /* xl:text-3xl */
+  }
+}
