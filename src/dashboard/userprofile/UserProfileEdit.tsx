@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 interface User {
   id: number;
@@ -31,144 +31,150 @@ interface User {
   industry: string;
   next_of_kin: string;
   next_of_kin_phone: string;
-   image_path: File | null;
-   ordination_category: string;
+  image_path: File | null;
+  ordination_category: string;
 }
 
-interface UserProfileCreationResponse {
-  message: string;
-  userProfileDTO: User; // Or whatever your DTO type is
-}
+// interface UserProfileCreationResponse {
+//   message: string;
+//   userProfileDTO: User; // Or whatever your DTO type is
+// }
 
 const UserProfileEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successMessage,] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [user, setUser] = useState<User>({
-  id: 0,
-  title: "",
-  first_name: "",
-  others: "",
-  last_name: "",
-  email: "",
-  gender: "",
-  state: "",
-  region: "",
-  province: "",
-  lga: "",
-  city: "",
-  zone: "",
-  area: "",
-  parish: "",
-  position: "",
-  join_ministry: "",
-  occupation: "",
-  dob: "",
-  phone_whatsapp: "",
-  social_handle: "",
-  address_home: "",
-  nearest_busstop: "",
-  address_office: "",
-  industry: "",
-  next_of_kin: "",
-  next_of_kin_phone: "",
-  image_path: null, // ✅ Ensure image_path is initialized
-  ordination_category: "",
-});
+    id: 0,
+    title: "",
+    first_name: "",
+    others: "",
+    last_name: "",
+    email: "",
+    gender: "",
+    state: "",
+    region: "",
+    province: "",
+    lga: "",
+    city: "",
+    zone: "",
+    area: "",
+    parish: "",
+    position: "",
+    join_ministry: "",
+    occupation: "",
+    dob: "",
+    phone_whatsapp: "",
+    social_handle: "",
+    address_home: "",
+    nearest_busstop: "",
+    address_office: "",
+    industry: "",
+    next_of_kin: "",
+    next_of_kin_phone: "",
+    image_path: null, // ✅ Ensure image_path is initialized
+    ordination_category: "",
+  });
 
   const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/userProfile/getUser/${id}`);
-      setUser(response.data);
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/userProfile/getUser/${id}`);
+        setUser(response.data);
 
-      // ✅ Ensure image persists on refresh
-      if (response.data.image_path && typeof response.data.image_path === "string") {
-        setPreviewUrl(response.data.image_path);
+        // ✅ Ensure image persists on refresh
+        if (response.data.image_path && typeof response.data.image_path === "string") {
+          setPreviewUrl(response.data.image_path);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setLoading(false);
       }
+    };
 
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      setLoading(false);
+    fetchUser();
+  }, [id]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user) return;
+
+    if (e.target.name === "image_path" && e.target.files) {
+      const file = e.target.files[0];
+      setUser({ ...user, image_path: file });
+
+      // ✅ Create a preview URL for the image
+      const preview = URL.createObjectURL(file);
+      setPreviewUrl(preview);
+    } else {
+      setUser({ ...user, [e.target.name]: e.target.value });
     }
   };
 
-  fetchUser();
-}, [id]);
+  const validateFields = () => {
+    const requiredFields = [
+      "address_home", "address_office", "city", "dob", "email",
+      "first_name", "gender", "join_ministry", "last_name",
+      "next_of_kin", "ordination_category", "position",
+      "social_handle", "state", "title",
+    ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (!user) return;
+    const missingFields = requiredFields.filter(field => !user?.[field as keyof User]);
 
-  if (e.target.name === "image_path" && e.target.files) {
-    const file = e.target.files[0];
-    setUser({ ...user, image_path: file });
+    if (missingFields.length > 0) {
+      alert(`Please fill in the required fields: ${missingFields.join(", ")}`);
+      return false;
+    }
 
-    // ✅ Create a preview URL for the image
-    const preview = URL.createObjectURL(file);
-    setPreviewUrl(preview);
-  } else {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  }
-};
-
-const validateFields = () => {
-  const requiredFields = [
-    "address_home", "address_office", "city", "dob", "email",
-    "first_name", "gender", "join_ministry", "last_name",
-    "next_of_kin", "ordination_category", "position",
-    "social_handle", "state", "title",
-  ];
-
-  const missingFields = requiredFields.filter(field => !user?.[field as keyof User]);
-
-  if (missingFields.length > 0) {
-    alert(`Please fill in the required fields: ${missingFields.join(", ")}`);
-    return false;
-  }
-
-  return true;
-};
-
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validateFields()) return;
-
-  const formData = new FormData();
-  Object.entries(user).forEach(([key, value]) => {
-    formData.append(key, value instanceof File ? value : value.toString());
-  });
-
-  console.log("🛠 FormData Before Sending:", [...formData.entries()]);
-
-  // ✅ Add request headers to match Postman
-  const config = {
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "multipart/form-data",
-    },
+    return true;
   };
 
- try {
-  const response = await axios.put(
-    `http://127.0.0.1:8000/api/userProfile/updateUser/${user.id}`,
-    user, // ✅ Send as raw JSON, like Postman
-    config
-  );
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateFields()) return;
 
-  console.log("✅ Server Response:", response.data);
-} catch (error) {
-  console.error("❌ Error updating user:", error);
-  if (error.response) {
-    console.error("⚠️ Server Response Data:", error.response.data);
-    console.error("🔄 Status Code:", error.response.status);
+    const formData = new FormData();
+    Object.entries(user).forEach(([key, value]) => {
+      formData.append(key, value instanceof File ? value : value.toString());
+    });
+
+    console.log("🛠 FormData Before Sending:", [...formData.entries()]);
+
+    // ✅ Add request headers to match Postman
+    const config = {
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    try {
+      const response = await axios.put(
+        `http://127.0.0.1:8000/api/userProfile/updateUser/${user.id}`,
+        user,
+        config
+      );
+
+      console.log("✅ Server Response:", response.data);
+
+      // ✅ Delay navigation after success
+      setTimeout(() => {
+        navigate("/dashboard/monthlyReportTable");
+      }, 3000);
+    } catch (error: unknown) {
+      console.error('Activation error:', error);
+
+      if (error instanceof Error) {
+        toast.error(error.message || 'Account activation failed');
+      } else {
+        toast.error('Account activation failed');
+      }
+    }
   }
-}
-};
-
   if (loading) {
     return <div className="p-4 text-center">Loading...</div>;
   }
@@ -244,7 +250,7 @@ const validateFields = () => {
           </div>
           <div>
             <label className="block">
-                Gender:
+              Gender:
               <input
                 type="text"
                 name="gender"
@@ -302,9 +308,9 @@ const validateFields = () => {
               />
             </label>
           </div>
-           <div>
+          <div>
             <label className="block">
-                City:
+              City:
               <input
                 type="text"
                 name="city"
@@ -386,9 +392,9 @@ const validateFields = () => {
               />
             </label>
           </div>
-           <div>
+          <div>
             <label className="block">
-               Your Industry:
+              Your Industry:
               <input
                 type="text"
                 name="industry"
@@ -448,7 +454,7 @@ const validateFields = () => {
           </div>
           <div>
             <label className="block">
-                Nearest Bus Stop:
+              Nearest Bus Stop:
               <input
                 type="text"
                 name="nearest_busstop"
@@ -494,7 +500,7 @@ const validateFields = () => {
               />
             </label>
           </div>
-           <div>
+          <div>
             <label htmlFor="image_path" className="block">Upload Image:</label>
             <input
               id="image_path"
@@ -525,7 +531,7 @@ const validateFields = () => {
           </div>
           <div>
             <label className="block">
-                Ordination Category:
+              Ordination Category:
               <input
                 type="text"
                 name="ordination_category"
@@ -542,12 +548,12 @@ const validateFields = () => {
         </button>
       </form>
       <div>
-          
-      {successMessage && (
-        <div className="text-green-500 mt-2">{successMessage}</div>
-      )}
+
+        {successMessage && (
+          <div className="text-green-500 mt-2">{successMessage}</div>
+        )}
       </div>
-       <ToastContainer position="top-right" autoClose={4000} hideProgressBar={false} />
+      <ToastContainer position="top-right" autoClose={4000} hideProgressBar={false} />
     </div>
   );
 };

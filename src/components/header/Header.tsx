@@ -54,9 +54,11 @@ const Header: React.FC = () => {
 
         {/* Buttons */}
         <div className="flex flex-col items-center space-y-2 lg:flex-row lg:space-y-0 lg:space-x-6">
-          <button className="bg-blue-200 px-4 py-2 rounded-md font-semibold text-gray-700 hover:bg-red-500 hover:text-white transition">
+          <Link to='#'>
+             <button className="bg-blue-200 px-4 py-2 rounded-md font-semibold text-gray-700 hover:bg-red-500 hover:text-white transition">
             Donate
           </button>
+          </Link>
 
           <Link to="/dashboard/register" onClick={handleLinkClick}>
             <button className="bg-blue-200 px-4 py-2 rounded-md font-semibold text-gray-700 hover:bg-green-500 hover:text-white transition">
@@ -64,7 +66,7 @@ const Header: React.FC = () => {
             </button>
           </Link>
 
-          <Link to="/userprofile" onClick={handleLinkClick}>
+          <Link to="/dashboard/loginUser" onClick={handleLinkClick}>
             <button className="bg-blue-200 px-4 py-2 rounded-md font-semibold text-gray-700 hover:bg-orange-500 hover:text-white transition">
               Login
             </button>

@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { createReport, MonthlyDuePaymentDTO } from '../services/AuthServiceDuePayment';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router';
+import axios from 'axios';
 
 // Define the validation schema using yup
 const schema = yup.object().shape({
@@ -13,7 +14,7 @@ const schema = yup.object().shape({
     paymentDate: yup.string().required('Payment date is required'),
     provinceCoordinator: yup.string().required('Province Coordinator Name is required'),
     refMonth: yup.string().required('Reference month is required'),
-    createdDate: yup.string().required('Created date is required'),
+    whoPaid: yup.string().optional(),
     remark: yup.string().optional(),
 });
 
@@ -24,17 +25,42 @@ const MonthlyDueCreate: React.FC = () => {
 
     const navigator = useNavigate(); 
 
+    // const onSubmit = async (data: MonthlyDuePaymentDTO) => {
+    //     try {
+    //         const response = await createReport(data);
+    //         toast.success(response.data.message);
+    //         // Introduce a short delay before navigating
+    //         setTimeout(() => {
+    //             navigator('/dashboard/monthlyDueTable');
+    //         }, 3000); // Display message for 3 seconds
+    //     } catch (error) {
+    //         toast.error('Failed to create report');
+    //     }
+    // };
+
     const onSubmit = async (data: MonthlyDuePaymentDTO) => {
-        try {
-            const response = await createReport(data);
-            toast.success(response.data.message);
-            // Introduce a short delay before navigating
-            setTimeout(() => {
-                navigator('/dashboard/monthlyDueTable');
-            }, 3000); // Display message for 3 seconds
-        } catch (error) {
-            toast.error('Failed to create report');
+      try {
+        const response = await createReport(data);
+        toast.success(response.data.message || "Report created successfully");
+        setTimeout(() => navigator('/dashboard/monthlyDueTable'), 3000);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          const responseData = error.response?.data;
+          let message = "Failed to create report";
+    
+          if (typeof responseData?.message === 'string') {
+            message = responseData.message;
+          } else if (typeof responseData?.errors === 'object') {
+            // Laravel-style validation errors
+            const allErrors = Object.values(responseData.errors).flat().join(' ');
+            message = allErrors;
+          }
+    
+          toast.error(message);
+        } else {
+          toast.error("An unexpected error occurred");
         }
+      }
     };
 
     return (
@@ -44,7 +70,7 @@ const MonthlyDueCreate: React.FC = () => {
                 <input 
                     type="text" 
                     placeholder='Enter Amount Paid'
-                    {...register('amount')} 
+                    {...register('amount')}
                     className="w-full p-2 border border-gray-300 rounded mt-1"
                 />
                 {errors.amount && <p className="text-red-500 text-sm">{errors.amount.message}</p>}
@@ -92,15 +118,16 @@ const MonthlyDueCreate: React.FC = () => {
                 />
                 {errors.refMonth && <p className="text-red-500 text-sm">{errors.refMonth.message}</p>}
             </div>
-
+            
             <div className="mb-4">
-                <label className="block text-gray-700">Created Date</label>
+                <label className="block text-gray-700">Who Paid</label>
                 <input 
-                    type="date" 
-                    {...register('createdDate')} 
+                    type="text"
+                    placeholder='Who Made The Payment'
+                    {...register('whoPaid')} 
                     className="w-full p-2 border border-gray-300 rounded mt-1"
                 />
-                {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
+                {errors.whoPaid && <p className="text-red-500 text-sm">{errors.whoPaid.message}</p>}
             </div>
 
             <div className="mb-4">
@@ -115,6 +142,7 @@ const MonthlyDueCreate: React.FC = () => {
             </div>
 
             <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
+            <ToastContainer position='top-center' />
         </form>
     );
 };

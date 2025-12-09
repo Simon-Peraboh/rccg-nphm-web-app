@@ -2,10 +2,10 @@ import React from 'react';
 import { pic1, pic2, pic3, pic4 } from '../visitation/index';
 
 const visitedPlaces = [
-  { src: pic1, caption: 'Place 1' },
-  { src: pic2, caption: 'Place 2' },
-  { src: pic3, caption: 'Place 3' },
-  { src: pic4, caption: 'Place 4' },
+  { src: pic1, caption: 'Daddy GO visit to Port Harcourt Correctional Center' },
+  { src: pic2, caption: 'Awareness/Inauguration at Region 9, KANO' },
+  { src: pic3, caption: ' Maximum Correctional Centre Lagos' },
+  { src: pic4, caption: 'IJEBU ODE  Correctional Center' },
 ];
 
 const Visitation: React.FC = () => {

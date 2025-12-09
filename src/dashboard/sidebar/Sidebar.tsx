@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FaHome, FaAngleLeft, FaAngleRight, FaRegistered } from 'react-icons/fa';
+import { MdLeaderboard } from "react-icons/md";
 import { GiDatabase } from "react-icons/gi";
 import { FcTodoList } from "react-icons/fc";
 import { SiLibreofficewriter } from "react-icons/si";
@@ -24,14 +25,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
     return roles.includes(userRole);
   };
 
-  const secretaryNoteRoles = ['SUPERADMIN', 'SECRETARY'];
-  const nationalDatabaseRoles = ['SUPERADMIN', 'ADMIN'];
-  const monthlyDueReportRoles = ['SUPERADMIN', 'TREASURER'];
-  const generalRoles = ['SUPERADMIN', 'SECRETARY', 'ADMIN', 'TREASURER'];
-  const onlyRoles = ['SUPERADMIN'];
+  const secretaryNoteRoles = ['SUPER_ADMIN', 'SECRETARY'];
+  const nationalDatabaseRoles = ['SUPER_ADMIN', 'ADMIN'];
+  const monthlyDueReportRoles = ['SUPER_ADMIN', 'TREASURER'];
+  const generalRoles = ['SUPER_ADMIN', 'SECRETARY', 'ADMIN', 'TREASURER', 'USER'];
+  const onlyRoles = ['SUPER_ADMIN'];
 
   return (
-    <div className={`h-screen ${isCollapsed ? 'w-16' : 'w-64'} bg-gray-800 text-white fixed flex flex-col transition-all duration-300`}>
+    <div className={`h-screen ${isCollapsed ? 'w-16' : 'w-64'} bg-gray-500 text-white fixed flex flex-col transition-all duration-300`}>
       <div className="p-4 flex justify-between items-center">
         <span className="text-2xl font-bold">{!isCollapsed && 'Logo'}</span>
         <button onClick={onToggleCollapse} className="focus:outline-none">
@@ -43,16 +44,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
           <FaHome />
           {!isCollapsed && <span>Dashboard</span>}
         </Link>
-        {hasRole(secretaryNoteRoles) && (
-          <Link to="/dashboard/secretaryNoteTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <SiLibreofficewriter />
-            {!isCollapsed && <span>Secretary Note</span>}
-          </Link>
-        )}
         {hasRole(nationalDatabaseRoles) && (
           <Link to="/dashboard/userprofile" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
             <GiDatabase />
             {!isCollapsed && <span>National Database</span>}
+          </Link>
+        )}
+         {hasRole(onlyRoles) && (
+          <Link to="/dashboard/nationalReportTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
+            <TbMessageReport />
+            {!isCollapsed && <span>National Report</span>}
+          </Link>
+        )}
+         {hasRole(generalRoles) && (
+          <Link to="/dashboard/monthlyReportTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
+            <TbFileReport />
+            {!isCollapsed && <span>Monthly Report</span>}
           </Link>
         )}
         {hasRole(generalRoles) && (
@@ -61,22 +68,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
             {!isCollapsed && <span>Special Projects</span>}
           </Link>
         )}
-        {hasRole(generalRoles) && (
-          <Link to="/dashboard/monthlyReportTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <TbFileReport />
-            {!isCollapsed && <span>Monthly Report</span>}
-          </Link>
-        )}
         {hasRole(monthlyDueReportRoles) && (
           <Link to="/dashboard/monthlyDueTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
             <TbReportMoney />
             {!isCollapsed && <span>Monthly Due Report</span>}
-          </Link>
-        )}
-        {hasRole(onlyRoles) && (
-          <Link to="/dashboard/nationalReportTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <TbMessageReport />
-            {!isCollapsed && <span>National Report</span>}
           </Link>
         )}
         {hasRole(generalRoles) && (
@@ -89,6 +84,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
           <Link to="/dashboard/todoListTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
             <FcTodoList />
             {!isCollapsed && <span>TodoList</span>}
+          </Link>
+        )}
+          {hasRole(secretaryNoteRoles) && (
+          <Link to="/dashboard/secretaryNoteTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
+            <SiLibreofficewriter />
+            {!isCollapsed && <span>Secretary Note</span>}
+          </Link>
+        )}
+        {hasRole(generalRoles) && (
+          <Link to="/dashboard/stateCoordinators" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
+            <MdLeaderboard  />
+            {!isCollapsed && <span>State Coordinators</span>}
           </Link>
         )}
          {hasRole(onlyRoles) && (

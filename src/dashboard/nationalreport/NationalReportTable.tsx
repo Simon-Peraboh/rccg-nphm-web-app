@@ -3,24 +3,26 @@ import { Link } from "react-router-dom";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import TodoListTable from "../todolist/TodoListTable";
+//import { clearToken } from '../services/AuthServiceLoginRegister';
 
 interface NationalReport {
   id: string;
-  coreDuties: string;
-  monthlyTask: string;
-  taskDone: string;
+  core_duties: string;
+  monthly_task: string;
+  task_done: string;
   strength: string;
   weakness: string;
   opportunities: string;
   threats: string;
-  amountBudgeted: string;
-  amountSpent: string;
-  createdDate: string;
+  amount_budgeted: string;
+  amount_spent: string;
   remarks: string;
+  created_at?: string;
 }
 
 const NationalReportTable: React.FC = () => {
@@ -37,7 +39,7 @@ const NationalReportTable: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<NationalReport[]>("http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/nationalReport");
+      const response = await axios.get<NationalReport[]>("http://127.0.0.1:8000/api/nationalReport/getAllReport");
       setReports(response.data);
       setLoading(false);
     } catch (error) {
@@ -55,7 +57,7 @@ const NationalReportTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/nationalReport/${id}`);
+              await axios.delete(`http://127.0.0.1:8000/api/nationalReport/deleteReport/${id}`);
               setReports(reports.filter(report => report.id !== id));
               toast.success("Report deleted successfully");
             } catch (error) {
@@ -103,7 +105,7 @@ const NationalReportTable: React.FC = () => {
   const indexOfLastReport = currentPage * reportsPerPage;
   const indexOfFirstReport = indexOfLastReport - reportsPerPage;
   const currentReports = reports.filter(report => {
-    const reportDate = new Date(report.createdDate);
+   const reportDate = new Date(report.created_at ?? '');
     const reportMonthYear = `${reportDate.getMonth() + 1}/${reportDate.getFullYear()}`;
     return reportMonthYear.includes(searchTerm);
   }).slice(indexOfFirstReport, indexOfLastReport);
@@ -152,6 +154,8 @@ const NationalReportTable: React.FC = () => {
               <tr>
                 <th className="px-2 py-1">
                   <input
+                    itemID="checkbox"
+                    placeholder="checkbox"
                     type="checkbox"
                     onChange={(e) => {
                       if (e.target.checked) {
@@ -181,21 +185,22 @@ const NationalReportTable: React.FC = () => {
                 <tr key={report.id} className="border-b-2 border-gray-400 hover:bg-white">
                   <td className="px-2 py-1">
                     <input
+                       itemID="checkbox"
+                        placeholder="checkbox"
                       type="checkbox"
                       checked={selectedReports.has(report.id)}
                       onChange={() => handleCheckboxChange(report.id)}
                     />
                   </td>
                   <td className="px-2 py-1">{indexOfFirstReport + index + 1}</td>
-                  <td className="px-2 py-1">{report.coreDuties}</td>
-                  <td className="px-2 py-1">{report.monthlyTask}</td>
-                  <td className="px-2 py-1">{report.taskDone}</td>
-                  <td className="px-2 py-1">{report.amountBudgeted}</td>
-                  <td className="px-2 py-1">{report.amountSpent}</td>
+                  <td className="px-2 py-1">{report.core_duties}</td>
+                  <td className="px-2 py-1">{report.monthly_task}</td>
+                  <td className="px-2 py-1">{report.task_done}</td>
+                  <td className="px-2 py-1">{report.amount_budgeted}</td>
+                  <td className="px-2 py-1">{report.amount_spent}</td>
                   <td className="px-2 py-1">{report.strength}</td>
                   <td className="px-2 py-1">{report.weakness}</td>
-                  <td className="px-2 py-1">{report.createdDate}</td>
-                  {/* <td className="px-2 py-1">{report.remarks}</td> */}
+                  <td className="px-2 py-1">{report.created_at}</td>
                   <td className="px-2 py-1 flex space-x-2 justify-center">
                     <Link to={`/dashboard/nationalReportView/${report.id}`} className="text-blue-500 hover:text-blue-700">
                       <FaEye />
@@ -203,7 +208,11 @@ const NationalReportTable: React.FC = () => {
                     <Link to={`/dashboard/nationalReportEdit/${report.id}`} className="text-yellow-500 hover:text-yellow-700">
                       <FaEdit />
                     </Link>
-                    <button onClick={() => handleDelete(report.id)} className="text-red-500 hover:text-red-700">
+                    <button
+                      type="button"
+                       onClick={() => handleDelete(report.id)}
+                        title="Delete"
+                       className="text-red-500 hover:text-red-700">
                       <FaTrash />
                     </button>
                   </td>
@@ -219,8 +228,11 @@ const NationalReportTable: React.FC = () => {
             >
               Previous
             </button>
+             <label htmlFor="usersPerPage">
             <span>Page {currentPage} of {totalPages}</span>
+             </label>
             <select
+              id="usersPerPage"
               value={reportsPerPage}
               onChange={handleReportsPerPageChange}
               className="ml-2 p-2 border rounded mb-1 text-sm"
@@ -239,6 +251,7 @@ const NationalReportTable: React.FC = () => {
           </div>
         </>
       )}
+      <ToastContainer position="top-center" />
     </div>
   );
 };

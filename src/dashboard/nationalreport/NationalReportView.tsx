@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getReportById, NationalReportDTO } from '../services/AuthServiceNationalReport';
-import { toast } from 'react-toastify';
+import { getReport, NationalReportDTO } from '../services/AuthServiceNationalReport';
+import { toast, ToastContainer } from 'react-toastify';
 
 const NationalReportView: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -13,7 +13,7 @@ const NationalReportView: React.FC = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const response = await getReportById(reportId);
+                const response = await getReport(reportId);
                 setReport(response.data);
                 console.log(response);
                 setLoading(false);
@@ -39,15 +39,15 @@ const NationalReportView: React.FC = () => {
             <h1 className="text-2xl font-bold mb-4 text-center">National Report Details</h1>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Core Duties:</label>
-                <p>{report.coreDuties}</p>
+                <p>{report.core_duties}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Monthly Task:</label>
-                <p>{report.monthlyTask}</p>
+                <p>{report.monthly_task}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Task Done:</label>
-                <p>{report.taskDone}</p>
+                <p>{report.task_done}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Strength:</label>
@@ -67,20 +67,17 @@ const NationalReportView: React.FC = () => {
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Amount Budgeted:</label>
-                <p>{report.amountBudgeted}</p>
+                <p>{report.amount_budgeted}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Amount Spent:</label>
-                <p>{report.amountSpent}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Created Date:</label>
-                <p>{report.createdDate}</p>
+                <p>{report.amount_spent}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Remark:</label>
                 <p>{report.remarks}</p>
             </div>
+            <ToastContainer position='top-center' />
         </div>
     );
 };

@@ -1,44 +1,71 @@
 import axios from 'axios';
 import { getToken } from './AuthServiceLoginRegister';  // Assuming AuthService has a getToken function
 
-const BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/nationalMonthlyReport';
-const USER_PROFILE_API_BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/userprofile';
-const NATIONAL_MONTHLY_REPORT_API_BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/nationalMonthlyReport';
+const BASE_URL = 'http://127.0.0.1:8000/api/monthlyReports';
+const USER_PROFILE_API_BASE_URL = 'http://127.0.0.1:8000/api/userProfile/getAllUsers';
+const NATIONAL_MONTHLY_REPORT_API_BASE_URL = 'http://127.0.0.1:8000/api/monthlyReports/getAllReports';
 
-// Interceptor to add Authorization header
-axios.interceptors.request.use(
-    config => {
-        const token = getToken();
-        if (token) {
-            config.headers['Authorization'] = token;
-        }
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    }
-);
+// // Interceptor to add Authorization header
+// axios.interceptors.request.use(
+//     config => {
+//         const token = getToken();
+//         if (token) {
+//             config.headers['Authorization'] = token;
+//         }
+//         return config;
+//     },
+//     error => {
+//         return Promise.reject(error);
+//     }
+// );
+
+// // Attach token globally
+// axios.interceptors.request.use(
+//   config => {
+//     const token = getToken();
+//     if (token) {
+//       config.headers['Authorization'] = `Bearer ${token}`;
+//     }
+//     return config;
+//   },
+//   error => Promise.reject(error)
+// );
+
+
+// Auth-only instance
+const authAxios = axios.create();
+
+authAxios.interceptors.request.use(config => {
+  const token = getToken();
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+
 
 export interface MonthlyReportDTO {
     id?: string;
     state: string;
     region: string;
     province: string;
-    coordinatorName: string;
-    prisonVisited?: string;
-    hospitalVisited?: string;
-    policeStationVisited?: string;
+    coordinator_name: string;
+    prison_visited?: string;
+    hospital_visited?: string;
+    police_station_visited?: string;
     others?: string;
     items: string;
-    amountBudgeted: string;
-    amountSpent: string;
-    teamMembers: string;
-    soulsWon: string;
+    amount_budgeted: string;
+    amount_spent: string;
+    team_members: string;
+    souls_won: string;
     challenges?: string;
     suggestion?: string;
-    activityDate: string;
-    createdDate: string;
     remarks?: string;
+    report_created_by: string;
+    activity_date: string;
+
 }
 
 export interface MonthlyReportResponse {
@@ -46,25 +73,27 @@ export interface MonthlyReportResponse {
     monthlyReportDTO?: MonthlyReportDTO;
 }
 
-export const createReport = async (report: MonthlyReportDTO) => {
-    return axios.post<MonthlyReportResponse>(`${BASE_URL}`, report);
+export const createReport = (report: MonthlyReportDTO) => {
+  return authAxios.post<MonthlyReportResponse>(`${BASE_URL}/createReport`, report);
 };
 
-export const getReports = async () => {
-    return axios.get<MonthlyReportDTO[]>(`${BASE_URL}`);
+export const getAllReports = async () => {
+    return axios.get<MonthlyReportDTO[]>(`${BASE_URL}/getAllReports`);
 };
 
-export const getReportById = async (id: string) => {
-    return axios.get<MonthlyReportDTO>(`${BASE_URL}/${id}`);
+export const getReport = async (id: string) => {
+    return axios.get<MonthlyReportDTO>(`${BASE_URL}/getReport/${id}`);
 };
 
-export const updateReport = (id: string, report: MonthlyReportDTO) => {
-    return axios.put<MonthlyReportResponse>(`${BASE_URL}/${id}`, report);
+
+export const updateReport = (id: string, report: Partial<MonthlyReportDTO>) => {
+  return authAxios.put<MonthlyReportResponse>(`${BASE_URL}/updateReport/${id}`, report);
 };
 
 export const deleteReport = async (id: string) => {
-    return axios.delete<MonthlyReportResponse>(`${BASE_URL}/${id}`);
+  return authAxios.delete<MonthlyReportResponse>(`${BASE_URL}/deleteReport/${id}`);
 };
+
 
 // Fetch total number of members registered
 export const fetchTotalMembers = async () => {
@@ -77,3 +106,18 @@ export const fetchNationalMonthlyReport = async () => {
     const response = await axios.get(NATIONAL_MONTHLY_REPORT_API_BASE_URL);
     return response.data; // Adjust this according to your API's response structure
 };
+
+// Fetch total expenditure from all monthly reports
+export const fetchTotalExpenditure = async (): Promise<number> => {
+  const response = await axios.get<MonthlyReportDTO[]>(NATIONAL_MONTHLY_REPORT_API_BASE_URL);
+
+  return response.data.reduce((acc, report) => {
+    const cleanValue = String(report.amount_spent || '0')
+      .replace(/[^0-9.]/g, '') // remove commas, currency, text
+      .trim();
+
+    const parsed = parseFloat(cleanValue);
+    return acc + (isNaN(parsed) ? 0 : parsed);
+  }, 0);
+};
+

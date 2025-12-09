@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getReports, TodoListDTO, deleteReport, updateTodoStatus, updateTodoPriority } from '../services/AuthServiceTodoList';
+import { getAllList, TodoListDTO, deleteList, status, priority } from '../services/AuthServiceTodoList';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,7 +16,7 @@ const TodoListTable: React.FC = () => {
 
   const fetchTodos = async () => {
     try {
-      const response = await getReports();
+      const response = await getAllList();
       setTodos(response.data);
     } catch (error) {
       toast.error('Failed to fetch todos');
@@ -32,7 +32,7 @@ const TodoListTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await deleteReport(id); // Call the API to delete
+              await deleteList(id); // Call the API to delete
               setTodos(todos.filter(todo => todo.id !== id)); // Update state
               toast.success("Todo deleted successfully");
             } catch (error) {
@@ -51,7 +51,7 @@ const TodoListTable: React.FC = () => {
 
   const handleStatusChange = async (id: string, action: string) => {
     try {
-      await updateTodoStatus(id, action);
+      await status(id, action);
       toast.success('Status updated successfully');
       fetchTodos(); // Refresh todos
     } catch (error) {
@@ -61,7 +61,7 @@ const TodoListTable: React.FC = () => {
 
   const handlePriorityChange = async (id: string, action: string) => {
     try {
-      await updateTodoPriority(id, action);
+      await priority(id, action);
       toast.success('Priority updated successfully');
       fetchTodos(); // Refresh todos
     } catch (error) {
@@ -119,27 +119,36 @@ const TodoListTable: React.FC = () => {
                   >
                     Delete
                   </button>
-                  <select 
-                    onChange={(e) => handleStatusChange(todo.id!, e.target.value)} 
-                    value={todo.status}
-                    className="px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="inProgress">In Progress</option>
-                    <option value="inComplete">Incomplete</option>
-                    <option value="complete">Complete</option>
-                    <option value="clear">Clear</option>
-                  </select>
-                  <select 
-                    onChange={(e) => handlePriorityChange(todo.id!, e.target.value)} 
-                    value={todo.priority}
-                    className="px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="urgent">Urgent</option>
-                    <option value="high">High</option>
-                    <option value="normal">Normal</option>
-                    <option value="low">Low</option>
-                    <option value="clear">Clear</option>
-                  </select>
+                                    <div className="mb-2">
+                    <label htmlFor={`status-${todo.id}`} className="text-sm font-medium">Status</label>
+                    <select
+                      id={`status-${todo.id}`}
+                      onChange={(e) => handleStatusChange(todo.id!, e.target.value)}
+                      value={todo.status}
+                      className="w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      <option value="inProgress">In Progress</option>
+                      <option value="inComplete">Incomplete</option>
+                      <option value="complete">Complete</option>
+                      <option value="clear">Clear</option>
+                    </select>
+                  </div>
+
+                  <div className="mb-2">
+                    <label htmlFor={`priority-${todo.id}`} className="text-sm font-medium">Priority</label>
+                    <select
+                      id={`priority-${todo.id}`}
+                      onChange={(e) => handlePriorityChange(todo.id!, e.target.value)}
+                      value={todo.priority}
+                      className="w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      <option value="urgent">Urgent</option>
+                      <option value="high">High</option>
+                      <option value="normal">Normal</option>
+                      <option value="low">Low</option>
+                      <option value="clear">Clear</option>
+                    </select>
+                  </div>
                 </td>
               </tr>
             ))

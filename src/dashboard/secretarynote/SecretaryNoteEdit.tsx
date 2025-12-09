@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { getReportById, updateReport, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
+import { getNote, updateNote, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 // Define the validation schema using yup
 const schema = yup.object().shape({
@@ -34,7 +34,7 @@ const SecretaryNoteEdit: React.FC = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const response = await getReportById(reportId);
+        const response = await getNote(reportId);
         const data = response.data;
         console.log('Fetched data:', data); // Add logging here
         setValue('meetingVenue', data.meetingVenue);
@@ -59,7 +59,7 @@ const SecretaryNoteEdit: React.FC = () => {
 
   const onSubmit = async (data: SecretaryNoteDTO) => {
     try {
-      const response = await updateReport(reportId, data);
+      const response = await updateNote(reportId, data);
       console.log('Response from backend:', response); // Log the response for debugging
       toast.success(response.data.message);
 
@@ -177,6 +177,7 @@ const SecretaryNoteEdit: React.FC = () => {
         {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
       </div>
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Update Report</button>
+      <ToastContainer position='top-center' />
     </form>
   );
 };

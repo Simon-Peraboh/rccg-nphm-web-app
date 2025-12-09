@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getReportById, MonthlyDuePaymentDTO } from '../services/AuthServiceDuePayment';
+import { getReport, MonthlyDuePaymentDTO } from '../services/AuthServiceDuePayment';
 import { toast } from 'react-toastify';
 
 const MonthlyDueView: React.FC = () => {
@@ -13,7 +13,7 @@ const MonthlyDueView: React.FC = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const response = await getReportById(reportId);
+                const response = await getReport(reportId);
                 setReport(response.data);
                 setLoading(false);
             } catch (error) {
@@ -56,10 +56,10 @@ const MonthlyDueView: React.FC = () => {
                 <label className="block text-gray-700 font-bold">Reference Month:</label>
                 <p>{report.refMonth}</p>
             </div>
-            <div className="mb-4">
+            {/* <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Created Date:</label>
                 <p>{report.createdDate}</p>
-            </div>
+            </div> */}
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Remark:</label>
                 <p>{report.remark}</p>

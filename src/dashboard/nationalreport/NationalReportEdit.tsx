@@ -2,22 +2,21 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { getReportById, updateReport, NationalReportDTO } from '../services/AuthServiceNationalReport';
+import { getReport, updateReport, NationalReportDTO } from '../services/AuthServiceNationalReport';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 // Define the validation schema using yup
 const schema = yup.object().shape({
-  coreDuties: yup.string().required('Core Duties is required'),
-  monthlyTask: yup.string().required('Monthly task is required'),
-  taskDone: yup.string().required('Task done is required'),
+  core_duties: yup.string().required('Core Duties is required'),
+  monthly_task: yup.string().required('Monthly task is required'),
+  task_done: yup.string().required('Task done is required'),
   strength: yup.string().optional(),
   weakness: yup.string().optional(),
   opportunities: yup.string().optional(),
   threats: yup.string().optional(),
-  amountBudgeted: yup.string().required('Amount Budgeted is required'),
-  amountSpent: yup.string().required('Amount Spent is required'),
-  createdDate: yup.string().required('Created Date is required'),
+  amount_budgeted: yup.string().required('Amount Budgeted is required'),
+  amount_spent: yup.string().required('Amount Spent is required'),
   remarks: yup.string().optional(),
 });
 
@@ -34,19 +33,18 @@ const NationalReportEdit: React.FC = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const response = await getReportById(reportId);
+        const response = await getReport(reportId);
         const data = response.data;
         console.log('Fetched data:', data); // Add logging here
-        setValue('coreDuties', data.coreDuties);
-        setValue('monthlyTask', data.monthlyTask);
-        setValue('taskDone', data.taskDone);
+        setValue('core_duties', data.core_duties);
+        setValue('monthly_task', data.monthly_task);
+        setValue('task_done', data.task_done);
         setValue('strength', data.strength);
         setValue('weakness', data.weakness);
         setValue('opportunities', data.opportunities);
         setValue('threats', data.threats);
-        setValue('amountBudgeted', data.amountBudgeted);
-        setValue('amountSpent', data.amountSpent);
-        setValue('createdDate', data.createdDate);
+        setValue('amount_budgeted', data.amount_budgeted);
+        setValue('amount_spent', data.amount_spent);
         setValue('remarks', data.remarks || '');
       } catch (error) {
         console.error('Error fetching report:', error); // Add logging here
@@ -81,28 +79,28 @@ const NationalReportEdit: React.FC = () => {
         <label className="block text-gray-700">Core Duties</label>
         <input 
           type="text" 
-          {...register('coreDuties')} 
+          {...register('core_duties')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.coreDuties && <p className="text-red-500 text-sm">{errors.coreDuties.message}</p>}
+        {errors.core_duties && <p className="text-red-500 text-sm">{errors.core_duties.message}</p>}
       </div>
       <div className="mb-4">
         <label className="block text-gray-700">Monthly Task</label>
         <input 
           type="text" 
-          {...register('monthlyTask')} 
+          {...register('monthly_task')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.monthlyTask && <p className="text-red-500 text-sm">{errors.monthlyTask.message}</p>}
+        {errors.monthly_task && <p className="text-red-500 text-sm">{errors.monthly_task.message}</p>}
       </div>
       <div className="mb-4">
         <label className="block text-gray-700">Task Done</label>
         <input 
           type="text" 
-          {...register('taskDone')} 
+          {...register('task_done')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.taskDone && <p className="text-red-500 text-sm">{errors.taskDone.message}</p>}
+        {errors.task_done && <p className="text-red-500 text-sm">{errors.task_done.message}</p>}
       </div>
       <div className="mb-4">
         <label className="block text-gray-700">Strength</label>
@@ -144,28 +142,19 @@ const NationalReportEdit: React.FC = () => {
         <label className="block text-gray-700">Amount Budgeted</label>
         <input 
           type="text" 
-          {...register('amountBudgeted')} 
+          {...register('amount_budgeted')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.amountBudgeted && <p className="text-red-500 text-sm">{errors.amountBudgeted.message}</p>}
+        {errors.amount_budgeted && <p className="text-red-500 text-sm">{errors.amount_budgeted.message}</p>}
       </div>
       <div className="mb-4">
         <label className="block text-gray-700">Amount Spent</label>
         <input 
           type="text" 
-          {...register('amountSpent')} 
+          {...register('amount_spent')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.amountSpent && <p className="text-red-500 text-sm">{errors.amountSpent.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Created Date</label>
-        <input 
-          type="date" 
-          {...register('createdDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
+        {errors.amount_spent && <p className="text-red-500 text-sm">{errors.amount_spent.message}</p>}
       </div>
       <div className="mb-4">
         <label className="block text-gray-700">Remark</label>
@@ -177,6 +166,7 @@ const NationalReportEdit: React.FC = () => {
         {errors.remarks && <p className="text-red-500 text-sm">{errors.remarks.message}</p>}
       </div>
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Update Report</button>
+      <ToastContainer position='top-center' />
     </form>
   );
 };

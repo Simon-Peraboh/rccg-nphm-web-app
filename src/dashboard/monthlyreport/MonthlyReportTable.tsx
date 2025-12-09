@@ -13,21 +13,22 @@ interface MonthlyReport {
   state: string;
   region: string;
   province: string;
-  coordinatorName: string;
-  prisonVisited: string;
-  hospitalVisited: string;
-  policeStationVisited: string;
+  coordinator_name: string;
+  prison_visited: string;
+  hospital_visited: string;
+  police_station_visited: string;
   others: string;
   items: string;
-  amountBudgeted: string;
-  amountSpent: string;
-  teamMembers: string;
-  soulsWon: string;
+  amount_budgeted: string;
+  amount_spent: string;
+  team_members: string;
+  souls_won: string;
   challenges: string;
   suggestion: string;
-  activityDate: string;
-  createdDate: string;
   remarks: string;
+  activity_date: string;
+  report_created_by: string;
+
 }
 
 const MonthlyReportTable: React.FC = () => {
@@ -44,7 +45,7 @@ const MonthlyReportTable: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<MonthlyReport[]>("http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/nationalMonthlyReport");
+      const response = await axios.get<MonthlyReport[]>("http://127.0.0.1:8000/api/monthlyReports/getAllReports");
       setReports(response.data);
       setLoading(false);
     } catch (error) {
@@ -62,7 +63,7 @@ const MonthlyReportTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/nationalMonthlyReport/${id}`);
+              await axios.delete(`http://127.0.0.1:8000/api/monthlyReports/deleteReport/${id}`);
               setReports(reports.filter(report => report.id !== id));
               toast.success("Report deleted successfully");
             } catch (error) {
@@ -110,7 +111,7 @@ const MonthlyReportTable: React.FC = () => {
   const indexOfLastReport = currentPage * reportsPerPage;
   const indexOfFirstReport = indexOfLastReport - reportsPerPage;
   const currentReports = reports.filter(report => {
-    const reportDate = new Date(report.activityDate);
+    const reportDate = new Date(report.activity_date);
     const reportMonthYear = `${reportDate.getMonth() + 1}/${reportDate.getFullYear()}`;
     return reportMonthYear.includes(searchTerm);
   }).slice(indexOfFirstReport, indexOfLastReport);
@@ -134,7 +135,7 @@ const MonthlyReportTable: React.FC = () => {
           className="p-2 border rounded w-1/2 mr-2"
         />
         <div className="flex space-x-2">
-          <Link to="/dashboard/monthlyReportCreate" className="p-2 bg-gray-400 text-white rounded text-xl">Create Report</Link>
+          <Link to="/dashboard/monthlyReport" className="p-2 bg-gray-400 text-white rounded text-xl">Create Report</Link>
           <button
             onClick={() => exportToExcel(true)}
             className="p-1 bg-blue-500 text-white rounded text-sm"
@@ -159,8 +160,10 @@ const MonthlyReportTable: React.FC = () => {
               <tr>
                 <th className="px-2 py-1">
                   <input
-                    type="checkbox"
-                    onChange={(e) => {
+                     itemID="check"
+                     type="checkbox"
+                     placeholder="checkbox"
+                     onChange={(e) => {
                       if (e.target.checked) {
                         const newSelectedReports = new Set(reports.map(report => report.id));
                         setSelectedReports(newSelectedReports);
@@ -188,7 +191,9 @@ const MonthlyReportTable: React.FC = () => {
                 <tr key={report.id} className="border-b-2 border-gray-400 hover:bg-white">
                   <td className="px-2 py-1">
                     <input
+                      itemID="check"
                       type="checkbox"
+                       placeholder="checkbox"
                       checked={selectedReports.has(report.id)}
                       onChange={() => handleCheckboxChange(report.id)}
                     />
@@ -197,11 +202,11 @@ const MonthlyReportTable: React.FC = () => {
                   <td className="px-2 py-1">{report.region}</td>
                   <td className="px-2 py-1">{report.state}</td>
                   <td className="px-2 py-1">{report.province}</td>
-                  <td className="px-2 py-1">{report.coordinatorName}</td>
-                  <td className="px-2 py-1">{report.amountBudgeted}</td>
-                  <td className="px-2 py-1">{report.amountSpent}</td>
-                  <td className="px-2 py-1">{report.activityDate}</td>
-                  <td className="px-2 py-1">{report.soulsWon}</td>
+                  <td className="px-2 py-1">{report.coordinator_name}</td>
+                  <td className="px-2 py-1">{report.amount_budgeted}</td>
+                  <td className="px-2 py-1">{report.amount_spent}</td>
+                  <td className="px-2 py-1">{report.activity_date}</td>
+                  <td className="px-2 py-1">{report.souls_won}</td>
                   <td className="px-2 py-1 flex space-x-2 justify-center">
                     <Link to={`/dashboard/monthlyReportView/${report.id}`} className="text-blue-500 hover:text-blue-700">
                       <FaEye />
@@ -209,7 +214,11 @@ const MonthlyReportTable: React.FC = () => {
                     <Link to={`/dashboard/monthlyReportEdit/${report.id}`} className="text-yellow-500 hover:text-yellow-700">
                       <FaEdit />
                     </Link>
-                    <button onClick={() => handleDelete(report.id)} className="text-red-500 hover:text-red-700">
+                    <button
+                       type="button"
+                       onClick={() => handleDelete(report.id)}
+                        title="Delete"
+                       className="text-red-500 hover:text-red-700">
                       <FaTrash />
                     </button>
                   </td>
@@ -225,8 +234,11 @@ const MonthlyReportTable: React.FC = () => {
             >
               Previous
             </button>
+             <label htmlFor="usersPerPage">
             <span>Page {currentPage} of {totalPages}</span>
+             </label>
             <select
+              id="usersPerPage"
               value={reportsPerPage}
               onChange={handleReportsPerPageChange}
               className="ml-2 p-2 border rounded mb-1 text-sm"

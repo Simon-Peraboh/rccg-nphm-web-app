@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { getProjectById, updateReport, TodoListDTO } from '../services/AuthServiceTodoList';
+import { getList, updateList, TodoListDTO } from '../services/AuthServiceTodoList';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -32,7 +32,7 @@ const TodoListEdit: React.FC = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const response = await getProjectById(reportId);
+        const response = await getList(reportId);
         const data = response.data;
         console.log('Fetched data:', data); // Add logging here
         setValue('task', data.task);
@@ -54,7 +54,7 @@ const TodoListEdit: React.FC = () => {
 
   const onSubmit = async (data: TodoListDTO) => {
     try {
-      const response = await updateReport(reportId, data);
+      const response = await updateList(reportId, data);
       console.log('Response from backend:', response); // Log the response for debugging
       toast.success(response.data.message);
 

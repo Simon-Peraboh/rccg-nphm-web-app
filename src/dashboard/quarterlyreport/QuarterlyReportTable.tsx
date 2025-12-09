@@ -32,7 +32,7 @@ const QuarterlyReportTable: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<QuarterlyReport[]>("http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/quarterlyReport");
+      const response = await axios.get<QuarterlyReport[]>("http://127.0.0.1:8000/api/quarterlyReport/getAllReport");
       setReports(response.data);
       setLoading(false);
     } catch (error) {
@@ -50,7 +50,7 @@ const QuarterlyReportTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/quarterlyReport/${id}`);
+              await axios.delete(`http://127.0.0.1:8000/api/quarterlyReport/deleteReport/${id}`);
               setReports(reports.filter(report => report.id !== id));
               toast.success("Report deleted successfully");
             } catch (error) {
@@ -147,6 +147,8 @@ const QuarterlyReportTable: React.FC = () => {
               <tr>
                 <th className="px-2 py-1">
                   <input
+                    itemID="checkbox"
+                    placeholder="checkbox"
                     type="checkbox"
                     onChange={(e) => {
                       if (e.target.checked) {
@@ -173,6 +175,8 @@ const QuarterlyReportTable: React.FC = () => {
                 <tr key={report.id} className="border-b-2 border-gray-400 hover:bg-white">
                   <td className="px-2 py-1">
                     <input
+                       itemID="checkbox"
+                       placeholder="checkbox"
                       type="checkbox"
                       checked={selectedReports.has(report.id)}
                       onChange={() => handleCheckboxChange(report.id)}
@@ -191,7 +195,11 @@ const QuarterlyReportTable: React.FC = () => {
                     <Link to={`/dashboard/QuarterlyReportEdit/${report.id}`} className="text-yellow-500 hover:text-yellow-700">
                       <FaEdit />
                     </Link>
-                    <button onClick={() => handleDelete(report.id)} className="text-red-500 hover:text-red-700">
+                    <button
+                      type="button"
+                       onClick={() => handleDelete(report.id)}
+                        title="Delete"
+                       className="text-red-500 hover:text-red-700">
                       <FaTrash />
                     </button>
                   </td>
@@ -207,8 +215,11 @@ const QuarterlyReportTable: React.FC = () => {
             >
               Previous
             </button>
+             <label htmlFor="usersPerPage" className="block text-sm font-semibold mb-1">
             <span>Page {currentPage} of {totalPages}</span>
-            <select
+            </label>
+             <select
+              id="usersPerPage"
               value={reportsPerPage}
               onChange={handleReportsPerPageChange}
               className="ml-2 p-2 border rounded mb-1 text-sm"

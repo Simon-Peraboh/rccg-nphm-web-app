@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 const Navbar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [user, setUser] = useState<{ username: string, role: string } | null>(null);
+  const [user, setUser] = useState<{ email: string, role: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +37,9 @@ const Navbar: React.FC = () => {
         <p>Are you sure you want to log out?</p>
         <div>
           <button
-            onClick={() => {
+             type='button'
+             title='BUTTON'
+              onClick={() => {
               logout();
               toast.dismiss(toastId);
               navigate('/dashboard/loginUser');
@@ -47,6 +49,8 @@ const Navbar: React.FC = () => {
             Yes
           </button>
           <button
+            type='button'
+            title='Message'
             onClick={() => toast.dismiss(toastId)}
             className="bg-gray-500 text-white px-3 py-1 rounded"
           >
@@ -62,7 +66,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="bg-gray-800 text-white py-4 px-6 flex justify-between items-center">
+    <header className="bg-gray-500 text-white py-4 px-6 flex justify-between items-center">
       <nav className="flex-1 flex justify-center items-center space-x-4">
         <input
           type="text"
@@ -71,18 +75,30 @@ const Navbar: React.FC = () => {
         />
       </nav>
       <div className="flex items-center space-x-4">
-        <button onClick={toggleDarkMode} className="focus:outline-none">
+        <button
+           type='button'
+           onClick={toggleDarkMode}
+           title='Toggle'
+           className="focus:outline-none">
           {isDarkMode ? <FaSun /> : <FaMoon />}
         </button>
-        <button className="focus:outline-none">
+        <button
+           className="focus:outline-none"
+           type='button'
+           title='check'
+          >
           <FaBell />
         </button>
         <div className="flex items-center space-x-2">
           <FaUserCircle className="text-2xl" />
-          <span>{user ? user.username : 'Guest'}</span>
+          <span>{user ? user.email : 'Guest'}</span>
         </div>
         <div className="relative">
-          <button onClick={toggleDropdown} className="focus:outline-none">
+          <button
+            type='button'
+            title='button'
+             onClick={toggleDropdown} 
+             className="focus:outline-none">
             <FaCog className="text-2xl" />
           </button>
           {isDropdownOpen && (
@@ -94,6 +110,8 @@ const Navbar: React.FC = () => {
                 <FaCog className="mr-2" /> Settings
               </Link>
               <button
+                type='button'
+                title='button'
                 onClick={confirmLogout}
                 className="block w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >

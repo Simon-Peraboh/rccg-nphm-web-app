@@ -1,21 +1,33 @@
 import axios from 'axios';
 import { getToken } from './AuthServiceLoginRegister';  // Assuming AuthService has a getToken function
 
-const BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/secretaryNote';
+const BASE_URL = 'http://127.0.0.1:8000/api/secretaryNote';
 
 // Interceptor to add Authorization header
-axios.interceptors.request.use(
-    config => {
-        const token = getToken();
-        if (token) {
-            config.headers['Authorization'] = token;
-        }
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    }
-);
+// axios.interceptors.request.use(
+//     config => {
+//         const token = getToken();
+//         if (token) {
+//             config.headers['Authorization'] = token;
+//         }
+//         return config;
+//     },
+//     error => {
+//         return Promise.reject(error);
+//     }
+// );
+
+// Auth-only instance
+const authAxios = axios.create();
+
+authAxios.interceptors.request.use(config => {
+  const token = getToken();
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
 
 export interface SecretaryNoteDTO {
     id?: string;
@@ -31,29 +43,29 @@ export interface SecretaryNoteDTO {
     meetingDate: string;
     createdDate?: string;
   }
-  
+
 
 export interface SecretaryNoteResponse {
     message: string;
     secretaryNoteDTO?: SecretaryNoteDTO;
 }
 
-export const createReport = async (report: SecretaryNoteDTO) => {
-    return axios.post<SecretaryNoteResponse>(`${BASE_URL}`, report);
+export const createNote = async (report: SecretaryNoteDTO) => {
+    return axios.post<SecretaryNoteResponse>(`${BASE_URL}/createNote`, report);
 };
 
-export const getReports = async () => {
-    return axios.get<SecretaryNoteDTO[]>(`${BASE_URL}`);
+export const getAllNotes = async () => {
+    return axios.get<SecretaryNoteDTO[]>(`${BASE_URL}/getAllNotes`);
 };
 
-export const getReportById = async (id: string) => {
-    return axios.get<SecretaryNoteDTO>(`${BASE_URL}/${id}`);
+export const getNote = async (id: string) => {
+    return axios.get<SecretaryNoteDTO>(`${BASE_URL}/getNote/${id}`);
 };
 
-export const updateReport = (id: string, report: SecretaryNoteDTO) => {
-    return axios.put<SecretaryNoteResponse>(`${BASE_URL}/${id}`, report);
+export const updateNote = (id: string, report: Partial<SecretaryNoteDTO>) => {
+    return axios.put<SecretaryNoteResponse>(`${BASE_URL}/updateNote/${id}`, report);
 };
 
-export const deleteReport = async (id: string) => {
-    return axios.delete<SecretaryNoteResponse>(`${BASE_URL}/${id}`);
+export const deleteNote = async (id: string) => {
+    return axios.delete<SecretaryNoteResponse>(`${BASE_URL}/deleteNote/${id}`);
 };

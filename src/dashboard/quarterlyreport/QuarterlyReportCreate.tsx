@@ -12,7 +12,7 @@ const schema = yup.object().shape({
   period: yup.string().required('Period is required'),
   totalSouls: yup.string().required('Total Souls is required'),
   totalAmount: yup.string().required('Total Amount is required'),
-  creationDate: yup.string().required(''),
+
 
 });
 
@@ -80,16 +80,6 @@ const QuarterlyReportCreate: React.FC = () => {
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
         {errors.totalAmount && <p className="text-red-500 text-sm">{errors.totalAmount.message}</p>}
-      </div>
-
-        <div className="mb-4">
-        <label className="block text-gray-700">Date Of Creation</label>
-        <input 
-          type="date" 
-          {...register('creationDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.creationDate && <p className="text-red-500 text-sm">{errors.creationDate.message}</p>}
       </div>
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
     </form>

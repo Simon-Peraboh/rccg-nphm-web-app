@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { createReport, SpecialProjectsReportDTO } from '../services/AuthServiceSpecialProjects';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 // Define the validation schema using yup
@@ -147,7 +147,7 @@ const SpecialProjectsCreate: React.FC = () => {
         <input 
           type="text" 
           placeholder='How Much Does It Cost'
-          {...register('projectCost')} 
+          {...register('projectCost')}
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
         {errors.projectCost && <p className="text-red-500 text-sm">{errors.projectCost.message}</p>}
@@ -158,13 +158,14 @@ const SpecialProjectsCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='Enter Remarks If Any'
-          {...register('projectRemarks')} 
+          {...register('projectRemarks')}
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
         {errors.projectRemarks && <p className="text-red-500 text-sm">{errors.projectRemarks.message}</p>}
       </div>
 
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
+      <ToastContainer position='top-center' />
     </form>
   );
 };

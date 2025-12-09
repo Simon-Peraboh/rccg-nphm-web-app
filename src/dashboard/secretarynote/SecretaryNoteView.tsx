@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getReportById, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
-import { toast } from 'react-toastify';
+import { getNote, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
+import { toast, ToastContainer } from 'react-toastify';
 
 const SecretaryNoteView: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -13,7 +13,7 @@ const SecretaryNoteView: React.FC = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const response = await getReportById(reportId);
+                const response = await getNote(reportId);
                 setReport(response.data);
                 console.log(response);
                 setLoading(false);
@@ -81,6 +81,7 @@ const SecretaryNoteView: React.FC = () => {
                 <label className="block text-gray-700 font-bold">Created Date:</label>
                 <p>{report.createdDate}</p>
             </div>
+            <ToastContainer position='top-center' />
         </div>
     );
 };

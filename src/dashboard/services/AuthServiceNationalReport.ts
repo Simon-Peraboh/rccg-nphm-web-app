@@ -1,33 +1,42 @@
 import axios from 'axios';
 import { getToken } from './AuthServiceLoginRegister';  // Assuming AuthService has a getToken function
 
-const BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/nationalReport';
+const BASE_URL = 'http://127.0.0.1:8000/api/nationalReport';
 
 // Interceptor to add Authorization header
-axios.interceptors.request.use(
-    config => {
-        const token = getToken();
-        if (token) {
-            config.headers['Authorization'] = token;
-        }
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    }
-);
+// axios.interceptors.request.use(
+//     config => {
+//         const token = getToken();
+//         if (token) {
+//             config.headers['Authorization'] = token;
+//         }
+//         return config;
+//     },
+//     error => {
+//         return Promise.reject(error);
+//     }
+// );
+
+const authAxios = axios.create();
+
+authAxios.interceptors.request.use(config => {
+  const token = getToken();
+  if (token) {
+   config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export interface NationalReportDTO {
-    coreDuties: string;
-    monthlyTask: string;
-    taskDone: string;
+    core_duties: string;
+    monthly_task: string;
+    task_done: string;
     strength?: string;
     weakness?: string;
     opportunities?: string;
     threats?: string;
-    amountBudgeted: string;
-    amountSpent: string;
-    createdDate: string;
+    amount_budgeted: string;
+    amount_spent: string;
     remarks?: string;
   }
   
@@ -38,21 +47,21 @@ export interface NationalReportResponse {
 }
 
 export const createReport = async (report: NationalReportDTO) => {
-    return axios.post<NationalReportResponse>(`${BASE_URL}`, report);
+  return authAxios.post<NationalReportResponse>(`${BASE_URL}/createReport`, report);
 };
 
-export const getReports = async () => {
-    return axios.get<NationalReportDTO[]>(`${BASE_URL}`);
+export const getAllReport = async () => {
+  return axios.get<NationalReportDTO[]>(`${BASE_URL}/getAllReport`);
 };
 
-export const getReportById = async (id: string) => {
-    return axios.get<NationalReportDTO>(`${BASE_URL}/${id}`);
+export const getReport = async (id: string) => {
+  return axios.get<NationalReportDTO>(`${BASE_URL}/getReport/${id}`); // ✅ add slash
 };
 
-export const updateReport = (id: string, report: NationalReportDTO) => {
-    return axios.put<NationalReportResponse>(`${BASE_URL}/${id}`, report);
+export const updateReport = (id: string, report: Partial<NationalReportDTO>) => {
+  return axios.put<NationalReportResponse>(`${BASE_URL}/updateReport/${id}`, report); // ✅ add slash
 };
 
 export const deleteReport = async (id: string) => {
-    return axios.delete<NationalReportResponse>(`${BASE_URL}/${id}`);
+  return axios.delete<NationalReportResponse>(`${BASE_URL}/deleteReport/${id}`); // ✅ add slash
 };

@@ -2,8 +2,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { createReport, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
-import { toast } from 'react-toastify';
+import { createNote, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
+import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 // Define the validation schema using yup
@@ -30,7 +30,7 @@ const SecretaryNoteCreate: React.FC = () => {
 
   const onSubmit = async (data: SecretaryNoteDTO) => {
     try {
-      const response = await createReport(data);
+      const response = await createNote(data);
       toast.success(response.data.message);
       // Introduce a short delay before navigating
       setTimeout(() => {
@@ -43,7 +43,7 @@ const SecretaryNoteCreate: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-      <h1 className='text top-1 text-center text-gray-800'>Create Monthly Report</h1>
+      <h1 className='text top-1 text-center text-gray-800'>Create Minutes of Meeting</h1>
       <div className="mb-4">
         <label className="block text-gray-700">Meeting Venue:</label>
         <input 
@@ -145,24 +145,13 @@ const SecretaryNoteCreate: React.FC = () => {
         <label className="block text-gray-700">Date Of Meeting</label>
         <input 
           type="date" 
-          {...register('meetingDate')} 
+          {...register('meetingDate')}
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
         {errors.meetingDate && <p className="text-red-500 text-sm">{errors.meetingDate.message}</p>}
       </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700">Remark</label>
-        <input 
-          type="date"
-          placeholder='Enter Remarks If Any'
-          {...register('createdDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
-      </div>
-
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
+      <ToastContainer position='top-center' />
     </form>
   );
 };

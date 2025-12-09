@@ -209,13 +209,12 @@ const UserProfileTable: React.FC = () => {
                 ) : (
                   <span className="text-gray-400 italic">No Image</span>
                 )}
-
               </td>
               <td className="px-2 py-1 flex space-x-2 justify-center">
-                <Link to={`/userprofileView/${user.id}`} className="text-blue-500 hover:text-blue-700">
+                <Link to={`/dashboard/userprofileView/${user.id}`} className="text-blue-500 hover:text-blue-700">
                   <FaEye />
                 </Link>
-                <Link to={`/userprofileEdit/${user.id}`} className="text-yellow-500 hover:text-yellow-700">
+                <Link to={`/dashboard/userprofileEdit/${user.id}`} className="text-yellow-500 hover:text-yellow-700">
                   <FaEdit />
                 </Link>
 

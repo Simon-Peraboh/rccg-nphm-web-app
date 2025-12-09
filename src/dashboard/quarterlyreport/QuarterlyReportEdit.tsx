@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { getProjectById, updateReport, QuarterlyReportDTO } from '../services/AuthServiceQuarterlyReport';
+import { getReport, updateReport, QuarterlyReportDTO } from '../services/AuthServiceQuarterlyReport';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -12,7 +12,6 @@ const schema = yup.object().shape({
   period: yup.string().required('Period is required'),
   totalSouls: yup.string().required('Souls is required'),
   totalAmount: yup.string().required('Amount is required'),
-  creationDate: yup.string().required('Date is required'),
  
 });
 
@@ -29,14 +28,13 @@ const QuarterlyReportEdit: React.FC = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const response = await getProjectById(reportId);
+        const response = await getReport(reportId);
         const data = response.data;
         console.log('Fetched data:', data); // Add logging here
         setValue('whichYear', data.whichYear);
         setValue('period', data.period);
         setValue('totalSouls', data.totalSouls);
         setValue('totalAmount', data.totalAmount);
-        setValue('creationDate', data.creationDate || '');
         } catch (error) {
         console.error('Error fetching report:', error); // Add logging here
         toast.error('Failed to fetch report');
@@ -101,15 +99,6 @@ const QuarterlyReportEdit: React.FC = () => {
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
         {errors.totalAmount && <p className="text-red-500 text-sm">{errors.totalAmount.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Creation Date</label>
-        <input 
-          type="date" 
-          {...register('creationDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.creationDate && <p className="text-red-500 text-sm">{errors.creationDate.message}</p>}
       </div>
         <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Update Report</button>
     </form>

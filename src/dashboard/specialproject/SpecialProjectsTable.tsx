@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -37,7 +37,7 @@ const SpecialProjectsTable: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<SpecialProjects[]>("http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/specialProjects");
+      const response = await axios.get<SpecialProjects[]>("http://127.0.0.1:8000/api/specialProjects/getAllProjects");
       setReports(response.data);
       setLoading(false);
     } catch (error) {
@@ -55,7 +55,7 @@ const SpecialProjectsTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/specialProjects/${id}`);
+              await axios.delete(`http://127.0.0.1:8000/api/specialProjects/deleteReport/${id}`);
               setReports(reports.filter(report => report.id !== id));
               toast.success("Report deleted successfully");
             } catch (error) {
@@ -152,8 +152,9 @@ const SpecialProjectsTable: React.FC = () => {
               <tr>
                 <th className="px-2 py-1">
                   <input
+                    placeholder="yeah"
                     type="checkbox"
-                    onChange={(e) => {
+                     onChange={(e) => {
                       if (e.target.checked) {
                         const newSelectedReports = new Set(reports.map(report => report.id));
                         setSelectedReports(newSelectedReports);
@@ -180,6 +181,8 @@ const SpecialProjectsTable: React.FC = () => {
                 <tr key={report.id} className="border-b-2 border-gray-400 hover:bg-white">
                   <td className="px-2 py-1">
                     <input
+                      itemID="checkbox"
+                      placeholder="checkbox"
                       type="checkbox"
                       checked={selectedReports.has(report.id)}
                       onChange={() => handleCheckboxChange(report.id)}
@@ -200,7 +203,11 @@ const SpecialProjectsTable: React.FC = () => {
                     <Link to={`/dashboard/SpecialProjectsEdit/${report.id}`} className="text-yellow-500 hover:text-yellow-700">
                       <FaEdit />
                     </Link>
-                    <button onClick={() => handleDelete(report.id)} className="text-red-500 hover:text-red-700">
+                    <button
+                       type="button"
+                       onClick={() => handleDelete(report.id)}
+                       title="Delete"
+                       className="text-red-500 hover:text-red-700">
                       <FaTrash />
                     </button>
                   </td>
@@ -216,8 +223,11 @@ const SpecialProjectsTable: React.FC = () => {
             >
               Previous
             </button>
+             <label htmlFor="usersPerPage">
             <span>Page {currentPage} of {totalPages}</span>
+            </label>
             <select
+              id="usersPerPage"
               value={reportsPerPage}
               onChange={handleReportsPerPageChange}
               className="ml-2 p-2 border rounded mb-1 text-sm"
@@ -236,6 +246,7 @@ const SpecialProjectsTable: React.FC = () => {
           </div>
         </>
       )}
+      <ToastContainer position='top-center' />
     </div>
   );
 };

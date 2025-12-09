@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getReportById, MonthlyReportDTO } from '../services/AuthServiceMonthlyReport';
+import { getReport, MonthlyReportDTO } from '../services/AuthServiceMonthlyReport';
 import { toast } from 'react-toastify';
 
 const MonthlyReportView: React.FC = () => {
@@ -13,7 +13,7 @@ const MonthlyReportView: React.FC = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const response = await getReportById(reportId);
+                const response = await getReport(reportId);
                 setReport(response.data);
                 setLoading(false);
             } catch (error) {
@@ -50,24 +50,24 @@ const MonthlyReportView: React.FC = () => {
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Province Coordinator:</label>
-                <p>{report.coordinatorName}</p>
+                <p>{report.coordinator_name}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Prison Visited:</label>
-                <p>{report.prisonVisited}</p>
+                <p>{report.prison_visited}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Hospital Visited:</label>
-                <p>{report.hospitalVisited}</p>
+                <p>{report.hospital_visited}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Police Station Visited:</label>
-                <p>{report.policeStationVisited}</p>
+                <p>{report.police_station_visited}</p>
             </div>
-            <div className="mb-4">
+            {/* <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Province Coordinator:</label>
                 <p>{report.coordinatorName}</p>
-            </div>
+            </div> */}
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Other Places Visited:</label>
                 <p>{report.others}</p>
@@ -78,19 +78,19 @@ const MonthlyReportView: React.FC = () => {
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Amount Budgeted:</label>
-                <p>{report.amountBudgeted}</p>
+                <p>{report.amount_budgeted}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Amount Spent:</label>
-                <p>{report.amountSpent}</p>
+                <p>{report.amount_spent}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Team Members:</label>
-                <p>{report.teamMembers}</p>
+                <p>{report.team_members}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Souls Won:</label>
-                <p>{report.soulsWon}</p>
+                <p>{report.souls_won}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Challenges:</label>
@@ -101,16 +101,16 @@ const MonthlyReportView: React.FC = () => {
                 <p>{report.suggestion}</p>
             </div>
             <div className="mb-4">
+                <label className="block text-gray-700 font-bold">Remark:</label>
+                <p>{report.remarks}</p>
+            </div>
+            <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Date Of Visitation:</label>
-                <p>{report.activityDate}</p>
+                <p>{report.activity_date}</p>
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Created Date:</label>
-                <p>{report.createdDate}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Remark:</label>
-                <p>{report.remarks}</p>
+                <p>{report.report_created_by}</p>
             </div>
         </div>
     );

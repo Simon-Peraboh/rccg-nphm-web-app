@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { createReport, MonthlyReportDTO } from '../services/AuthServiceMonthlyReport';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 // Define the validation schema using yup
@@ -11,25 +11,32 @@ const schema = yup.object().shape({
   state: yup.string().required('State is required'),
   region: yup.string().required('Region is required'),
   province: yup.string().required('Province is required'),
-  coordinatorName: yup.string().required('Coordinator Name is required'),
-  prisonVisited: yup.string().optional(),
-  hospitalVisited: yup.string().optional(),
-  policeStationVisited: yup.string().optional(),
+  coordinator_name: yup.string().required('Coordinator Name is required'),
+  prison_visited: yup.string().optional(),
+  hospital_visited: yup.string().optional(),
+  police_station_visited: yup.string().optional(),
   others: yup.string().optional(),
   items: yup.string().required('Items are required'),
-  amountBudgeted: yup.string().required('Amount Budgeted is required'),
-  amountSpent: yup.string().required('Amount Spent is required'),
-  teamMembers: yup.string().required('Team Members are required'),
-  soulsWon: yup.string().required('Souls Won is required'),
+  amount_budgeted: yup.string().required('Amount Budgeted is required'),
+  amount_spent: yup.string().required('Amount Spent is required'),
+  team_members: yup.string().required('Team Members are required'),
+  souls_won: yup.string().required('Souls Won is required'),
   challenges: yup.string().optional(),
   suggestion: yup.string().optional(),
-  activityDate: yup.string().required('Activity Date is required'),
-  createdDate: yup.string().required('Created Date is required'),
   remarks: yup.string().optional(),
+  activity_date: yup.string().required('Activity Date is required'),
+  report_created_by: yup.string().required("Creator of Report is required"),
+
+
 });
 
 const MonthlyReportCreate: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<MonthlyReportDTO>({
+  const {
+  register,
+  handleSubmit,
+  formState: { errors, isSubmitting },
+   } = useForm<MonthlyReportDTO>({
+
     resolver: yupResolver(schema),
   });
 
@@ -89,10 +96,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='Enter Coordinator Name'
-          {...register('coordinatorName')} 
+          {...register('coordinator_name')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.coordinatorName && <p className="text-red-500 text-sm">{errors.coordinatorName.message}</p>}
+        {errors.coordinator_name && <p className="text-red-500 text-sm">{errors.coordinator_name.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -100,10 +107,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text" 
           placeholder='Enter Correctional Center Visited'
-          {...register('prisonVisited')} 
+          {...register('prison_visited')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.prisonVisited && <p className="text-red-500 text-sm">{errors.prisonVisited.message}</p>}
+        {errors.prison_visited && <p className="text-red-500 text-sm">{errors.prison_visited.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -111,10 +118,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='Enter Hospital Visited'
-          {...register('hospitalVisited')} 
+          {...register('hospital_visited')}
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.hospitalVisited && <p className="text-red-500 text-sm">{errors.hospitalVisited.message}</p>}
+        {errors.hospital_visited && <p className="text-red-500 text-sm">{errors.hospital_visited.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -122,10 +129,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='Enter Police Station Visited'
-          {...register('policeStationVisited')} 
+          {...register('police_station_visited')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.policeStationVisited && <p className="text-red-500 text-sm">{errors.policeStationVisited.message}</p>}
+        {errors.police_station_visited && <p className="text-red-500 text-sm">{errors.police_station_visited.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -155,10 +162,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='Enter Amount Budgeted '
-          {...register('amountBudgeted')} 
+          {...register('amount_budgeted')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.amountBudgeted && <p className="text-red-500 text-sm">{errors.amountBudgeted.message}</p>}
+        {errors.amount_budgeted && <p className="text-red-500 text-sm">{errors.amount_budgeted.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -166,10 +173,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='How Much Was Spent'
-          {...register('amountSpent')} 
+          {...register('amount_spent')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.amountSpent && <p className="text-red-500 text-sm">{errors.amountSpent.message}</p>}
+        {errors.amount_spent && <p className="text-red-500 text-sm">{errors.amount_spent.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -177,10 +184,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='How Many People Went'
-          {...register('teamMembers')} 
+          {...register('team_members')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.teamMembers && <p className="text-red-500 text-sm">{errors.teamMembers.message}</p>}
+        {errors.team_members && <p className="text-red-500 text-sm">{errors.team_members.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -188,10 +195,10 @@ const MonthlyReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='How Many Souls Got Saved'
-          {...register('soulsWon')} 
+          {...register('souls_won')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.soulsWon && <p className="text-red-500 text-sm">{errors.soulsWon.message}</p>}
+        {errors.souls_won && <p className="text-red-500 text-sm">{errors.souls_won.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -215,27 +222,6 @@ const MonthlyReportCreate: React.FC = () => {
         />
         {errors.suggestion && <p className="text-red-500 text-sm">{errors.suggestion.message}</p>}
       </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700"> Date Of Visitation</label>
-        <input 
-          type="date" 
-          {...register('activityDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.activityDate && <p className="text-red-500 text-sm">{errors.activityDate.message}</p>}
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700">Created Date</label>
-        <input 
-          type="date" 
-          {...register('createdDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
-      </div>
-
       <div className="mb-4">
         <label className="block text-gray-700">Remark</label>
         <input 
@@ -247,7 +233,35 @@ const MonthlyReportCreate: React.FC = () => {
         {errors.remarks && <p className="text-red-500 text-sm">{errors.remarks.message}</p>}
       </div>
 
-      <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
+      <div className="mb-4">
+        <label className="block text-gray-700"> Date Of Visitation</label>
+        <input 
+          type="date" 
+          {...register('activity_date')} 
+          className="w-full p-2 border border-gray-300 rounded mt-1"
+        />
+        {errors.activity_date && <p className="text-red-500 text-sm">{errors.activity_date.message}</p>}
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700">Report Created By Who</label>
+        <input 
+          type="text"
+          placeholder='Your Name'
+          {...register('report_created_by')}
+          className="w-full p-2 border border-gray-300 rounded mt-1"
+        />
+        {errors.report_created_by && <p className="text-red-500 text-sm">{errors.report_created_by.message}</p>}
+      </div>
+
+
+      <button
+        disabled={isSubmitting}
+        type="submit"
+        className={`w-full p-2 rounded mt-4 text-white ${isSubmitting ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+      >
+        {isSubmitting ? 'Submitting...' : 'Create Report'}
+      </button>
+       <ToastContainer position="top-right" autoClose={4000} />
     </form>
   );
 };

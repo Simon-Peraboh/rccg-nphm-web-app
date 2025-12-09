@@ -96,12 +96,15 @@ const RegisterProfileCreate: React.FC = () => {
   const [lgas, setLgas] = useState<string[]>([]);
   const [form, setForm] = useState<UserForm>(() => loadFromLocalStorage() ?? defaultForm);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [consentGiven, setConsentGiven] = useState(false);
+
 
 
 
   const genderOptions = ["MALE", "FEMALE"];
-  const ordinationOptions = ["DEACON", "DEACONESS", "ASST PASTOR", "FULL PASTOR"];
- 
+  const ordinationOptions = ["NOT ORDAINED","DEACON", "DEACONESS", "ASST PASTOR", "FULL PASTOR"];
+  const positionOptions = ['NATIONAL EXCO', 'REG COORDINATOR', 'PROV COORDINATOR', 'ASST REG COORDINATOR', 'ASST PROV COORDINATOR', 'MEMBER'];
+
   useEffect(() => {
     axios.get("http://127.0.0.1:8000/api/userProfile/regions").then((res) => {
       setRegions(res.data);
@@ -134,6 +137,7 @@ const RegisterProfileCreate: React.FC = () => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
@@ -156,7 +160,10 @@ const RegisterProfileCreate: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+      if (!consentGiven) {
+      toast.error("Please provide consent before submitting the form.");
+      return;
+    }
     const formData = new FormData();
     Object.entries(form).forEach(([key, val]) => {
       if (val !== null && val !== undefined) {
@@ -209,17 +216,17 @@ const RegisterProfileCreate: React.FC = () => {
         value={form[name] as string}
         onChange={handleChange}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border rounded"
+        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
       />
     </div>
   );
 
   return (
-    <div className="max-w-5xl mx-auto bg-blue-200 shadow-lg rounded-lg p-8 sm:p-10">
+    <div className="max-w-5xl mx-auto bg-blue-200 shadow-lg rounded-lg p-6 sm:p-8">
       <h2 className="text-4xl font-bold text-center text-blue-800 mb-10">NPHM Bio-Data Form</h2>
 
       <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {renderInput("Title", "title", "text", "Mr / Mrs / Dr")}
           {renderInput("First Name", "first_name", "text", "e.g. John")}
           {renderInput("Middle Name", "others", "text", "Optional")}
@@ -234,7 +241,6 @@ const RegisterProfileCreate: React.FC = () => {
           {renderInput("Area", "area", "text", "e.g. Area 1")}
           {renderInput("Parish", "parish", "text", "e.g. RCCG Grace Chapel")}
           {renderInput("City", "city", "text", "e.g. Lagos")}
-          {renderInput("Position", "position", "text", "e.g. Choir Leader")}
           {renderInput("Home Address", "address_home", "text", "123 Example Street")}
           {renderInput("Nearest Bus Stop", "nearest_busstop", "text", "e.g. Ikeja Underbridge")}
           {renderInput("Office Address", "address_office", "text", "Office Location")}
@@ -242,14 +248,13 @@ const RegisterProfileCreate: React.FC = () => {
           {renderInput("Next of Kin Phone", "next_of_kin_phone", "text", "e.g. +2348012345679")}
           {renderInput("Social Media Handle", "social_handle", "text", "@yourhandle")}
           <div>
-
             <label htmlFor="gender" className="block text-sm font-semibold mb-1">Gender</label>
             <select
               id="gender"
               name="gender"
               value={form.gender}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select Gender</option>
               {genderOptions.map((g) => (
@@ -257,7 +262,21 @@ const RegisterProfileCreate: React.FC = () => {
               ))}
             </select>
           </div>
-
+          <div>
+            <label htmlFor="position" className="block text-sm font-semibold mb-1">Position</label>
+            <select
+              id="position"
+              name="position"
+              value={form.position}
+              onChange={handleChange}
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select Position</option>
+              {positionOptions.map((sp) => (
+                <option key={sp} value={sp}>{sp}</option>
+              ))}
+            </select>
+          </div>
           <div>
             <label htmlFor="ordination_category" className="block text-sm font-semibold mb-1">Ordination Category</label>
             <select
@@ -265,7 +284,7 @@ const RegisterProfileCreate: React.FC = () => {
               name="ordination_category"
               value={form.ordination_category}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select Ordination</option>
               {ordinationOptions.map((o) => (
@@ -281,7 +300,7 @@ const RegisterProfileCreate: React.FC = () => {
               name="region"
               value={form.region}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select Region</option>
               {regions.map((r) => (
@@ -297,7 +316,7 @@ const RegisterProfileCreate: React.FC = () => {
               name="province"
               value={form.province}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select Province</option>
               {provinces.map((p) => (
@@ -313,7 +332,7 @@ const RegisterProfileCreate: React.FC = () => {
               name="state"
               value={form.state}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select State</option>
               {states.map((s) => (
@@ -329,7 +348,7 @@ const RegisterProfileCreate: React.FC = () => {
               name="lga"
               value={form.lga}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select LGA</option>
               {lgas.map((l) => (
@@ -346,9 +365,8 @@ const RegisterProfileCreate: React.FC = () => {
               name="image_path"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
-
             {previewUrl && (
               <div className="mt-4">
                 <p className="text-sm text-gray-600">Image Preview:</p>
@@ -357,13 +375,29 @@ const RegisterProfileCreate: React.FC = () => {
             )}
           </div>
         </div>
+        <div className="mt-6 text-sm flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="consent"
+            checked={consentGiven}
+            onChange={() => setConsentGiven(prev => !prev)}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="consent" className="text-gray-700">
+            I agree to the processing of my personal data for ministry purposes.
+          </label>
+        </div>
         <div className="mt-10 flex justify-center">
           <button
-            type="submit"
-            className="bg-blue-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-md shadow transition-all duration-200"
-          >
-            Submit
-          </button>
+              type="submit"
+              disabled={!consentGiven}
+              className={`bg-blue-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-md shadow transition-all duration-200 ${
+                !consentGiven ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              Submit
+            </button>
+
         </div>
       </form>
       <ToastContainer position="top-right" autoClose={4000}

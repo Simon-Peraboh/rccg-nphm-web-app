@@ -65,11 +65,18 @@ const TodoListForm: React.FC<TodoFormProps> = ({ onSubmit, todo }) => {
 
       <div className="mb-4">
         <label className="block text-gray-700">Assigned</label>
-        <select {...register('assigned', { required: 'Assigned is required' })} className="w-full p-2 border border-gray-300 rounded mt-1">
+        <select
+          {...register('assigned', {
+            required: 'Assigned is required',
+            setValueAs: (val) => val === 'yes'
+          })}
+          className="..."
+        >
           <option value="">Select</option>
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
+
         {errors.assigned && <p className="text-red-500 text-sm">{errors.assigned.message}</p>}
       </div>
 

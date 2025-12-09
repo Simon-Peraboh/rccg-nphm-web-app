@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { getProjectById, updateReport, SpecialProjectsReportDTO } from '../services/AuthServiceSpecialProjects';
+import { getReport, updateReport, SpecialProjectsReportDTO } from '../services/AuthServiceSpecialProjects';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 // Define the validation schema using yup
 const schema = yup.object().shape({
@@ -34,7 +34,7 @@ const SpecialProjectsEdit: React.FC = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const response = await getProjectById(reportId);
+        const response = await getReport(reportId);
         const data = response.data;
         console.log('Fetched data:', data); // Add logging here
         setValue('projectName', data.projectName);
@@ -65,7 +65,7 @@ const SpecialProjectsEdit: React.FC = () => {
 
       // Introduce a short delay before navigating
       setTimeout(() => {
-        navigate('/dashboard/nationalReportTable');
+        navigate('/dashboard/specialProjectsTable');
       }, 3000); // Display message for 3 seconds
 
     } catch (error) {
@@ -169,6 +169,7 @@ const SpecialProjectsEdit: React.FC = () => {
         {errors.projectRemarks && <p className="text-red-500 text-sm">{errors.projectRemarks.message}</p>}
       </div>
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Update Report</button>
+      <ToastContainer position='top-center' />
     </form>
   );
 };

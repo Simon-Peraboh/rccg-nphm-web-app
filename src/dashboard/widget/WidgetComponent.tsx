@@ -3,7 +3,7 @@ import Widget from './Widget';
 import { FaUserFriends } from 'react-icons/fa';
 import { MdAttachMoney } from "react-icons/md";
 import { TbFileReport } from "react-icons/tb";
-import { fetchTotalMembers, fetchNationalMonthlyReport, MonthlyReportDTO } from '../services/AuthServiceMonthlyReport';
+import { fetchTotalMembers, fetchTotalExpenditure, fetchNationalMonthlyReport, MonthlyReportDTO } from '../services/AuthServiceMonthlyReport';
 import { toast } from 'react-toastify';
 
 const WidgetComponent: React.FC = () => {
@@ -23,15 +23,15 @@ const WidgetComponent: React.FC = () => {
         console.log('Fetched monthly report data:', monthlyReportData);
 
         const totalReports = monthlyReportData.length;
-        const totalExpenditureCaptured = monthlyReportData.reduce((acc, report) => acc + parseFloat(report.amountSpent || '0'), 0);
-        const totalSoulsSavedCount = monthlyReportData.reduce((acc, report) => acc + parseFloat(report.soulsWon || '0'), 0);
+        const totalSpent = await fetchTotalExpenditure();
+        const totalSoulsSavedCount = monthlyReportData.reduce((acc, report) => acc + parseFloat(report.souls_won || '0'), 0);
 
         console.log('Total Reports:', totalReports);
-        console.log('Total Expenditure Captured:', totalExpenditureCaptured);
+        console.log('Total Expenditure Captured:', totalSpent);
         console.log('Total Souls Saved:', totalSoulsSavedCount);
 
         setTotalMonthlyReport(totalReports);
-        setTotalExpenditure(totalExpenditureCaptured);
+        setTotalExpenditure(totalSpent);
         setTotalSoulsSaved(totalSoulsSavedCount);
       } catch (error) {
         toast.error('Failed to fetch widget data');
@@ -59,7 +59,7 @@ const WidgetComponent: React.FC = () => {
       <Widget
         title="Total Expenditure Captured"
         icon={<MdAttachMoney />}
-        content={<div className="text-lg font-semibold">{totalExpenditure !== null ? totalExpenditure.toFixed(2) : 'Loading...'}</div>}
+        content={<div className="text-lg font-semibold">{totalExpenditure !== null ? totalExpenditure.toLocaleString('en-NG', { style: 'currency', currency: 'NGN' }) : 'Loading...'}</div>}
         link="/dashboard/monthlyReportTable"
       />
       <Widget

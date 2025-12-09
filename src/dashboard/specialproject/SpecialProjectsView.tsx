@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getProjectById, SpecialProjectsReportDTO } from '../services/AuthServiceSpecialProjects';
-import { toast } from 'react-toastify';
+import { getReport, SpecialProjectsReportDTO } from '../services/AuthServiceSpecialProjects';
+import { toast, ToastContainer } from 'react-toastify';
 
 const SpecialProjectsView: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -13,7 +13,7 @@ const SpecialProjectsView: React.FC = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const response = await getProjectById(reportId);
+                const response = await getReport(reportId);
                 setReport(response.data); // Ensure the response structure matches
                 setLoading(false);
             } catch (error) {
@@ -80,6 +80,7 @@ const SpecialProjectsView: React.FC = () => {
                 <label className="block text-gray-700 font-bold">Remarks:</label>
                 <p>{report.projectRemarks}</p>
             </div>
+            <ToastContainer position='top-center' />
         </div>
     );
 };

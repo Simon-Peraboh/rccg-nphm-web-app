@@ -1,14 +1,15 @@
-// AuthServiceLoginRegister.ts
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
-const AUTH_REST_API_BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/auth';
+const AUTH_REST_API_BASE_URL = `${import.meta.env.VITE_API_URL}/userManager`;
 
 export interface RegisterDTO {
-  username: string;
+  name: string;
+  surname: string;
   email: string;
-  password: string;
-  roles?: string[];
+  role: string; // ✅ not string[]
 }
+
 
 export interface LoginDTO {
   usernameOrEmail: string;
@@ -16,157 +17,102 @@ export interface LoginDTO {
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  tokenType: string;
-  role: string;
-  message?: string; // Optional message from the backend
-  refreshToken: string;
+  token: string;
+  user: {
+    name: string;
+    surname: string;
+    email: string;
+    role: string;
+  };
+  message?: string;
 }
 
-export interface RefreshTokenDTO {
-  refreshToken: string;
-}
-
-// Function to store refresh token
-export const storeRefreshToken = (refreshToken: string) => {
-  console.log('Storing refresh token:', refreshToken);
-  localStorage.setItem('refreshToken', refreshToken);
-};
-
-// Function to retrieve refresh token
-export const getRefreshToken = (): string | null => {
-  return localStorage.getItem('refreshToken');
-};
-
-
-// Function to clear any cached tokens
 export const clearToken = () => {
-  console.log('Clearing stored tokens');
   localStorage.removeItem('token');
   sessionStorage.clear();
 };
 
 export const registerAPICall = (registerObj: RegisterDTO) => {
-  return axios.post(`${AUTH_REST_API_BASE_URL}/register`, registerObj);
+  return axios.post(`${AUTH_REST_API_BASE_URL}/createUser`, registerObj);
 };
 
-export const loginAPICall = async (loginObj: LoginDTO) => {
+export const loginAPICall = async (loginData: LoginDTO) => {
   try {
-      clearToken(); // Clear previous tokens
-      console.log('Attempting login with:', loginObj);
-      
-      // Make the login request
-      const response = await axios.post<AuthResponse>(`${AUTH_REST_API_BASE_URL}/login`, loginObj);
-      console.log('Login successful, response:', response.data);
-      
-      const { accessToken, refreshToken, tokenType, role, message } = response.data;
-      
-      // Store the access token and refresh token
-      storeToken(`${tokenType} ${accessToken}`);
-      storeRefreshToken(refreshToken);  // New function to store the refresh token
+    const response = await axios.post(`${AUTH_REST_API_BASE_URL}/login`, {
+      email: loginData.usernameOrEmail,
+      password: loginData.password,
+    });
 
-      return { accessToken, refreshToken, tokenType, role, message };
-  } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-          console.error('Login failed with status:', error.response.status);
-          console.error('Response data:', error.response.data);
-          const message = error.response.status === 401
-              ? 'Unauthorized: Incorrect username or password'
-              : error.response.data.message || 'Login failed';
-          throw new Error(message);
-      } else {
-          console.error('Login failed due to a network or unknown error:', error);
-          throw new Error('Login failed: Unable to connect to the server');
-      }
+    toast.success('Login successful');
+    return response;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.message || 'Login failed';
+      toast.error(message);
+      throw new Error(message);
+    } else {
+      toast.error('Unexpected error');
+      throw new Error('Unexpected error');
+    }
   }
 };
 
-
 export const storeToken = (token: string) => {
-  const tokenPayload = JSON.parse(atob(token.split('.')[1])); // Decode the JWT payload
-  const expirationDate = new Date(tokenPayload.exp * 1000); // Convert expiration from seconds to milliseconds
-
-  console.log('Storing token:', token);
-  console.log('Token expiration time:', expirationDate);
-  console.log('Current time:', new Date());
-
   localStorage.setItem('token', token);
 };
 
 export const getToken = () => {
-  const token = localStorage.getItem('token');
-  if (token) {
-      const tokenPayload = JSON.parse(atob(token.split('.')[1])); // Decode the JWT payload
-      const expirationDate = new Date(tokenPayload.exp * 1000); // Convert expiration from seconds to milliseconds
-      const currentTime = new Date();
-
-      console.log('Retrieved token:', token);
-      console.log('Token expiration time:', expirationDate);
-      console.log('Current time:', currentTime);
-
-      if (currentTime >= expirationDate) {
-          console.warn('Token is expired, clearing token');
-          clearToken();
-          return null;
-      }
-
-      return token;
-  }
-  return null;
+  return localStorage.getItem('token');
 };
 
 interface LoggedInUser {
-  username: string;
+  email: string;
   role: string;
 }
 
-export const saveLoggedInUser = ({ username, role }: LoggedInUser) => {
-  console.log('Saving logged-in user:', { username, role });
-  sessionStorage.setItem('authenticatedUser', username);
+export const saveLoggedInUser = ({ email, role }: LoggedInUser) => {
+  sessionStorage.setItem('authenticatedUser', email);
   sessionStorage.setItem('role', role);
 };
 
 export const isUserLoggedIn = () => {
-  const username = sessionStorage.getItem('authenticatedUser');
-  console.log('Is user logged in?', username !== null);
-  return username !== null;
+  return !!sessionStorage.getItem('authenticatedUser');
 };
 
 export const getLoggedInUser = (): LoggedInUser | null => {
-  const username = sessionStorage.getItem('authenticatedUser');
+  const email = sessionStorage.getItem('authenticatedUser');
   const role = sessionStorage.getItem('role');
-  console.log('Retrieved logged-in user:', { username, role });
-  if (username && role) {
-      return { username, role };
-  }
-  return null;
+  return email && role ? { email, role } : null;
 };
 
 export const logout = () => {
-  console.log('Logging out, clearing storage');
   localStorage.clear();
   sessionStorage.clear();
 };
 
+export const activateAccountAPICall = (
+  token: string,
+  temporaryPassword: string,
+  newPassword: string,
+  confirmPassword: string,
+) => {
+  return axios.post(`${AUTH_REST_API_BASE_URL}/accountActivation`, {
+    token,
+    temporary_password: temporaryPassword,
+    new_password: newPassword,
+    new_password_confirmation: confirmPassword,
+  });
+};
+
+
+// Attach token globally
 axios.interceptors.request.use(
   config => {
-      const token = getToken();
-      if (token) {
-          config.headers['Authorization'] = token;
-      }
-      return config;
+    const token = getToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
   },
-  error => {
-      console.error('Request error:', error);
-      return Promise.reject(error);
-  }
+  error => Promise.reject(error)
 );
-
-
-export interface RefreshTokenDTO {
-  refreshToken: string;
-}
-
-export const refreshTokenAPICall = (refreshTokenObj: RefreshTokenDTO) => {
-  return axios.post<AuthResponse>(`${AUTH_REST_API_BASE_URL}/refresh`, refreshTokenObj);
-};

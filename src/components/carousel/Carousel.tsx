@@ -10,7 +10,7 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex === images.length - 1 ? 0 : prevIndex + 1));
-    }, 3000); // Change slide every 3 seconds
+    }, 10000); // Change slide every 3 seconds
 
     return () => clearInterval(intervalId); // Cleanup interval
   }, [images.length]);
@@ -29,7 +29,7 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
       <img
         src={images[currentIndex].src}
         alt={`Slide ${currentIndex + 1}`}
-        className="w-full object-cover h-80"
+        className="w-full object-cover h-screen"
       />
       {/* Text Caption */}
       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white py-2 px-4 p-2">

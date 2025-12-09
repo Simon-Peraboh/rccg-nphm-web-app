@@ -1,21 +1,33 @@
 import axios from 'axios';
 import { getToken } from './AuthServiceLoginRegister';  // Assuming AuthService has a getToken function
 
-const BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/specialProjects';
+const BASE_URL = 'http://127.0.0.1:8000/api/specialProjects';
 
 // Interceptor to add Authorization header
-axios.interceptors.request.use(
-    config => {
-        const token = getToken();
-        if (token) {
-            config.headers['Authorization'] = token;
-        }
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    }
-);
+// axios.interceptors.request.use(
+//     config => {
+//         const token = getToken();
+//         if (token) {
+//             config.headers['Authorization'] = token;
+//         }
+//         return config;
+//     },
+//     error => {
+//         return Promise.reject(error);
+//     }
+// );
+
+// Auth-only instance
+const authAxios = axios.create();
+
+authAxios.interceptors.request.use(config => {
+  const token = getToken();
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
 
 export interface SpecialProjectsReportDTO {
     id?: string;
@@ -39,21 +51,21 @@ export interface SpecialProjectsReportResponse {
 }
 
 export const createReport = async (report: SpecialProjectsReportDTO) => {
-    return axios.post<SpecialProjectsReportResponse>(`${BASE_URL}`, report);
+    return axios.post<SpecialProjectsReportResponse>(`${BASE_URL}/createReport`, report);
 };
 
-export const getProjectById = async (id: string) => {
-    return axios.get<SpecialProjectsReportDTO>(`${BASE_URL}/${id}`);
+export const getReport = async (id: string) => {
+    return axios.get<SpecialProjectsReportDTO>(`${BASE_URL}/getReport/${id}`);
 };
 
-export const getReports = async () => {
-    return axios.get<SpecialProjectsReportDTO[]>(`${BASE_URL}`);
+export const getAllProjects = async () => {
+    return axios.get<SpecialProjectsReportDTO[]>(`${BASE_URL}/getAllProjects`);
 };
 
-export const updateReport = (id: string, report: SpecialProjectsReportDTO) => {
-    return axios.put<SpecialProjectsReportResponse>(`${BASE_URL}/${id}`, report);
+export const updateReport = (id: string, report: Partial<SpecialProjectsReportDTO>) => {
+    return axios.put<SpecialProjectsReportResponse>(`${BASE_URL}/updateReport/${id}`, report);
 };
 
 export const deleteReport = async (id: string) => {
-    return axios.delete<SpecialProjectsReportResponse>(`${BASE_URL}/${id}`);
+    return axios.delete<SpecialProjectsReportResponse>(`${BASE_URL}/deleteReport/${id}`);
 };

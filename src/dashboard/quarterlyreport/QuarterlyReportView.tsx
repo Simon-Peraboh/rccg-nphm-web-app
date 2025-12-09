@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getProjectById, QuarterlyReportDTO } from '../services/AuthServiceQuarterlyReport';
+import { getReport, QuarterlyReportDTO } from '../services/AuthServiceQuarterlyReport';
 import { toast } from 'react-toastify';
 
 const QuarterlyReportView: React.FC = () => {
@@ -13,7 +13,7 @@ const QuarterlyReportView: React.FC = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const response = await getProjectById(reportId);
+                const response = await getReport(reportId);
                 setReport(response.data);
                 console.log(response);
                 setLoading(false);
@@ -52,10 +52,6 @@ const QuarterlyReportView: React.FC = () => {
             <div className="mb-4">
                 <label className="block text-gray-700 font-bold">Total Amount:</label>
                 <p>{report.totalAmount}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Created Date:</label>
-                <p>{report.creationDate}</p>
             </div>
         </div>
     );

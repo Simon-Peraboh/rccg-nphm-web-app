@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { registerAPICall, RegisterDTO } from '../services/AuthServiceLoginRegister';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
+import axios from 'axios';
 
 const RegisterUser: React.FC = () => {
-    const [username, setUsername] = useState('');
+    const [surname, setSurname] = useState('');
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [roles, setRoles] = useState<string[]>([]);
-    const navigate = useNavigate(); // Hook to programmatically navigate to another route
+    const [role, setRole] = useState('');
+    const navigate = useNavigate();
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const registerObj: RegisterDTO = { username, email, password, roles };
+        const registerObj: RegisterDTO = { name, surname, email, role };
 
         try {
             const response = await registerAPICall(registerObj);
@@ -21,22 +22,50 @@ const RegisterUser: React.FC = () => {
             toast.success('Registration successful');
             // Delay navigation to the dashboard to ensure the toast message is displayed
            setTimeout(() => navigate('/dashboard'), 3000);
-        } catch (error) {
+         }  catch (error: unknown) {
             console.error(error);
-            toast.error('Registration failed');
-        }
+
+            if (axios.isAxiosError(error)) {
+                const responseData = error.response?.data;
+
+                // Laravel validation errors are usually under `message` or `errors`
+                if (typeof responseData?.message === 'object') {
+                const messages = Object.values(responseData.message)
+                    .flat()
+                    .join(' ');
+                toast.error(messages);
+                } else {
+                toast.error(responseData?.message || 'Registration failed');
+                }
+            } else {
+                toast.error('Unexpected error during registration');
+            }
+         }
     };
+
 
     return (
         <div className="max-w-md mx-auto mt-10 p-5 bg-white shadow-md rounded-md">
             <h2 className="text-2xl font-bold mb-5">Register</h2>
             <form onSubmit={handleRegister}>
                 <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Username</label>
+                    <label className="block text-sm font-medium text-gray-700">Name</label>
+                    <input
+                       title='name'
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Surname</label>
                     <input
                         type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        title='surname'
+                        value={surname}
+                        onChange={(e) => setSurname(e.target.value)}
                         required
                         className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                     />
@@ -45,28 +74,20 @@ const RegisterUser: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <input
                         type="email"
+                        title='email'
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                     />
                 </div>
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="mt-1 p-2 w-full border border-gray-300 rounded-md"
-                    />
-                </div>
+
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700">Roles</label>
                     <input
                         type="text"
-                        value={roles.join(',')}
-                        onChange={(e) => setRoles(e.target.value.split(','))}
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
                         placeholder="ROLE_USER,ROLE_ADMIN"
                         className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                     />

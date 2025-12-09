@@ -3,21 +3,21 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { createReport, NationalReportDTO } from '../services/AuthServiceNationalReport';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 // Define the validation schema using yup
 const schema = yup.object().shape({
-  coreDuties: yup.string().required('Core Duties is required'),
-  monthlyTask: yup.string().required('Monthly is required'),
-  taskDone: yup.string().required('Task Done is required'),
+  core_duties: yup.string().required('Core Duties is required'),
+  monthly_task: yup.string().required('Monthly is required'),
+  task_done: yup.string().required('Task Done is required'),
   strength: yup.string().optional(),
   weakness: yup.string().optional(),
   opportunities: yup.string().optional(),
   threats: yup.string().optional(),
-  amountBudgeted: yup.string().required('Amount Budgeted is required'),
-  amountSpent: yup.string().required('Amount Spent is required'),
-  createdDate: yup.string().required('Created Date is required'),
+  amount_budgeted: yup.string().required('Amount Budgeted is required'),
+  amount_spent: yup.string().required('Amount Spent is required'),
   remarks: yup.string().optional(),
 });
 
@@ -28,31 +28,44 @@ const NationalReportCreate: React.FC = () => {
 
   const navigator = useNavigate();
 
-  const onSubmit = async (data: NationalReportDTO) => {
-    try {
-      const response = await createReport(data);
-      toast.success(response.data.message);
-      // Introduce a short delay before navigating
-      setTimeout(() => {
-        navigator('/dashboard/nationalReportTable');
-      }, 3000); // Display message for 3 seconds
-    } catch (error) {
-      toast.error('Failed to create report');
+ const onSubmit = async (data: NationalReportDTO) => {
+  try {
+    const response = await createReport(data);
+    toast.success(response.data.message || "Report created successfully");
+    setTimeout(() => navigator('/dashboard/nationalReportTable'), 3000);
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+      let message = "Failed to create report";
+
+      if (typeof responseData?.message === 'string') {
+        message = responseData.message;
+      } else if (typeof responseData?.errors === 'object') {
+        // Laravel-style validation errors
+        const allErrors = Object.values(responseData.errors).flat().join(' ');
+        message = allErrors;
+      }
+
+      toast.error(message);
+    } else {
+      toast.error("An unexpected error occurred");
     }
-  };
+  }
+};
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-      <h1 className='text top-1 text-center text-gray-800'>Create Monthly Report</h1>
+      <h1 className='text top-1 text-center text-gray-800'>Create Monthly National Report</h1>
       <div className="mb-4">
         <label className="block text-gray-700">Core Duties</label>
         <input 
           type="text" 
           placeholder='Enter Core Duties'
-          {...register('coreDuties')} 
+          {...register('core_duties')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.coreDuties && <p className="text-red-500 text-sm">{errors.coreDuties.message}</p>}
+        {errors.core_duties && <p className="text-red-500 text-sm">{errors.core_duties.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -60,10 +73,10 @@ const NationalReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='Enter Monthly Task'
-          {...register('monthlyTask')} 
+          {...register('monthly_task')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.monthlyTask && <p className="text-red-500 text-sm">{errors.monthlyTask.message}</p>}
+        {errors.monthly_task && <p className="text-red-500 text-sm">{errors.monthly_task.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -71,10 +84,10 @@ const NationalReportCreate: React.FC = () => {
         <input 
           type="text" 
           placeholder='Enter Task Done'
-          {...register('taskDone')} 
+          {...register('task_done')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.taskDone && <p className="text-red-500 text-sm">{errors.taskDone.message}</p>}
+        {errors.task_done && <p className="text-red-500 text-sm">{errors.task_done.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -126,10 +139,10 @@ const NationalReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='Enter Amount Budgeted '
-          {...register('amountBudgeted')} 
+          {...register('amount_budgeted')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.amountBudgeted && <p className="text-red-500 text-sm">{errors.amountBudgeted.message}</p>}
+        {errors.amount_budgeted && <p className="text-red-500 text-sm">{errors.amount_budgeted.message}</p>}
       </div>
 
       <div className="mb-4">
@@ -137,20 +150,12 @@ const NationalReportCreate: React.FC = () => {
         <input 
           type="text"
           placeholder='How Much Was Spent'
-          {...register('amountSpent')} 
+          {...register('amount_spent')} 
           className="w-full p-2 border border-gray-300 rounded mt-1"
         />
-        {errors.amountSpent && <p className="text-red-500 text-sm">{errors.amountSpent.message}</p>}
+        {errors.amount_spent && <p className="text-red-500 text-sm">{errors.amount_spent.message}</p>}
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Created Date</label>
-        <input 
-          type="date" 
-          {...register('createdDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
-      </div>
+     
 
       <div className="mb-4">
         <label className="block text-gray-700">Remark</label>
@@ -164,6 +169,7 @@ const NationalReportCreate: React.FC = () => {
       </div>
 
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
+      <ToastContainer position = 'top-center' />
     </form>
   );
 };

@@ -19,7 +19,7 @@ const QuarterlyReportTable2: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<QuarterlyReport[]>("http://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/quarterlyReport");
+      const response = await axios.get<QuarterlyReport[]>("http://127.0.0.1:8000/api/quarterlyReport/getAllReport");
       setReports(response.data);
       setLoading(false);
     } catch (error) {

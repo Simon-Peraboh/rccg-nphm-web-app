@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { getToken } from './AuthServiceLoginRegister';
 
-const BASE_URL = 'https://rccgphmbackend-env.eba-utgxehmc.eu-west-2.elasticbeanstalk.com/api/v1/todoList';
+const BASE_URL = 'http://127.0.0.1:8000/api/todoList';
 
 axios.interceptors.request.use(
   config => {
     const token = getToken();
     if (token) {
-      config.headers['Authorization'] = token;
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
@@ -31,30 +31,31 @@ export interface TodoListResponse {
   todoListDTO?: TodoListDTO;
 }
 
-export const createReport = async (report: TodoListDTO) => {
-  return axios.post<TodoListResponse>(`${BASE_URL}`, report);
+export const createList = async (report: TodoListDTO) => {
+  return axios.post<TodoListResponse>(`${BASE_URL}/createList`, report);
 };
 
-export const getProjectById = async (id: string) => {
-  return axios.get<TodoListDTO>(`${BASE_URL}/${id}`);
+export const getList = async (id: string) => {
+  return axios.get<TodoListDTO>(`${BASE_URL}/getList/${id}`);
 };
 
-export const getReports = async () => {
-  return axios.get<TodoListDTO[]>(`${BASE_URL}`);
+export const getAllList = async () => {
+  return axios.get<TodoListDTO[]>(`${BASE_URL}/getAllList`);
 };
 
-export const updateReport = (id: string, report: TodoListDTO) => {
-  return axios.put<TodoListResponse>(`${BASE_URL}/${id}`, report);
+export const updateList = (id: string, report: TodoListDTO) => {
+  return axios.put<TodoListResponse>(`${BASE_URL}/updateList/${id}`, report);
 };
 
-export const deleteReport = async (id: string) => {
-  return axios.delete<TodoListResponse>(`${BASE_URL}/${id}`);
+export const deleteList = async (id: string) => {
+  return axios.delete<TodoListResponse>(`${BASE_URL}/deleteList/${id}`);
 };
 
-export const updateTodoStatus = async (id: string, action: string) => {
-  return axios.patch<TodoListResponse>(`${BASE_URL}/${id}/status`, { action });
+export const status = async (id: string, action: string) => {
+  return axios.patch<TodoListResponse>(`${BASE_URL}/status/${id}`, { action });
 };
 
-export const updateTodoPriority = async (id: string, action: string) => {
-  return axios.patch<TodoListResponse>(`${BASE_URL}/${id}/priority`, { action });
+export const priority = async (id: string, action: string) => {
+  return axios.patch<TodoListResponse>(`${BASE_URL}/priority/${id}`, { action });
 };
+

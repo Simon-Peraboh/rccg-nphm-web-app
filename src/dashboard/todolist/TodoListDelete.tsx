@@ -1,5 +1,5 @@
 import React from 'react';
-import { deleteReport } from '../services/AuthServiceTodoList';
+import { deleteList } from '../services/AuthServiceTodoList';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -13,7 +13,7 @@ const TodoListDelete: React.FC = () => {
 
     const handleDelete = async () => {
         try {
-            const response = await deleteReport(reportId);
+            const response = await deleteList(reportId);
             toast.success(response.data.message);
             navigate('/dashboard/todoListTable'); // Redirect to list view after deletion
         } catch (error) {
