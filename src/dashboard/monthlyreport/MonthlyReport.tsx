@@ -55,7 +55,7 @@ const MonthlyReport: React.FC = () => {
 
     // ✅ Fetch regions
   useEffect(() => {
-    axios.get("https://app.rccgphm.org/api/monthlyReports/regions")
+    axios.get("https://nphmapp.rccgphm.org/api/monthlyReports/regions")
       .then(res => setRegions(res.data.regions || res.data))
       .catch(() => toast.error("Failed to fetch regions"));
   }, []);
@@ -63,7 +63,7 @@ const MonthlyReport: React.FC = () => {
   // ✅ Fetch provinces when region changes
   useEffect(() => {
     if (user.region) {
-      axios.get(`https://app.rccgphm.org/api/monthlyReports/provinces/${user.region}`)
+      axios.get(`https://nphmapp.rccgphm.org/api/monthlyReports/provinces/${user.region}`)
         .then(res => setProvinces(res.data.provinces || res.data))
         .catch(() => toast.error("Failed to fetch provinces"));
     } else {
@@ -71,9 +71,19 @@ const MonthlyReport: React.FC = () => {
     }
   }, [user.region]);
 
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+   const onInputChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name, value } = e.target;
+
+  // If this field has a character limit — enforce it
+  if (charLimits[name] && value.length > charLimits[name]) {
+    return; // prevent updating state beyond limit
   }
+
+  setUser(prev => ({ ...prev, [name]: value }));
+};
+
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +92,7 @@ const MonthlyReport: React.FC = () => {
 
    const onConfirmSubmit = async () => {
     try {
-      const response = await axios.post("https://app.rccgphm.org/api/monthlyReports/createReport", user);
+      const response = await axios.post("https://nphmapp.rccgphm.org/api/monthlyReports/createReport", user);
       toast.success(response.data.message || "Report submitted successfully!");
       setTimeout(() => navigate("/dashboard/monthlyReportTable"), 3000);
     } catch (error) {
@@ -92,6 +102,16 @@ const MonthlyReport: React.FC = () => {
       toast.error(msg);
     }
   };
+
+  const charLimits: Record<string, number> = {
+  challenges: 150,
+  suggestion: 150,
+  remarks: 150,
+  others: 100,
+  coordinator_name: 60,
+  items: 255,
+};
+
 
   return (
     <div className='container mx-auto mt-10'>
@@ -197,6 +217,20 @@ const MonthlyReport: React.FC = () => {
                       className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       required={!["others", "challenges", "suggestion", "remarks"].includes(name)}
                     />
+                    {charLimits[name] && (
+                        <div
+                          className={`text-sm mt-1 ${
+                            ((user[name as keyof User] as string)?.length || 0) >
+                            charLimits[name] - 20
+                              ? "text-red-500"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          {charLimits[name] -
+                            ((user[name as keyof User] as string)?.length || 0)}{" "}
+                          / {charLimits[name]} characters left
+                        </div>
+                      )}
                   </div>
                 ))}
                 <div>

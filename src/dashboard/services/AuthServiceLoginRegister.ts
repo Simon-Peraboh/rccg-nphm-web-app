@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const AUTH_REST_API_BASE_URL = 'https://app.rccgphm.org/api/userManager';
+const AUTH_REST_API_BASE_URL = 'https://nphmapp.rccgphm.org/api/userManager';
 
 export interface RegisterDTO {
   name: string;
