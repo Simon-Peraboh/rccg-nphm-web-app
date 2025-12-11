@@ -16,6 +16,7 @@
     "@reduxjs/toolkit": "^2.6.1",
     "@tanstack/react-query": "^5.81.5",
     "axios": "^1.7.2",
+    "browser-image-compression": "^2.0.2",
     "dayjs": "^1.11.13",
     "formik": "^2.4.6",
     "localforage": "^1.10.0",

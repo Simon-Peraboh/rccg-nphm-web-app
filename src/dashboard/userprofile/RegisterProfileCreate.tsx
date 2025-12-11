@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import ImageUploader from "../cropimage/ResizeImage";
 
 interface UserForm {
   title: string;
@@ -102,7 +103,7 @@ const RegisterProfileCreate: React.FC = () => {
 
 
   const genderOptions = ["MALE", "FEMALE"];
-  const ordinationOptions = ["NOT ORDAINED","DEACON", "DEACONESS", "ASST PASTOR", "FULL PASTOR"];
+  const ordinationOptions = ["NOT ORDAINED", "DEACON", "DEACONESS", "ASST PASTOR", "FULL PASTOR"];
   const positionOptions = ['NATIONAL EXCO', 'REG COORDINATOR', 'PROV COORDINATOR', 'ASST REG COORDINATOR', 'ASST PROV COORDINATOR', 'MEMBER'];
 
   useEffect(() => {
@@ -135,24 +136,29 @@ const RegisterProfileCreate: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
+    // If this field has a character limit — enforce it
+    if (charLimits[name] && value.length > charLimits[name]) {
+      return; // prevent updating state beyond limit
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-  
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    setForm(prev => ({ ...prev, image_path: file }));
-    setPreviewUrl(URL.createObjectURL(file)); // 🔍 creates temporary preview URL
-  }
-};
+    const file = e.target.files?.[0];
+    if (file) {
+      setForm(prev => ({ ...prev, image_path: file }));
+      setPreviewUrl(URL.createObjectURL(file)); // 🔍 creates temporary preview URL
+    }
+  };
 
 
   useEffect(() => {
     const saved = loadFromLocalStorage();
     if (saved) setForm(saved);
   }, []);
-  
+
   useEffect(() => {
     saveToLocalStorage(form);
   }, [form]);
@@ -160,7 +166,7 @@ const RegisterProfileCreate: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-      if (!consentGiven) {
+    if (!consentGiven) {
       toast.error("Please provide consent before submitting the form.");
       return;
     }
@@ -176,7 +182,7 @@ const RegisterProfileCreate: React.FC = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-       // Extract success message from backend response
+      // Extract success message from backend response
       const successMessage = res.data.message || "✅ Submission successful";
       toast.success(`✅ ${successMessage}`);
 
@@ -206,20 +212,62 @@ const RegisterProfileCreate: React.FC = () => {
     }
   };
 
-  const renderInput = (label: string, name: keyof UserForm, type = "text", placeholder = "") => (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium">{label}</label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        value={form[name] as string}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-      />
-    </div>
-  );
+  const charLimits: Record<string, number> = {
+    first_name: 50,
+    last_name: 50,
+    email: 50,
+    others: 50,
+    address_home: 100,
+    phone_whatsapp: 20,
+    nearest_busstop: 60,
+    address_office: 100,
+    next_of_kin_phone: 20,
+    next_of_kin: 50,
+    zone: 50,
+    area: 50,
+    city: 50,
+    parish: 50,
+
+  };
+
+  const renderInput = (
+    label: string,
+    name: keyof UserForm,
+    type = "text",
+    placeholder = ""
+  ) => {
+    const value = form[name] as string;
+    const limit = charLimits[name as string];
+
+    return (
+      <div>
+        <label htmlFor={name} className="block text-sm font-medium">
+          {label}
+        </label>
+
+        <input
+          id={name}
+          name={name}
+          type={type}
+          value={value}
+          onChange={handleChange}
+          placeholder={placeholder}
+          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+
+        {/* Character Limit Counter */}
+        {limit && (
+          <div
+            className={`text-sm mt-1 ${value.length > limit - 20 ? "text-red-500" : "text-gray-600"
+              }`}
+          >
+            {limit - value.length} / {limit} characters left
+          </div>
+        )}
+      </div>
+    );
+  };
+
 
   return (
     <div className="max-w-5xl mx-auto bg-blue-200 shadow-lg rounded-lg p-6 sm:p-8">
@@ -247,6 +295,7 @@ const RegisterProfileCreate: React.FC = () => {
           {renderInput("Next of Kin Name", "next_of_kin", "text", "e.g. Jane Doe")}
           {renderInput("Next of Kin Phone", "next_of_kin_phone", "text", "e.g. +2348012345679")}
           {renderInput("Social Media Handle", "social_handle", "text", "@yourhandle")}
+
           <div>
             <label htmlFor="gender" className="block text-sm font-semibold mb-1">Gender</label>
             <select
@@ -357,24 +406,19 @@ const RegisterProfileCreate: React.FC = () => {
             </select>
           </div>
 
-         <div className="md:col-span-2">
-            <label htmlFor="image_path" className="block text-sm font-semibold text-gray-700 mb-1">Upload Image</label>
-            <input
-              id="image_path"
-              type="file"
-              name="image_path"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-            {previewUrl && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-600">Image Preview:</p>
-                <img src={previewUrl} alt="Preview" className="h-40 rounded shadow" />
-              </div>
-            )}
-          </div>
+            <ImageUploader
+            label="Upload Image"
+            name="image_path"
+            previewUrl={previewUrl}
+            onFileSelect={(file) => {
+              setForm((prev) => ({ ...prev, image_path: file }));
+              setPreviewUrl(file ? URL.createObjectURL(file) : null);
+            }}
+          />
+
+
         </div>
+
         <div className="mt-6 text-sm flex items-center gap-2">
           <input
             type="checkbox"
@@ -389,14 +433,13 @@ const RegisterProfileCreate: React.FC = () => {
         </div>
         <div className="mt-10 flex justify-center">
           <button
-              type="submit"
-              disabled={!consentGiven}
-              className={`bg-blue-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-md shadow transition-all duration-200 ${
-                !consentGiven ? 'opacity-50 cursor-not-allowed' : ''
+            type="submit"
+            disabled={!consentGiven}
+            className={`bg-blue-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-md shadow transition-all duration-200 ${!consentGiven ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-            >
-              Submit
-            </button>
+          >
+            Submit
+          </button>
 
         </div>
       </form>
@@ -407,7 +450,7 @@ const RegisterProfileCreate: React.FC = () => {
         pauseOnHover={true}
         draggable={true}
         theme="colored"
-       />
+      />
     </div>
 
   );
