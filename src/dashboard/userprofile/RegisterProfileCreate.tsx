@@ -145,13 +145,13 @@ const RegisterProfileCreate: React.FC = () => {
   };
 
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setForm(prev => ({ ...prev, image_path: file }));
-      setPreviewUrl(URL.createObjectURL(file)); // 🔍 creates temporary preview URL
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setForm(prev => ({ ...prev, image_path: file }));
+  //     setPreviewUrl(URL.createObjectURL(file)); // 🔍 creates temporary preview URL
+  //   }
+  // };
 
 
   useEffect(() => {
