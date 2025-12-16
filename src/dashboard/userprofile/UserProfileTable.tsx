@@ -35,7 +35,7 @@ const UserProfileTable: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response: AxiosResponse<User[]> = await axios.get("https://nphmapp.rccgphm.org/api/userProfile/getAllUsers");
+      const response: AxiosResponse<User[]> = await axios.get("https://app2.rccgphm.org/api/userProfile/getAllUsers");
       setUsers(response.data);
       setLoading(false);
     } catch (error) {
@@ -53,7 +53,7 @@ const UserProfileTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`https://nphmapp.rccgphm.org/api/userProfile/deleteUser/${id}`);
+              await axios.delete(`https://app2.rccgphm.org/api/userProfile/deleteUser/${id}`);
               setUsers(users.filter(user => user.id !== id));
               toast.success("User deleted successfully");
             } catch (error) {
@@ -196,7 +196,7 @@ const UserProfileTable: React.FC = () => {
                     src={
                       user.image_path.startsWith('http')
                         ? user.image_path
-                        : `https://nphmapp.rccgphm.org/storage/${user.image_path}`
+                        : `https://app2.rccgphm.org/storage/${user.image_path}`
                     }
                     alt="User"
                     className="h-14 w-14 rounded-full border object-cover"

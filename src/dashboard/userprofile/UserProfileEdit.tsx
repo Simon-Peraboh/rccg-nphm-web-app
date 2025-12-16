@@ -82,7 +82,7 @@ const UserProfileEdit: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`https://nphmapp.rccgphm.org/api/userProfile/getUser/${id}`);
+        const response = await axios.get(`https://app2.rccgphm.org/api/userProfile/getUser/${id}`);
         setUser(response.data);
 
         // ✅ Ensure image persists on refresh
@@ -178,7 +178,7 @@ const UserProfileEdit: React.FC = () => {
 
     try {
             const response = await axios.put(
-        `https://nphmapp.rccgphm.org/api/userProfile/updateUser/${user.id}`,
+        `https://app2.rccgphm.org/api/userProfile/updateUser/${user.id}`,
         formData, // ✅ Send as multipart/form-data
         config
       );

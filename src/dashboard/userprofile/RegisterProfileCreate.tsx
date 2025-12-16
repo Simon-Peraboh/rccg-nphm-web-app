@@ -107,11 +107,11 @@ const RegisterProfileCreate: React.FC = () => {
   const positionOptions = ['NATIONAL EXCO', 'REG COORDINATOR', 'PROV COORDINATOR', 'ASST REG COORDINATOR', 'ASST PROV COORDINATOR', 'MEMBER'];
 
   useEffect(() => {
-    axios.get("https://nphmapp.rccgphm.org/api/userProfile/regions").then((res) => {
+    axios.get("https://app2.rccgphm.org/api/userProfile/regions").then((res) => {
       setRegions(res.data);
     });
 
-    axios.get("https://nphmapp.rccgphm.org/api/userProfile/states").then((res) => {
+    axios.get("https://app2.rccgphm.org/api/userProfile/states").then((res) => {
       setStates(res.data);
     });
   }, []);
@@ -119,7 +119,7 @@ const RegisterProfileCreate: React.FC = () => {
   useEffect(() => {
     if (form.region) {
       axios
-        .get(`https://nphmapp.rccgphm.org/api/userProfile/provinces/${form.region}`)
+        .get(`https://app2.rccgphm.org/api/userProfile/provinces/${form.region}`)
         .then((res) => setProvinces(res.data));
     }
   }, [form.region]);
@@ -127,7 +127,7 @@ const RegisterProfileCreate: React.FC = () => {
   useEffect(() => {
     if (form.state) {
       axios
-        .get(`https://nphmapp.rccgphm.org/api/userProfile/lgas/${form.state}`)
+        .get(`https://app2.rccgphm.org/api/userProfile/lgas/${form.state}`)
         .then((res) => setLgas(res.data));
     }
   }, [form.state]);
@@ -169,7 +169,7 @@ const RegisterProfileCreate: React.FC = () => {
     });
 
     try {
-      const res = await axios.post("https://nphmapp.rccgphm.org/api/userProfile/createUser", formData, {
+      const res = await axios.post("https://app2.rccgphm.org/api/userProfile/createUser", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

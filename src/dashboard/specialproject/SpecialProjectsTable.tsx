@@ -37,7 +37,7 @@ const SpecialProjectsTable: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<SpecialProjects[]>("https://nphmapp.rccgphm.org/api/specialProjects/getAllProjects");
+      const response = await axios.get<SpecialProjects[]>("https://app2.rccgphm.org/api/specialProjects/getAllProjects");
       setReports(response.data);
       setLoading(false);
     } catch (error) {
@@ -55,7 +55,7 @@ const SpecialProjectsTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`https://nphmapp.rccgphm.org/api/specialProjects/deleteReport/${id}`);
+              await axios.delete(`https://app2.rccgphm.org/api/specialProjects/deleteReport/${id}`);
               setReports(reports.filter(report => report.id !== id));
               toast.success("Report deleted successfully");
             } catch (error) {

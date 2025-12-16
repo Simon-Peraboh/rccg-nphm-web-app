@@ -55,7 +55,7 @@ const MonthlyReport: React.FC = () => {
 
     // ✅ Fetch regions
   useEffect(() => {
-    axios.get("https://nphmapp.rccgphm.org/api/monthlyReports/regions")
+    axios.get("https://app2.rccgphm.org/api/monthlyReports/regions")
       .then(res => setRegions(res.data.regions || res.data))
       .catch(() => toast.error("Failed to fetch regions"));
   }, []);
@@ -63,7 +63,7 @@ const MonthlyReport: React.FC = () => {
   // ✅ Fetch provinces when region changes
   useEffect(() => {
     if (user.region) {
-      axios.get(`https://nphmapp.rccgphm.org/api/monthlyReports/provinces/${user.region}`)
+      axios.get(`https://app2.rccgphm.org/api/monthlyReports/provinces/${user.region}`)
         .then(res => setProvinces(res.data.provinces || res.data))
         .catch(() => toast.error("Failed to fetch provinces"));
     } else {
@@ -92,7 +92,7 @@ const MonthlyReport: React.FC = () => {
 
    const onConfirmSubmit = async () => {
     try {
-      const response = await axios.post("https://nphmapp.rccgphm.org/api/monthlyReports/createReport", user);
+      const response = await axios.post("https://app2.rccgphm.org/api/monthlyReports/createReport", user);
       toast.success(response.data.message || "Report submitted successfully!");
       setTimeout(() => navigate("/dashboard/monthlyReportTable"), 3000);
     } catch (error) {

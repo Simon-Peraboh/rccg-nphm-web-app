@@ -21,7 +21,7 @@ export default function Connect() {
 
   useEffect(() => {
     axios
-      .get("https://app.rccgphm.org/api/stateCoordinators/getAll")
+      .get("https://app2.rccgphm.org/api/stateCoordinators/getAll")
       .then((res) => {
         setCoordinators(res.data);
         setLoading(false);
@@ -82,12 +82,13 @@ export default function Connect() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                     {group.map((coordinator) => (
                       <div key={coordinator.id} className="text-center bg-white p-4 rounded-lg shadow-md">
-                        <img
-                          src={`https://app.rccgphm.org/storage/${coordinator.image_path}`}
-                          onError={(e) => (e.currentTarget.src = pic5)}
-                          alt={coordinator.full_name}
-                          className="w-24 h-32 object-cover rounded-lg mx-auto mb-2"
-                        />
+                      <img
+                        src={`https://app2.rccgphm.org/storage/uploads/coord_images/${coordinator.image_path}`}
+                        onError={(e) => (e.currentTarget.src = pic5)}
+                        alt={coordinator.full_name}
+                        className="w-24 h-32 object-cover rounded-lg mx-auto mb-2"
+                      />
+
                         <h3 className="text-lg font-semibold">{coordinator.full_name}</h3>
                         <p className="text-gray-600">{coordinator.province}</p>
                         <div className="mt-2 flex justify-center space-x-2 text-blue-600">

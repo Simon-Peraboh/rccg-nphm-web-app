@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { getToken } from './AuthServiceLoginRegister';  // Assuming AuthService has a getToken function
 
-const BASE_URL = 'https://nphmapp.rccgphm.org/api/secretaryNote';
+const BASE_URL = 'https://app2.rccgphm.org/api/secretaryNote';
+
 
 
 const authAxios = axios.create();

@@ -45,7 +45,7 @@ const MonthlyReportTable: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<MonthlyReport[]>("https://nphmapp.rccgphm.org/api/monthlyReports/getAllReports");
+      const response = await axios.get<MonthlyReport[]>("https://app2.rccgphm.org/api/monthlyReports/getAllReports");
       setReports(response.data);
       setLoading(false);
     } catch (error) {
@@ -63,7 +63,7 @@ const MonthlyReportTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`https://nphmapp.rccgphm.org/api/monthlyReports/deleteReport/${id}`);
+              await axios.delete(`https://app2.rccgphm.org/api/monthlyReports/deleteReport/${id}`);
               setReports(reports.filter(report => report.id !== id));
               toast.success("Report deleted successfully");
             } catch (error) {

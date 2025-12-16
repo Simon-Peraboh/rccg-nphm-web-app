@@ -61,7 +61,7 @@ const StateCoordinatorForm: React.FC = () => {
   // Fetch the available states from backend
   useEffect(() => {
     axios
-      .get('https://app.rccgphm.org/api/stateCoordinators/states')
+      .get('https://app2.rccgphm.org/api/stateCoordinators/states')
       .then((response) => {
         console.log("Fetched states response:", response.data);
         if (Array.isArray(response.data)) {
@@ -128,7 +128,7 @@ const StateCoordinatorForm: React.FC = () => {
 
   try {
     const response = await axios.post(
-      'https://app.rccgphm.org/api/stateCoordinators/create',
+      'https://app2.rccgphm.org/api/stateCoordinators/create',
       submissionData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );

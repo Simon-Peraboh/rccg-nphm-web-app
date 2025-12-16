@@ -42,7 +42,7 @@ const UserProfileTableView: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`https://nphmapp.rccgphm.org/api/userProfile/getUser/${id}`);
+        const response = await axios.get(`https://app2.rccgphm.org/api/userProfile/getUser/${id}`);
         setUser(response.data);
         setLoading(false);
       } catch (error) {
@@ -170,7 +170,7 @@ const UserProfileTableView: React.FC = () => {
                 src={
                   typeof user.image_path === 'string' && user.image_path.startsWith('http')
                     ? user.image_path
-                    : `https://nphmapp.rccgphm.org/storage/${user.image_path}`
+                    : `https://app2.rccgphm.org/storage/${user.image_path}`
                 }
                 alt="User"
                 className="h-24 w-24 rounded-full border object-cover"

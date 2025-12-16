@@ -1,7 +1,7 @@
 // ✅ apicalls/attendance/api.ts
 import axios from 'axios';
 
-const API_BASE_URL = "https://nphmapp.rccgphm.org/api"; // ✅ Manually define the API base URL
+const API_BASE_URL = "https://app2.rccgphm.org/api"; // ✅ Manually define the API base URL
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,

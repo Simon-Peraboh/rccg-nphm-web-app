@@ -19,7 +19,7 @@ const QuarterlyReportTable2: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<QuarterlyReport[]>("https://nphmapp.rccgphm.org/api/quarterlyReport/getAllReport");
+      const response = await axios.get<QuarterlyReport[]>("https://app2.rccgphm.org/api/quarterlyReport/getAllReport");
       setReports(response.data);
       setLoading(false);
     } catch (error) {

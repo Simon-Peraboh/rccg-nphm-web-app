@@ -37,7 +37,7 @@ const SecretaryNoteTable: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get<SecretaryNote[]>("https://nphmapp.rccgphm.org/api/secretaryNote/getAllNotes");
+      const response = await axios.get<SecretaryNote[]>("https://app2.rccgphm.org/api/secretaryNote/getAllNotes");
       setReports(response.data);
       setLoading(false);
     } catch (error) {
@@ -55,7 +55,7 @@ const SecretaryNoteTable: React.FC = () => {
           label: 'Yes',
           onClick: async () => {
             try {
-              await axios.delete(`https://nphmapp.rccgphm.org/api/secretaryNote/deleteNote/${id}`);
+              await axios.delete(`https://app2.rccgphm.org/api/secretaryNote/deleteNote/${id}`);
               setReports(reports.filter(report => report.id !== id));
               toast.success("Report deleted successfully");
             } catch (error) {

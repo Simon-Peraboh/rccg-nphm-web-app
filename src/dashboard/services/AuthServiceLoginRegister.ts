@@ -1,7 +1,9 @@
 import axios from 'axios';
-import { toast } from 'react-toastify';
 
-const AUTH_REST_API_BASE_URL = 'https://nphmapp.rccgphm.org/api/userManager';
+ const AUTH_REST_API_BASE_URL = 'https://app2.rccgphm.org/api/userManager';
+// const AUTH_REST_API_BASE_URL =
+//   `${import.meta.env.VITE_API_URL ?? "https://nphmapp.rccgphm.org/api"}/userManager`;
+
 
 export interface RegisterDTO {
   name: string;
@@ -36,36 +38,18 @@ export const registerAPICall = (registerObj: RegisterDTO) => {
   return axios.post(`${AUTH_REST_API_BASE_URL}/createUser`, registerObj);
 };
 
+
+
 export const loginAPICall = async (loginData: LoginDTO) => {
-  try {
-    const response = await axios.post(`${AUTH_REST_API_BASE_URL}/login`, {
-      email: loginData.usernameOrEmail,
-      password: loginData.password,
-    });
-
-    toast.success('Login successful');
-    return response;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const data = error.response?.data;
-      let message = 'Login failed';
-
-if (typeof data?.message === 'string') {
-  message = data.message;
-} else if (typeof data?.message === 'object') {
-  message = Object.values(data.message).flat().join(' ');
-}
-
-
-      toast.error(message);
-      throw new Error(message); // ✅ Now clean Error
-    } else {
-      toast.error('Unexpected error');
-      throw new Error('Unexpected error');
-    }
-  }
-
+  return axios.post(`${AUTH_REST_API_BASE_URL}/login`, {
+    email: loginData.usernameOrEmail,
+    password: loginData.password,
+  });
 };
+
+
+
+
 
 export const storeToken = (token: string) => {
   localStorage.setItem('token', token);
