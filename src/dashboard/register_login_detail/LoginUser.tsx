@@ -4,6 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import axios from 'axios';
 import { checkNetworkSpeed } from "../services/NetworkSpeedService";
+import { Link } from 'react-router-dom';
 
 const LoginUser: React.FC = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -11,14 +12,14 @@ const LoginUser: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-        useEffect(() => {
-        checkNetworkSpeed();
+  useEffect(() => {
+    checkNetworkSpeed();
 
-        // Retest every 10 seconds
-        const interval = setInterval(checkNetworkSpeed, 10000);
+    // Retest every 10 seconds
+    const interval = setInterval(checkNetworkSpeed, 10000);
 
-        return () => clearInterval(interval);
-      }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +81,7 @@ const LoginUser: React.FC = () => {
             className="mt-1 p-2 w-full border border-gray-300 rounded-md"
             placeholder="Password"
           />
+
           <div className="flex items-center mt-2">
             <input
               type="checkbox"
@@ -88,9 +90,21 @@ const LoginUser: React.FC = () => {
               checked={showPassword}
               onChange={() => setShowPassword(!showPassword)}
             />
-            <label htmlFor="showPassword" className="text-sm text-gray-700">Show Password</label>
+            <label htmlFor="showPassword" className="text-sm text-gray-700">
+              Show Password
+            </label>
+          </div>
+
+          <div className="text-right mt-2">
+            <Link
+              to="/dashboard/forgetPassword"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot Password?
+            </Link>
           </div>
         </div>
+
 
         <button
           type="submit"

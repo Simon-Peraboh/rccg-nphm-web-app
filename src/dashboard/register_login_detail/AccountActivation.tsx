@@ -29,7 +29,7 @@ const AccountActivation: React.FC = () => {
     try {
       await activateAccountAPICall(token, tempPassword, newPassword, confirmPassword);
       toast.success('Account activated successfully! You can now log in.');
-      setTimeout(() => navigate('/login'), 2000);
+      setTimeout(() => navigate('/dashboard/loginUser'), 2000);
     } catch (error: unknown) {
       console.error('Activation error:', error);
 
@@ -42,7 +42,7 @@ const AccountActivation: React.FC = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-5 bg-white shadow-md rounded-md">
+    <div className="max-w-md mx-auto mt-10 p-5 bg-blue-200 shadow-md rounded-md">
       <h2 className="text-2xl font-bold mb-5 text-center">Activate Your Account</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

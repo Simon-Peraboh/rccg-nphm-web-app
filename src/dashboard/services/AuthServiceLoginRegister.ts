@@ -26,6 +26,16 @@ export interface AuthResponse {
   message?: string;
 }
 
+export interface ForgotPasswordDTO {
+  email: string;
+}
+
+export interface ResetPasswordDTO {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export const clearToken = () => {
   localStorage.removeItem('token');
   sessionStorage.clear();
@@ -35,33 +45,6 @@ export const registerAPICall = (registerObj: RegisterDTO) => {
   return axios.post(`${AUTH_REST_API_BASE_URL}/createUser`, registerObj);
 };
 
-// export const loginAPICall = async (loginData: LoginDTO) => {
-//   try {
-//     const response = await axios.post(`${AUTH_REST_API_BASE_URL}/login`, {
-//       email: loginData.usernameOrEmail,
-//       password: loginData.password,
-//     });
-
-//     toast.success('Login successful');
-//     return response;
-
-//   } catch (error: unknown) {
-//     if (axios.isAxiosError(error)) {
-
-//       const backendError =
-//         error.response?.data?.error ||
-//         error.response?.data?.message ||
-//         'Login failed';
-
-//       toast.error(backendError);
-//       throw new Error(backendError);
-
-//     } else {
-//       toast.error('Unexpected error');
-//       throw new Error('Unexpected error');
-//     }
-//   }
-// };
 
 export const loginAPICall = async (loginData: LoginDTO) => {
   return axios.post(`${AUTH_REST_API_BASE_URL}/login`, {
@@ -69,29 +52,6 @@ export const loginAPICall = async (loginData: LoginDTO) => {
     password: loginData.password,
   });
 };
-
-
-
-// export const loginAPICall = async (loginData: LoginDTO) => {
-//   try {
-//     const response = await axios.post(`${AUTH_REST_API_BASE_URL}/login`, {
-//       email: loginData.usernameOrEmail,
-//       password: loginData.password,
-//     });
-
-//     return response;
-//   } catch (error) {
-//     if (axios.isAxiosError(error)) {
-//       const message =
-//         error.response?.data?.message || 'Unable to login. Try again later.';
-//       toast.error(message);
-//       throw new Error(message);
-//     }
-
-//     toast.error('Network error. Please try again.');
-//     throw new Error('Network error');
-//   }
-// };
 
 
 export const storeToken = (token: string) => {
@@ -139,6 +99,18 @@ export const activateAccountAPICall = (
     new_password: newPassword,
     new_password_confirmation: confirmPassword,
   });
+};
+
+// ✅ Forgot Password API call
+export const forgotPasswordAPICall = (data: ForgotPasswordDTO) => {
+  return axios.post(`${AUTH_REST_API_BASE_URL}/forgotPassword`, data);
+
+};
+
+
+
+export const resetPasswordAPICall = (data: ResetPasswordDTO) => {
+  return axios.post(`${AUTH_REST_API_BASE_URL}/resetPassword`, data);
 };
 
 
