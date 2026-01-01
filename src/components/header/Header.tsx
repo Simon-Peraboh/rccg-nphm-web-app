@@ -54,7 +54,7 @@ const Header: React.FC = () => {
 
         {/* Buttons */}
         <div className="flex flex-col items-center space-y-2 lg:flex-row lg:space-y-0 lg:space-x-6">
-          <Link to='#'>
+          <Link to='/Donation'>
              <button className="bg-blue-200 px-4 py-2 rounded-md font-semibold text-gray-700 hover:bg-red-500 hover:text-white transition">
             Donate
           </button>

@@ -56,6 +56,9 @@ import 'react-toastify/dist/ReactToastify.css';
 //import ToastTest from './dashboard/toasttest/ToastTest.tsx'
 import StateCoordinatorForm from './dashboard/statecoord/StateCoordinator.tsx'
 import AccountActivation from './dashboard/register_login_detail/AccountActivation';
+import Donation from './pages/donation/Donation.tsx'
+import ForgotPassword from './dashboard/register_login_detail/ForgetPassword.tsx'
+import ResetPassword from './dashboard/register_login_detail/ResetPassword.tsx'
 
 
 const router = createBrowserRouter([
@@ -72,6 +75,7 @@ const router = createBrowserRouter([
       { path: "Report", element: <Report /> },
       { path: "Blog", element: <Blog /> },
       { path: "Contact", element: <Contact /> },
+      { path: "Donation", element: <Donation /> },
     ],
   },
   {
@@ -135,6 +139,8 @@ const router = createBrowserRouter([
   { path: "/dashboard/monthlyReportCreate", element: <MonthlyReportCreate /> },
   { path: "/dashboard/monthlyReport", element: <MonthlyReport /> },
   { path: "/dashboard/accountActivation", element: <AccountActivation /> },
+  { path: "/dashboard/forgetPassword", element: <ForgotPassword /> },
+  { path: "/dashboard/resetPassword", element: <ResetPassword /> },
 
 ]);
 

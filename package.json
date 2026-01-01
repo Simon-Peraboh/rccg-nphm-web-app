@@ -15,6 +15,7 @@
     "@material-tailwind/react": "^2.1.9",
     "@reduxjs/toolkit": "^2.7.0",
     "axios": "^1.7.2",
+    "browser-image-compression": "^2.0.2",
     "dayjs": "^1.11.13",
     "formik": "^2.4.6",
     "localforage": "^1.10.0",

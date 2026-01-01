@@ -29,6 +29,8 @@ const MonthlyReport: React.FC = () => {
   const [regions, setRegions] = useState<string[]>([]);
   const [provinces, setProvinces] = useState<string[]>([]);
   const [reviewMode, setReviewMode] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const [user, setUser] = useState<User>({
     state: "",
@@ -53,7 +55,7 @@ const MonthlyReport: React.FC = () => {
 
   const navigate = useNavigate();
 
-    // ✅ Fetch regions
+  // ✅ Fetch regions
   useEffect(() => {
     axios.get("https://app.rccgphm.org/api/monthlyReports/regions")
       .then(res => setRegions(res.data.regions || res.data))
@@ -71,27 +73,62 @@ const MonthlyReport: React.FC = () => {
     }
   }, [user.region]);
 
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  }
+  const onInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    // If this field has a character limit — enforce it
+    if (charLimits[name] && value.length > charLimits[name]) {
+      return; // prevent updating state beyond limit
+    }
+
+    setUser(prev => ({ ...prev, [name]: value }));
+  };
+
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setReviewMode(true);
   };
 
-   const onConfirmSubmit = async () => {
+  const onConfirmSubmit = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
     try {
-      const response = await axios.post("https://app.rccgphm.org/api/monthlyReports/createReport", user);
+      const response = await axios.post(
+        "https://app.rccgphm.org/api/monthlyReports/createReport",
+        user
+      );
+
       toast.success(response.data.message || "Report submitted successfully!");
-      setTimeout(() => navigate("/dashboard/monthlyReportTable"), 3000);
-    } catch (error) {
+
+      setTimeout(() => {
+        navigate("/dashboard/monthlyReportTable");
+      }, 3000);
+    } catch (error: unknown) {
       const msg = axios.isAxiosError(error)
-        ? error.response?.data?.message || 'Failed to submit report.'
-        : 'An unexpected error occurred.';
+        ? error.response?.data?.message || "Failed to submit report."
+        : "An unexpected error occurred.";
+
       toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+
+  const charLimits: Record<string, number> = {
+    challenges: 150,
+    suggestion: 150,
+    remarks: 150,
+    others: 100,
+    coordinator_name: 60,
+    items: 255,
+  };
+
 
   return (
     <div className='container mx-auto mt-10'>
@@ -105,25 +142,47 @@ const MonthlyReport: React.FC = () => {
                 <strong className='capitalize'>{key.replace(/_/g, ' ')}:</strong> {val}
               </div>
             ))}
-            <div className='flex justify-between mt-6'>
+            <div className="flex justify-between mt-6">
+              {/* Edit */}
               <button
-                className='bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded'
+                type="button"
+                disabled={isSubmitting}
+                className={`bg-transparent text-blue-700 font-semibold py-2 px-4 border border-blue-500 rounded
+      hover:bg-blue-500 hover:text-white hover:border-transparent
+      ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}
+    `}
                 onClick={() => setReviewMode(false)}
               >
                 Edit
               </button>
+
               <div>
+                {/* Submit */}
                 <button
-                  className='bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded mr-2'
+                  type="button"
+                  disabled={isSubmitting}
                   onClick={onConfirmSubmit}
+                  className={`bg-transparent text-green-700 font-semibold py-2 px-4 border border-green-500 rounded mr-2
+        hover:bg-green-500 hover:text-white hover:border-transparent
+        ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}
+      `}
                 >
-                  Submit
+                  {isSubmitting ? "Submitting…" : "Submit"}
                 </button>
-                <Link to="/" className='bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded'>
+
+                {/* Cancel */}
+                <Link
+                  to="/"
+                  className={`bg-transparent text-red-700 font-semibold py-2 px-4 border border-red-500 rounded
+        hover:bg-red-500 hover:text-white hover:border-transparent
+        ${isSubmitting ? "pointer-events-none opacity-50" : ""}
+      `}
+                >
                   Cancel
                 </Link>
               </div>
             </div>
+
           </div>
         </div>
       ) : (
@@ -135,7 +194,7 @@ const MonthlyReport: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium">Region</label>
                   <select
-                     title='region'
+                    title='region'
                     name="region"
                     value={user.region}
                     onChange={onInputChange}
@@ -197,6 +256,19 @@ const MonthlyReport: React.FC = () => {
                       className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       required={!["others", "challenges", "suggestion", "remarks"].includes(name)}
                     />
+                    {charLimits[name] && (
+                      <div
+                        className={`text-sm mt-1 ${((user[name as keyof User] as string)?.length || 0) >
+                            charLimits[name] - 20
+                            ? "text-red-500"
+                            : "text-gray-600"
+                          }`}
+                      >
+                        {charLimits[name] -
+                          ((user[name as keyof User] as string)?.length || 0)}{" "}
+                        / {charLimits[name]} characters left
+                      </div>
+                    )}
                   </div>
                 ))}
                 <div>
