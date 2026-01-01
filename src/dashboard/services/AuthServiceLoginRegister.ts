@@ -1,9 +1,6 @@
 import axios from 'axios';
 
- const AUTH_REST_API_BASE_URL = 'https://app2.rccgphm.org/api/userManager';
-// const AUTH_REST_API_BASE_URL =
-//   `${import.meta.env.VITE_API_URL ?? "https://nphmapp.rccgphm.org/api"}/userManager`;
-
+const AUTH_REST_API_BASE_URL = "https://app2.rccgphm.org/api/userManager";
 
 export interface RegisterDTO {
   name: string;
@@ -29,6 +26,16 @@ export interface AuthResponse {
   message?: string;
 }
 
+export interface ForgotPasswordDTO {
+  email: string;
+}
+
+export interface ResetPasswordDTO {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export const clearToken = () => {
   localStorage.removeItem('token');
   sessionStorage.clear();
@@ -39,16 +46,12 @@ export const registerAPICall = (registerObj: RegisterDTO) => {
 };
 
 
-
 export const loginAPICall = async (loginData: LoginDTO) => {
   return axios.post(`${AUTH_REST_API_BASE_URL}/login`, {
     email: loginData.usernameOrEmail,
     password: loginData.password,
   });
 };
-
-
-
 
 
 export const storeToken = (token: string) => {
@@ -96,6 +99,18 @@ export const activateAccountAPICall = (
     new_password: newPassword,
     new_password_confirmation: confirmPassword,
   });
+};
+
+// ✅ Forgot Password API call
+export const forgotPasswordAPICall = (data: ForgotPasswordDTO) => {
+  return axios.post(`${AUTH_REST_API_BASE_URL}/forgotPassword`, data);
+
+};
+
+
+
+export const resetPasswordAPICall = (data: ResetPasswordDTO) => {
+  return axios.post(`${AUTH_REST_API_BASE_URL}/resetPassword`, data);
 };
 
 

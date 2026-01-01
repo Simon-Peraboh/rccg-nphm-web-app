@@ -98,6 +98,7 @@ const RegisterProfileCreate: React.FC = () => {
   const [form, setForm] = useState<UserForm>(() => loadFromLocalStorage() ?? defaultForm);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [consentGiven, setConsentGiven] = useState(false);
+   const [isSubmitting, setIsSubmitting] = useState(false);
 
 
 
@@ -156,52 +157,60 @@ const RegisterProfileCreate: React.FC = () => {
 
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!consentGiven) {
-      toast.error("Please provide consent before submitting the form.");
-      return;
+  e.preventDefault();
+
+  if (!consentGiven) {
+    toast.error("Please provide consent before submitting the form.");
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  const formData = new FormData();
+  Object.entries(form).forEach(([key, val]) => {
+    if (val !== null && val !== undefined) {
+      formData.append(key, val instanceof File ? val : String(val));
     }
-    const formData = new FormData();
-    Object.entries(form).forEach(([key, val]) => {
-      if (val !== null && val !== undefined) {
-        formData.append(key, val instanceof File ? val : String(val));
-      }
-    });
+  });
 
-    try {
-      const res = await axios.post("https://app2.rccgphm.org/api/userProfile/createUser", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  try {
+    const res = await axios.post(
+      "https://app2.rccgphm.org/api/userProfile/createUser",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
 
-      // Extract success message from backend response
-      const successMessage = res.data.message || "✅ Submission successful";
-      toast.success(`✅ ${successMessage}`);
+    const successMessage = res.data.message || "Submission successful";
+    toast.success(`✅ ${successMessage}`);
 
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-      setTimeout(() => {
-        navigate("/");
-      }, 3000);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const errorData = error.response?.data;
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
 
-        if (!errorData || typeof errorData !== "object") {
-          toast.error("❌ Submission failed");
-        } else if (errorData.message && typeof errorData.message === "object") {
-          Object.entries(errorData.message).forEach(([field, messages]) => {
-            const messageArray = Array.isArray(messages) ? messages : [String(messages)];
-            messageArray.forEach((msg) => {
-              toast.error(`❌ ${field}: ${msg}`);
-            });
+    setTimeout(() => {
+      navigate("/");
+    }, 3000);
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorData = error.response?.data;
+
+      if (!errorData || typeof errorData !== "object") {
+        toast.error("❌ Submission failed");
+      } else if (errorData.message && typeof errorData.message === "object") {
+        Object.entries(errorData.message).forEach(([field, messages]) => {
+          const messageArray = Array.isArray(messages) ? messages : [String(messages)];
+          messageArray.forEach((msg) => {
+            toast.error(`❌ ${field}: ${msg}`);
           });
-        } else {
-          toast.error(`❌ ${errorData.error}`);
-        }
+        });
       } else {
-        toast.error("❌ An unexpected error occurred");
+        toast.error(`❌ ${errorData.error}`);
       }
+    } else {
+      toast.error("❌ An unexpected error occurred");
     }
-  };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const charLimits: Record<string, number> = {
     first_name: 50,
@@ -425,12 +434,14 @@ const RegisterProfileCreate: React.FC = () => {
         <div className="mt-10 flex justify-center">
           <button
             type="submit"
-            disabled={!consentGiven}
-            className={`bg-blue-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-md shadow transition-all duration-200 ${!consentGiven ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+            disabled={!consentGiven || isSubmitting}
+            className={`bg-blue-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-md shadow transition-all duration-200
+              ${(!consentGiven || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
           >
-            Submit
+            {isSubmitting ? 'Submitting…' : 'Submit'}
           </button>
+
 
         </div>
       </form>
