@@ -1,146 +1,206 @@
-import React, { useEffect, useState } from 'react';
-import { getAllList, TodoListDTO, deleteList, status, priority } from '../services/AuthServiceTodoList';
-import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { confirmAlert } from "react-confirm-alert";
+import { ToastContainer } from "react-toastify";
+import {
+  FaArrowLeft,
+  FaEdit,
+  FaEye,
+  FaSearch,
+  FaTrash,
+} from "react-icons/fa";
+import {
+  useDeleteTodo,
+  useTodos,
+  useUpdateTodoPriority,
+  useUpdateTodoStatus,
+} from "../hooks/useTodos";
+import type { TodoPriority, TodoStatus, TodoDTO } from "../types/todo";
+import { formatDisplayDateTime } from "../../dashboardconference/utils/formatters";
 
+const truncateText = (value: string | null | undefined, max = 32): string => {
+  if (!value) return "-";
+  return value.length > max ? `${value.slice(0, max)}...` : value;
+};
 
-const TodoListTable: React.FC = () => {
-  const [todos, setTodos] = useState<TodoListDTO[]>([]);
+const TodoTablePage: React.FC = () => {
+  const { data, isLoading } = useTodos();
+  const deleteMutation = useDeleteTodo();
+  const statusMutation = useUpdateTodoStatus();
+  const priorityMutation = useUpdateTodoPriority();
 
-  useEffect(() => {
-    fetchTodos();
-  }, []);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchTodos = async () => {
-    try {
-      const response = await getAllList();
-      setTodos(response.data);
-    } catch (error) {
-      toast.error('Failed to fetch todos');
-    }
-  };
+  const todos = useMemo<TodoDTO[]>(() => data ?? [], [data]);
 
-  const handleDelete = async (id: string) => {
-    confirmAlert({
-      title: 'Confirm to delete',
-      message: 'Are you sure you want to delete this report?',
-      buttons: [
-        {
-          label: 'Yes',
-          onClick: async () => {
-            try {
-              await deleteList(id); // Call the API to delete
-              setTodos(todos.filter(todo => todo.id !== id)); // Update state
-              toast.success("Todo deleted successfully");
-            } catch (error) {
-              toast.error("Error deleting todo");
-              console.error("Error deleting todo:", error);
-            }
-          }
-        },
-        {
-          label: 'No',
-          onClick: () => toast.info("Deletion cancelled")
-        }
+  const filteredTodos = useMemo(() => {
+    return todos.filter((todo) => {
+      const haystack = [
+        todo.task,
+        todo.description,
+        todo.assignee,
+        todo.status,
+        todo.priority,
       ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(searchTerm.toLowerCase());
+    });
+  }, [todos, searchTerm]);
+
+  const handleDelete = (id: string, task: string) => {
+    confirmAlert({
+      title: "Confirm delete",
+      message: `Are you sure you want to delete "${task}"?`,
+      buttons: [
+        { label: "Yes", onClick: async () => deleteMutation.mutateAsync(id) },
+        { label: "No", onClick: () => undefined },
+      ],
     });
   };
 
-  const handleStatusChange = async (id: string, action: string) => {
-    try {
-      await status(id, action);
-      toast.success('Status updated successfully');
-      fetchTodos(); // Refresh todos
-    } catch (error) {
-      toast.error('Failed to update status');
-    }
+  const handleStatusChange = async (id: string, status: TodoStatus) => {
+    await statusMutation.mutateAsync({ id, status });
   };
 
-  const handlePriorityChange = async (id: string, action: string) => {
-    try {
-      await priority(id, action);
-      toast.success('Priority updated successfully');
-      fetchTodos(); // Refresh todos
-    } catch (error) {
-      toast.error('Failed to update priority');
-    }
+  const handlePriorityChange = async (id: string, priority: TodoPriority) => {
+    await priorityMutation.mutateAsync({ id, priority });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 px-4 py-6">
+        <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
+          <p className="text-center text-slate-500">Loading tasks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 mx-auto bg-blues-200 shadow-md rounded-lg">
-      <div className="mb-6">
-        <Link 
-          to="/dashboard/todoListCreate"
-          className="inline-block px-2 py-2 bg-blue-400 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          Add New Task
-        </Link>
-      </div>
+    <div className="min-h-screen bg-slate-50 px-4 py-6">
+      <ToastContainer position="top-right" theme="colored" />
 
-      <table className="w-full border-collapse bg-slate-50 rounded-md overflow-hidden text-sm">
-        <thead className="bg-gray-200 text-gray-600">
-          <tr>
-            <th className="px-4 py-2 border-b">Task</th>
-            <th className="px-4 py-2 border-b">Description</th>
-            <th className="px-4 py-2 border-b">Assignee</th>
-            <th className="px-4 py-2 border-b">Start Date</th>
-            <th className="px-4 py-2 border-b">Due Date</th>
-            <th className="px-4 py-2 border-b">Status</th>
-            <th className="px-4 py-2 border-b">Priority</th>
-            <th className="px-4 py-2 border-b">Assigned</th>
-            <th className="px-4 py-2 border-b">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="text-gray-700">
-          {todos.length > 0 ? (
-            todos.map(todo => (
-              <tr key={todo.id} className="border-b">
-                <td className="px-4 py-2">{todo.task}</td>
-                <td className="px-4 py-2">{todo.description}</td>
-                <td className="px-4 py-2">{todo.assignee}</td>
-                <td className="px-4 py-2">{todo.startDate}</td>
-                <td className="px-4 py-2">{todo.dueDate}</td>
-                <td className="px-4 py-2">{todo.status}</td>
-                <td className="px-4 py-2">{todo.priority}</td>
-                <td className="px-4 py-2">{todo.assigned}</td>
-                <td className="px-4 py-2 text-center flex space-x-2 items-center">
-                  <Link 
-                    to={`/dashboard/todoListEdit/${todo.id}`} 
-                    className="px-3 py-1 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    Edit
-                  </Link>
-                  <button 
-                    onClick={() => handleDelete(todo.id!)} 
-                    className="px-3 py-1 bg-red-500 text-white rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                  >
-                    Delete
-                  </button>
-                                    <div className="mb-2">
-                    <label htmlFor={`status-${todo.id}`} className="text-sm font-medium">Status</label>
+      <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+              Task Management
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Todo Board
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Manage assignments, due dates, status, and priority from one command center.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back to Dashboard</span>
+            </Link>
+
+            <Link
+              to="/dashboard/todoListCreate"
+              className="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              Add New Task
+            </Link>
+          </div>
+        </div>
+
+        <div className="mb-5 relative max-w-md">
+          <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by task, assignee, status..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
+          />
+        </div>
+
+        <div className="overflow-x-auto rounded-3xl border border-slate-200">
+          <table className="w-full min-w-[1280px] border-collapse">
+            <thead className="bg-slate-50">
+              <tr className="text-left text-sm font-semibold text-slate-500">
+                <th className="px-6 py-4">Task</th>
+                <th className="px-6 py-4">Assignee</th>
+                <th className="px-6 py-4">Start</th>
+                <th className="px-6 py-4">Due</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Priority</th>
+                <th className="px-6 py-4">Assigned</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredTodos.map((todo, index) => (
+                <tr
+                  key={todo.id}
+                  className={`border-t border-slate-100 transition hover:bg-slate-50 ${
+                    index === 0 ? "border-t-0" : ""
+                  }`}
+                >
+                  <td className="px-6 py-5">
+                    <div className="min-w-[320px]">
+                      <p
+                        className="truncate text-base font-semibold text-slate-900"
+                        title={todo.task}
+                      >
+                        {truncateText(todo.task, 34)}
+                      </p>
+                      <p
+                        className="mt-1 truncate text-sm text-slate-500"
+                        title={todo.description}
+                      >
+                        {truncateText(todo.description, 48)}
+                      </p>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5 text-sm text-slate-700">
+                    {truncateText(todo.assignee, 22)}
+                  </td>
+
+                  <td className="px-6 py-5 text-sm text-slate-500">
+                    {formatDisplayDateTime(todo.start_date)}
+                  </td>
+
+                  <td className="px-6 py-5 text-sm text-slate-500">
+                    {formatDisplayDateTime(todo.due_date)}
+                  </td>
+
+                  <td className="px-6 py-5">
                     <select
-                      id={`status-${todo.id}`}
-                      onChange={(e) => handleStatusChange(todo.id!, e.target.value)}
                       value={todo.status}
-                      className="w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      onChange={(e) =>
+                        handleStatusChange(todo.id as string, e.target.value as TodoStatus)
+                      }
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                      title={`Update status for ${todo.task}`}
                     >
-                      <option value="inProgress">In Progress</option>
                       <option value="inComplete">Incomplete</option>
+                      <option value="inProgress">In Progress</option>
                       <option value="complete">Complete</option>
                       <option value="clear">Clear</option>
                     </select>
-                  </div>
+                  </td>
 
-                  <div className="mb-2">
-                    <label htmlFor={`priority-${todo.id}`} className="text-sm font-medium">Priority</label>
+                  <td className="px-6 py-5">
                     <select
-                      id={`priority-${todo.id}`}
-                      onChange={(e) => handlePriorityChange(todo.id!, e.target.value)}
                       value={todo.priority}
-                      className="w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      onChange={(e) =>
+                        handlePriorityChange(todo.id as string, e.target.value as TodoPriority)
+                      }
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                      title={`Update priority for ${todo.task}`}
                     >
                       <option value="urgent">Urgent</option>
                       <option value="high">High</option>
@@ -148,21 +208,61 @@ const TodoListTable: React.FC = () => {
                       <option value="low">Low</option>
                       <option value="clear">Clear</option>
                     </select>
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={9} className="px-4 py-2 text-center text-gray-500">
-                No todos available
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                  </td>
+
+                  <td className="px-6 py-5 text-sm font-medium text-slate-700">
+                    {todo.assigned ? "Yes" : "No"}
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <div className="flex justify-end">
+                      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                        <Link
+                          to={`/dashboard/todoListView/${todo.id}`}
+                          className="rounded-lg p-2 text-blue-600 transition hover:bg-blue-50"
+                          aria-label={`View ${todo.task}`}
+                          title={`View ${todo.task}`}
+                        >
+                          <FaEye />
+                        </Link>
+
+                        <Link
+                          to={`/dashboard/todoListEdit/${todo.id}`}
+                          className="rounded-lg p-2 text-emerald-600 transition hover:bg-emerald-50"
+                          aria-label={`Edit ${todo.task}`}
+                          title={`Edit ${todo.task}`}
+                        >
+                          <FaEdit />
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(todo.id as string, todo.task)}
+                          className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+                          aria-label={`Delete ${todo.task}`}
+                          title={`Delete ${todo.task}`}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {filteredTodos.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-16 text-center text-slate-500">
+                    No tasks found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default TodoListTable;
+export default TodoTablePage;

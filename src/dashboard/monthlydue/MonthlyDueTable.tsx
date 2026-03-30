@@ -1,263 +1,390 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
-import axios from "axios";
-import * as XLSX from "xlsx";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { confirmAlert } from 'react-confirm-alert'; // Import
-import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import {
+  FaArrowLeft,
+  FaEdit,
+  FaEye,
+  FaSearch,
+  FaTrash,
+} from "react-icons/fa";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
+import { ToastContainer } from "react-toastify";
+import { useMonthlyDueReports, useDeleteMonthlyDueReport } from "../hooks/useMonthlyDue";
+import { exportToCsv } from "../../dashboardconference/utils/exportToCsv";
+import type { MonthlyDuePaymentDTO } from "../types/monthlyDue";
+import { formatDisplayDateTime } from "../../dashboardconference/utils/formatters";
 
-interface MonthlyDue {
-  id: string;
-  amount: string;
-  province: string;
-  paymentDate: string;
-  provinceCoordinator: string;
-  refMonth: string;
-  whoPaid: string;
-  remark: string;
-}
+const truncateText = (value: string | null | undefined, max = 24): string => {
+  if (!value) return "-";
+  return value.length > max ? `${value.slice(0, max)}...` : value;
+};
 
 const MonthlyDueTable: React.FC = () => {
-  const [reports, setReports] = useState<MonthlyDue[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchYear, setSearchYear] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [reportsPerPage, setReportsPerPage] = useState<number>(10);
+  const { data, isLoading } = useMonthlyDueReports();
+  const deleteMutation = useDeleteMonthlyDueReport();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchYear, setSearchYear] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [reportsPerPage, setReportsPerPage] = useState(10);
   const [selectedReports, setSelectedReports] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
+  const reports = useMemo<MonthlyDuePaymentDTO[]>(() => data ?? [], [data]);
 
-  const fetchReports = async () => {
-    try {
-      const response = await axios.get<MonthlyDue[]>("http://127.0.0.1:8000/api/monthlyDues/getAllReport");
-      setReports(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-      setLoading(false);
-    }
-  };
+  const filteredReports = useMemo(() => {
+    return reports.filter((report) => {
+      const reportYear = new Date(report.paymentDate).getFullYear().toString();
 
-  const handleDelete = async (id: string) => {
+      const haystack = [
+        report.province,
+        report.provinceCoordinator,
+        report.refMonth,
+        report.whoPaid,
+        report.remark,
+        report.amount,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return (
+        haystack.includes(searchTerm.toLowerCase()) &&
+        (searchYear === "" || reportYear === searchYear)
+      );
+    });
+  }, [reports, searchTerm, searchYear]);
+
+  const currentReports = useMemo(() => {
+    const indexOfLastReport = currentPage * reportsPerPage;
+    const indexOfFirstReport = indexOfLastReport - reportsPerPage;
+    return filteredReports.slice(indexOfFirstReport, indexOfLastReport);
+  }, [filteredReports, currentPage, reportsPerPage]);
+
+  const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
+
+  const handleDelete = (id: string) => {
     confirmAlert({
-      title: 'Confirm to submit',
-      message: 'Are you sure you want to delete this report?',
+      title: "Confirm deletion",
+      message: "Are you sure you want to delete this report?",
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: async () => {
-            try {
-              await axios.delete(`http://127.0.0.1:8000/api/monthlyDues/deleteReport/${id}`);
-              setReports(reports.filter(report => report.id !== id));
-              toast.success("Report deleted successfully");
-            } catch (error) {
-              toast.error("Error deleting report");
-              console.error("Error deleting report:", error);
-            }
-          }
+            await deleteMutation.mutateAsync(id);
+          },
         },
         {
-          label: 'No',
-          onClick: () => toast.info("Deletion cancelled")
-        }
-      ]
+          label: "No",
+          onClick: () => undefined,
+        },
+      ],
     });
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleYearChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchYear(event.target.value);
-  };
-
-  const handleReportsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setReportsPerPage(Number(event.target.value));
-    setCurrentPage(1); // Reset to first page when changing reports per page
-  };
-
   const handleCheckboxChange = (id: string) => {
-    const updatedSelectedReports = new Set(selectedReports);
-    if (updatedSelectedReports.has(id)) {
-      updatedSelectedReports.delete(id);
+    const updated = new Set(selectedReports);
+
+    if (updated.has(id)) {
+      updated.delete(id);
     } else {
-      updatedSelectedReports.add(id);
+      updated.add(id);
     }
-    setSelectedReports(updatedSelectedReports);
+
+    setSelectedReports(updated);
   };
 
-  const exportToExcel = (exportAll: boolean = false) => {
-    const dataToExport = exportAll ? reports : reports.filter(report => selectedReports.has(report.id));
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Reports");
-    XLSX.writeFile(wb, "MonthlyDueReports.xlsx");
+  const handleExport = (exportAll = false) => {
+    const dataToExport = exportAll
+      ? reports
+      : reports.filter((report) => report.id && selectedReports.has(report.id));
+
+    const rows = dataToExport.map((report) => ({
+      Amount: report.amount,
+      Province: report.province,
+      PaymentDate: report.paymentDate,
+      ProvinceCoordinator: report.provinceCoordinator,
+      RefMonth: report.refMonth,
+      WhoPaid: report.whoPaid ?? "",
+      Remark: report.remark ?? "",
+    }));
+
+    exportToCsv(rows, "monthly-due-reports");
   };
 
-  // Pagination
-  const indexOfLastReport = currentPage * reportsPerPage;
-  const indexOfFirstReport = indexOfLastReport - reportsPerPage;
-  const currentReports = reports.filter(report => {
-    const reportYear = new Date(report.paymentDate).getFullYear().toString();
+  if (isLoading) {
     return (
-      report.province.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (searchYear === "" || reportYear === searchYear)
+      <div className="min-h-screen bg-slate-50 px-4 py-6">
+        <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
+          <p className="text-center text-slate-500">Loading reports...</p>
+        </div>
+      </div>
     );
-  }).slice(indexOfFirstReport, indexOfLastReport);
-
-  const totalPages = Math.ceil(reports.length / reportsPerPage);
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-  if (loading) {
-    return <div>Loading...</div>;
   }
 
   return (
-    <div className="overflow-x-auto mr-1 ml-1">
-      <div className="flex justify-between items-center mb-4 p-2 rounded-xl">
-        <input
-          type="text"
-          placeholder="Search by province"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="p-2 border rounded w-1/3 mr-2"
-        />
-        <input
-          type="text"
-          placeholder="Search by year"
-          value={searchYear}
-          onChange={handleYearChange}
-          className="p-2 border rounded w-1/3"
-        />
-        <div className="flex space-x-2">
-          <Link to="/dashboard/monthlyDue" className="p-2 bg-gray-400 text-white rounded text-xl">Create Report</Link>
-          <button
-            onClick={() => exportToExcel(true)}
-            className="p-1 bg-blue-500 text-white rounded text-sm"
-          >
-            Export All
-          </button>
-          <button
-            onClick={() => exportToExcel()}
-            className="p-1 bg-green-500 text-white rounded text-sm"
-            disabled={selectedReports.size === 0}
-          >
-            Export Selected
-          </button>
+    <div className="min-h-screen bg-slate-50 px-4 py-6">
+      <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+              Monthly Due Management
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Monthly Due Reports
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Track province payments, coordinators, reference months, and remittance notes.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back to Dashboard</span>
+            </Link>
+
+            <Link
+              to="/dashboard/monthlyDue"
+              className="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              Create Report
+            </Link>
+          </div>
         </div>
-      </div>
-      {reports.length === 0 ? (
-        <div className="text-center text-gray-500">No data available</div>
-      ) : (
-        <>
-          <table className="min-w-full table-auto bg-cyan-50 rounded-md shadow-md">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="px-2 py-1">
-                  <input
-                    itemID="check"
-                     type="checkbox"
-                     placeholder="Checklist"
-                     onChange={(e) => {
-                      if (e.target.checked) {
-                        const newSelectedReports = new Set(reports.map(report => report.id));
-                        setSelectedReports(newSelectedReports);
-                      } else {
-                        setSelectedReports(new Set());
-                      }
-                    }}
-                    checked={selectedReports.size === reports.length}
-                  />
-                </th>
-                <th className="px-2 py-1">SN</th>
-                <th className="px-2 py-1">Amount</th>
-                <th className="px-2 py-1">Province</th>
-                <th className="px-2 py-1">Payment Date</th>
-                <th className="px-2 py-1">Coordinator</th>
-                <th className="px-2 py-1">Month</th>
-                <th className="px-2 py-1">Who Paid</th>
-                <th className="px-2 py-1">Remark</th>
-                <th className="px-2 py-1">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentReports.map((report, index) => (
-                <tr key={report.id} className="border-b-2 border-gray-400 hover:bg-white">
-                  <td className="px-2 py-1">
-                    <input
-                       itemID="check"
-                      type="checkbox"
-                      placeholder="Checklist"
-                      checked={selectedReports.has(report.id)}
-                      onChange={() => handleCheckboxChange(report.id)}
-                    />
-                  </td>
-                  <td className="px-2 py-1">{indexOfFirstReport + index + 1}</td>
-                  <td className="px-2 py-1">{report.amount}</td>
-                  <td className="px-2 py-1">{report.province}</td>
-                  <td className="px-2 py-1">{report.paymentDate}</td>
-                  <td className="px-2 py-1">{report.provinceCoordinator}</td>
-                  <td className="px-2 py-1">{report.refMonth}</td>
-                  <td className="px-2 py-1">{report.whoPaid}</td>
-                  <td className="px-2 py-1">{report.remark}</td>
-                  <td className="px-2 py-1 flex space-x-2 justify-center">
-                    <Link to={`/dashboard/monthlyDueView/${report.id}`} className="text-blue-500 hover:text-blue-700">
-                      <FaEye />
-                    </Link>
-                    <Link to={`/dashboard/monthlyDueEdit/${report.id}`} className="text-yellow-500 hover:text-yellow-700">
-                      <FaEdit />
-                    </Link>
-                    <button
-                         type="button"
-                         onClick={() => handleDelete(report.id)}
-                         title="Delete"
-                         className="text-red-500 hover:text-red-700">
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-4 mb-1 ml-1 py-2 bg-yellow-500 rounded disabled:opacity-50 text-sm"
-            >
-              Previous
-            </button>
-             <label htmlFor="usersPerPage">
-            <span>Page {currentPage} of {totalPages}</span>
-            </label>
+
+        <div className="mb-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="grid w-full gap-3 xl:max-w-2xl xl:grid-cols-[1.2fr_0.7fr]">
+            <div className="relative">
+              <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by province, coordinator, ref month..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
+              />
+            </div>
+
+            <input
+              type="text"
+              placeholder="Filter by year e.g. 2026"
+              value={searchYear}
+              onChange={(e) => {
+                setSearchYear(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
             <select
-              id="usersPerPage"
+              title="Reports per page"
               value={reportsPerPage}
-              onChange={handleReportsPerPageChange}
-              className="ml-2 p-2 border rounded mb-1 text-sm"
+              onChange={(e) => {
+                setReportsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700"
             >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
+              <option value={10}>10 per page</option>
+              <option value={20}>20 per page</option>
+              <option value={50}>50 per page</option>
             </select>
+
             <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-4 mb-1 mr-2 py-2 bg-green-500 rounded disabled:opacity-50 text-sm"
+              type="button"
+              onClick={() => handleExport(true)}
+              className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Next
+              Export All
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleExport(false)}
+              disabled={selectedReports.size === 0}
+              className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 disabled:opacity-50 hover:bg-slate-50"
+            >
+              Export Selected
             </button>
           </div>
-        </>
-      )}
-      <ToastContainer position="top-center" />
+        </div>
+
+        <div className="overflow-x-auto rounded-3xl border border-slate-200">
+          <table className="w-full min-w-[1150px] border-collapse">
+            <thead className="bg-slate-50">
+              <tr className="text-left text-sm font-semibold text-slate-500">
+                <th className="px-6 py-4">
+                  <input
+                    type="checkbox"
+                    title="Select all visible reports"
+                    aria-label="Select all visible reports"
+                    checked={
+                      currentReports.length > 0 &&
+                      currentReports.every((report) => report.id && selectedReports.has(report.id))
+                    }
+                    onChange={(e) => {
+                      const updated = new Set(selectedReports);
+
+                      if (e.target.checked) {
+                        currentReports.forEach((report) => {
+                          if (report.id) updated.add(report.id);
+                        });
+                      } else {
+                        currentReports.forEach((report) => {
+                          if (report.id) updated.delete(report.id);
+                        });
+                      }
+
+                      setSelectedReports(updated);
+                    }}
+                  />
+                </th>
+                <th className="px-6 py-4">Due Summary</th>
+                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">Payment Date</th>
+                <th className="px-6 py-4">Who Paid</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {currentReports.map((report, index) => {
+                const summaryTitle = truncateText(report.province, 24);
+                const summarySubtitle = `${truncateText(report.provinceCoordinator, 24)} • ${truncateText(
+                  report.refMonth,
+                  18
+                )}`;
+
+                return (
+                  <tr
+                    key={report.id}
+                    className={`border-t border-slate-100 transition hover:bg-slate-50 ${
+                      index === 0 ? "border-t-0" : ""
+                    }`}
+                  >
+                    <td className="px-6 py-5">
+                      <input
+                        type="checkbox"
+                        checked={report.id ? selectedReports.has(report.id) : false}
+                        onChange={() => report.id && handleCheckboxChange(report.id)}
+                        title={`Select report ${summaryTitle}`}
+                        aria-label={`Select report ${summaryTitle}`}
+                      />
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="min-w-[320px]">
+                        <p
+                          className="truncate text-base font-semibold text-slate-900"
+                          title={report.province}
+                        >
+                          {summaryTitle}
+                        </p>
+                        <p className="mt-1 truncate text-sm text-slate-500" title={summarySubtitle}>
+                          {summarySubtitle}
+                        </p>
+                        <p
+                          className="mt-1 truncate text-xs text-slate-400"
+                          title={report.remark ?? ""}
+                        >
+                          {truncateText(report.remark ?? "-", 46)}
+                        </p>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5 text-sm font-medium text-slate-700">
+                      {truncateText(report.amount, 18)}
+                    </td>
+
+                    <td className="px-6 py-5 text-sm text-slate-500">
+                      {formatDisplayDateTime(report.paymentDate)}
+                    </td>
+
+                    <td className="px-6 py-5 text-sm text-slate-700">
+                      <span title={report.whoPaid ?? ""}>
+                        {truncateText(report.whoPaid ?? "-", 20)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex justify-end">
+                        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                          <Link
+                            to={`/dashboard/monthlyDueView/${report.id}`}
+                            className="rounded-lg p-2 text-blue-600 transition hover:bg-blue-50"
+                            aria-label={`View report ${summaryTitle}`}
+                            title={`View report ${summaryTitle}`}
+                          >
+                            <FaEye />
+                          </Link>
+
+                          <Link
+                            to={`/dashboard/monthlyDueEdit/${report.id}`}
+                            className="rounded-lg p-2 text-emerald-600 transition hover:bg-emerald-50"
+                            aria-label={`Edit report ${summaryTitle}`}
+                            title={`Edit report ${summaryTitle}`}
+                          >
+                            <FaEdit />
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => report.id && handleDelete(report.id)}
+                            className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+                            aria-label={`Delete report ${summaryTitle}`}
+                            title={`Delete report ${summaryTitle}`}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {currentReports.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-16 text-center text-slate-500">
+                    No reports found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                title={`Go to page ${page}`}
+                aria-label={`Go to page ${page}`}
+                className={`rounded-2xl px-4 py-2 text-sm font-medium border ${
+                  currentPage === page
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-slate-700 border-slate-300"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <ToastContainer position="top-right" theme="colored" />
     </div>
   );
 };

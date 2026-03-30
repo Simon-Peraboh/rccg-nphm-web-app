@@ -1,85 +1,121 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getReport, NationalReportDTO } from '../services/AuthServiceNationalReport';
-import { toast, ToastContainer } from 'react-toastify';
+import React from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNationalReport } from "../hooks/useNationalReport";
+
+const DetailRow: React.FC<{ label: string; value?: string | null }> = ({
+  label,
+  value,
+}) => (
+  <div className="rounded-2xl border bg-slate-50 p-4">
+    <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
+    <p className="mt-2 text-sm font-semibold text-slate-900 whitespace-pre-wrap">
+      {value || "-"}
+    </p>
+  </div>
+);
 
 const NationalReportView: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const reportId = id as string;
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-    const [report, setReport] = useState<NationalReportDTO | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+  const { data: report, isLoading, isError, error } = useNationalReport(id);
 
-    useEffect(() => {
-        const fetchReport = async () => {
-            try {
-                const response = await getReport(reportId);
-                setReport(response.data);
-                console.log(response);
-                setLoading(false);
-            } catch (error) {
-                toast.error('Failed to fetch report');
-                setLoading(false);
-            }
-        };
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-slate-100 px-4 py-6">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-8 shadow-sm text-center">
+          <h2 className="text-2xl font-bold text-red-600">Invalid Report</h2>
+          <p className="mt-3 text-slate-600">No report ID was provided.</p>
 
-        fetchReport();
-    }, [reportId]);
+          <button
+            onClick={() => navigate("/dashboard/nationalReportTable")}
+            className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold"
+          >
+            Back to Reports
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-100 px-4 py-6">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-8 shadow-sm">
+          <p className="text-slate-600">Loading report details...</p>
+        </div>
+      </div>
+    );
+  }
 
-    if (!report) {
-        return <div>Report not found</div>;
-    }
+  if (isError || !report) {
+    const message =
+      error instanceof Error ? error.message : "Could not load report details.";
 
     return (
-        <div className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-            <h1 className="text-2xl font-bold mb-4 text-center">National Report Details</h1>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Core Duties:</label>
-                <p>{report.core_duties}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Monthly Task:</label>
-                <p>{report.monthly_task}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Task Done:</label>
-                <p>{report.task_done}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Strength:</label>
-                <p>{report.strength}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Weakness:</label>
-                <p>{report.weakness}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Opportunities:</label>
-                <p>{report.opportunities}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Threats:</label>
-                <p>{report.threats}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Amount Budgeted:</label>
-                <p>{report.amount_budgeted}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Amount Spent:</label>
-                <p>{report.amount_spent}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Remark:</label>
-                <p>{report.remarks}</p>
-            </div>
-            <ToastContainer position='top-center' />
+      <div className="min-h-screen bg-slate-100 px-4 py-6">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-8 shadow-sm text-center">
+          <h2 className="text-2xl font-bold text-red-600">Report Load Error</h2>
+          <p className="mt-3 text-slate-600">{message}</p>
+
+          <button
+            onClick={() => navigate("/dashboard/nationalReportTable")}
+            className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold"
+          >
+            Back to Reports
+          </button>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <div className="mx-auto max-w-5xl rounded-3xl bg-white border p-6 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+              National Report
+            </p>
+            <h1 className="text-2xl font-bold mt-2">Report Details</h1>
+            <p className="text-slate-600 mt-1 text-sm">
+              Full view of submitted national report.
+            </p>
+          </div>
+
+          <div className="flex gap-3 flex-wrap">
+            <Link
+              to={`/dashboard/nationalReportEdit/${report.id}`}
+              className="rounded-xl bg-green-600 px-4 py-2.5 text-white text-sm font-semibold"
+            >
+              Edit Report
+            </Link>
+
+            <button
+              onClick={() => navigate("/dashboard/nationalReportTable")}
+              className="rounded-xl border px-4 py-2.5 text-sm font-semibold"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <DetailRow label="Core Duties" value={report.core_duties} />
+          <DetailRow label="Monthly Task" value={report.monthly_task} />
+          <DetailRow label="Task Done" value={report.task_done} />
+          <DetailRow label="Strength" value={report.strength} />
+          <DetailRow label="Weakness" value={report.weakness} />
+          <DetailRow label="Opportunities" value={report.opportunities} />
+          <DetailRow label="Threats" value={report.threats} />
+          <DetailRow label="Amount Budgeted" value={report.amount_budgeted} />
+          <DetailRow label="Amount Spent" value={report.amount_spent} />
+          <DetailRow label="Remarks" value={report.remarks} />
+          <DetailRow label="Created At" value={report.created_at} />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default NationalReportView;

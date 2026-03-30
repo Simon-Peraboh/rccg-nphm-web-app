@@ -1,176 +1,186 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { getReport, updateReport, SpecialProjectsReportDTO } from '../services/AuthServiceSpecialProjects';
-import { useNavigate, useParams } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { ToastContainer, toast } from "react-toastify";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { useSpecialProject, useUpdateSpecialProject } from "../hooks/useSpecialProjects";
+import type { SpecialProjectsReportDTO } from "../types/specialProjects";
 
-// Define the validation schema using yup
-const schema = yup.object().shape({
-  projectName: yup.string().required('Core Duties is required'),
-  projectDescription: yup.string().required('Monthly task is required'),
-  projectLocation: yup.string().required('Task done is required'),
-  state: yup.string().required('State is Required'),
-  projectEstimate: yup.string().required('Estimate Time Frame Is Required'),
-  projectCost: yup.string().required('Project Cost Required'),
-  projectStartDate: yup.string().required('Start Date Reuired'),
-  projectCompletedDate: yup.string().required('Amount Budgeted is required'),
-  projectManager: yup.string().required('Amount Spent is required'),
-  projectAid: yup.string().required('Created Date is required'),
+const schema = yup.object({
+  projectName: yup.string().required("Project name is required"),
+  projectDescription: yup.string().required("Project description is required"),
+  projectLocation: yup.string().required("Project location is required"),
+  state: yup.string().required("State is required"),
+  projectEstimate: yup.string().required("Estimate time frame is required"),
+  projectCost: yup.string().required("Project cost is required"),
+  projectStartDate: yup.string().required("Start date is required"),
+  projectCompletedDate: yup.string().required("Completed date is required"),
+  projectManager: yup.string().required("Project manager is required"),
+  projectAid: yup.string().required("Funding detail is required"),
   projectRemarks: yup.string().optional(),
 });
 
 const SpecialProjectsEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const reportId = id as string;
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Hook for navigation
+  const { data, isLoading } = useSpecialProject(reportId);
+  const updateMutation = useUpdateSpecialProject();
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<SpecialProjectsReportDTO>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<SpecialProjectsReportDTO>({
     resolver: yupResolver(schema),
   });
 
   useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        const response = await getReport(reportId);
-        const data = response.data;
-        console.log('Fetched data:', data); // Add logging here
-        setValue('projectName', data.projectName);
-        setValue('projectDescription', data.projectDescription);
-        setValue('projectLocation', data.projectLocation);
-        setValue('state', data.state);
-        setValue('projectEstimate', data.projectEstimate);
-        setValue('projectCost', data.projectCost);
-        setValue('projectStartDate', data.projectStartDate);
-        setValue('projectCompletedDate', data.projectCompletedDate);
-        setValue('projectManager', data.projectManager);
-        setValue('projectAid', data.projectAid);
-        setValue('projectRemarks', data.projectRemarks || '');
-      } catch (error) {
-        console.error('Error fetching report:', error); // Add logging here
-        toast.error('Failed to fetch report');
-      }
-    };
+    if (!data) return;
 
-    fetchReport();
-  }, [reportId, setValue]);
+    setValue("projectName", data.projectName);
+    setValue("projectDescription", data.projectDescription);
+    setValue("projectLocation", data.projectLocation);
+    setValue("state", data.state);
+    setValue("projectEstimate", data.projectEstimate);
+    setValue("projectCost", data.projectCost);
+    setValue("projectStartDate", data.projectStartDate);
+    setValue("projectCompletedDate", data.projectCompletedDate);
+    setValue("projectManager", data.projectManager);
+    setValue("projectAid", data.projectAid);
+    setValue("projectRemarks", data.projectRemarks || "");
+  }, [data, setValue]);
 
-  const onSubmit = async (data: SpecialProjectsReportDTO) => {
+  const onSubmit = async (formData: SpecialProjectsReportDTO) => {
     try {
-      const response = await updateReport(reportId, data);
-      console.log('Response from backend:', response); // Log the response for debugging
-      toast.success(response.data.message);
+      await updateMutation.mutateAsync({
+        id: reportId,
+        payload: formData,
+      });
 
-      // Introduce a short delay before navigating
-      setTimeout(() => {
-        navigate('/dashboard/specialProjectsTable');
-      }, 3000); // Display message for 3 seconds
-
-    } catch (error) {
-      console.error('Error updating report:', error); // Log the error for debugging
-      toast.error('Failed to update report');
+      setTimeout(() => navigate("/dashboard/specialProjectsTable"), 1500);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.error ||
+            "Failed to update project report"
+        );
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to update project report");
+      }
     }
   };
 
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading project...</div>;
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-      <h1 className='text-center text-gray-800'>Edit Report</h1>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Name</label>
-        <input 
-          type="text" 
-          {...register('projectName')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectName && <p className="text-red-500 text-sm">{errors.projectName.message}</p>}
+    <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <ToastContainer position="top-center" />
+
+      <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-6 shadow-sm">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+            Special Projects
+          </p>
+          <h1 className="text-2xl font-bold mt-2">Edit Project Report</h1>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
+          {[
+            ["projectName", "Project Name"],
+            ["projectLocation", "Project Location"],
+            ["state", "State"],
+            ["projectEstimate", "Project Estimate"],
+            ["projectCost", "Project Cost"],
+            ["projectManager", "Project Manager"],
+            ["projectAid", "Funding Detail"],
+          ].map(([name, label]) => (
+            <div key={name}>
+              <label className="block text-sm font-medium mb-1">{label}</label>
+              <input
+                type="text"
+                {...register(name as keyof SpecialProjectsReportDTO)}
+                className="w-full rounded-xl border px-3 py-2.5"
+              />
+              {errors[name as keyof SpecialProjectsReportDTO] && (
+                <p className="text-red-500 text-xs mt-1">
+                  {String(errors[name as keyof SpecialProjectsReportDTO]?.message ?? "")}
+                </p>
+              )}
+            </div>
+          ))}
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Project Start Date</label>
+            <input
+              type="date"
+              {...register("projectStartDate")}
+              className="w-full rounded-xl border px-3 py-2.5"
+            />
+            {errors.projectStartDate && (
+              <p className="text-red-500 text-xs mt-1">{errors.projectStartDate.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Project Completed Date</label>
+            <input
+              type="date"
+              {...register("projectCompletedDate")}
+              className="w-full rounded-xl border px-3 py-2.5"
+            />
+            {errors.projectCompletedDate && (
+              <p className="text-red-500 text-xs mt-1">{errors.projectCompletedDate.message}</p>
+            )}
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Project Description</label>
+            <textarea
+              {...register("projectDescription")}
+              className="w-full rounded-xl border px-3 py-2.5 min-h-[100px]"
+            />
+            {errors.projectDescription && (
+              <p className="text-red-500 text-xs mt-1">{errors.projectDescription.message}</p>
+            )}
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Remarks</label>
+            <textarea
+              {...register("projectRemarks")}
+              className="w-full rounded-xl border px-3 py-2.5 min-h-[90px]"
+            />
+          </div>
+
+          <div className="md:col-span-2 flex flex-wrap gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="rounded-xl bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
+            >
+              {updateMutation.isPending ? "Updating..." : "Update Report"}
+            </button>
+
+            <Link
+              to="/dashboard/specialProjectsTable"
+              className="rounded-xl border px-5 py-2.5 text-sm font-semibold"
+            >
+              Cancel
+            </Link>
+          </div>
+        </form>
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Description</label>
-        <input 
-          type="text" 
-          {...register('projectDescription')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectDescription && <p className="text-red-500 text-sm">{errors.projectDescription.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">State</label>
-        <input 
-          type="text" 
-          {...register('state')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.state && <p className="text-red-500 text-sm">{errors.state.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Estimate</label>
-        <input 
-          type="text" 
-          {...register('projectEstimate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectEstimate && <p className="text-red-500 text-sm">{errors.projectEstimate.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Cost</label>
-        <input 
-          type="text" 
-          {...register('projectCost')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectCost && <p className="text-red-500 text-sm">{errors.projectCost.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Start Date</label>
-        <input 
-          type="text" 
-          {...register('projectStartDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectStartDate && <p className="text-red-500 text-sm">{errors.projectStartDate.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Completed Date</label>
-        <input 
-          type="text" 
-          {...register('projectCompletedDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectCompletedDate && <p className="text-red-500 text-sm">{errors.projectCompletedDate.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Manager</label>
-        <input 
-          type="text" 
-          {...register('projectManager')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectManager && <p className="text-red-500 text-sm">{errors.projectManager.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Project Aid</label>
-        <input 
-          type="text" 
-          {...register('projectAid')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectAid && <p className="text-red-500 text-sm">{errors.projectAid.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Remark</label>
-        <input 
-          type="text" 
-          placeholder='Enter Remarks If Any'
-          {...register('projectRemarks')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.projectRemarks && <p className="text-red-500 text-sm">{errors.projectRemarks.message}</p>}
-      </div>
-      <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Update Report</button>
-      <ToastContainer position='top-center' />
-    </form>
+    </div>
   );
 };
 

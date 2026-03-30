@@ -1,109 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
+import { FaArrowLeft } from "react-icons/fa";
+import {
+  useCreateMonthlyReport,
+  useMonthlyReportProvinces,
+  useMonthlyReportRegions,
+} from "../hooks/useMonthlyReport";
+import type { MonthlyReportDTO } from "../types/monthlyReport";
 
-interface User {
-  state: string;
-  region: string;
-  province: string;
-  coordinator_name: string;
-  prison_visited: string;
-  hospital_visited: string;
-  police_station_visited: string;
-  others?: string;
-  items: string;
-  amount_budgeted: string;
-  amount_spent: string;
-  team_members: string;
-  souls_won: string;
-  challenges?: string;
-  suggestion?: string;
-  remarks?: string;
-  activity_date: string;
-  report_created_by: string;
-}
-
-const MonthlyReport: React.FC = () => {
-  const [regions, setRegions] = useState<string[]>([]);
-  const [provinces, setProvinces] = useState<string[]>([]);
-  const [reviewMode, setReviewMode] = useState<boolean>(false);
-
-  const [user, setUser] = useState<User>({
-    state: "",
-    region: "",
-    province: "",
-    coordinator_name: "",
-    prison_visited: "",
-    hospital_visited: "",
-    police_station_visited: "",
-    others: "",
-    items: "",
-    amount_budgeted: "",
-    amount_spent: "",
-    team_members: "",
-    souls_won: "",
-    challenges: "",
-    suggestion: "",
-    remarks: "",
-    activity_date: "",
-    report_created_by: ""
-  });
-
-  const navigate = useNavigate();
-
-    // ✅ Fetch regions
-  useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/monthlyReports/regions")
-      .then(res => setRegions(res.data.regions || res.data))
-      .catch(() => toast.error("Failed to fetch regions"));
-  }, []);
-
-  // ✅ Fetch provinces when region changes
-  useEffect(() => {
-    if (user.region) {
-      axios.get(`http://127.0.0.1:8000/api/monthlyReports/provinces/${user.region}`)
-        .then(res => setProvinces(res.data.provinces || res.data))
-        .catch(() => toast.error("Failed to fetch provinces"));
-    } else {
-      setProvinces([]);
-    }
-  }, [user.region]);
-
-   const onInputChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-) => {
-  const { name, value } = e.target;
-
-  // If this field has a character limit — enforce it
-  if (charLimits[name] && value.length > charLimits[name]) {
-    return; // prevent updating state beyond limit
-  }
-
-  setUser(prev => ({ ...prev, [name]: value }));
-};
-
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setReviewMode(true);
-  };
-
-   const onConfirmSubmit = async () => {
-    try {
-      const response = await axios.post("http://127.0.0.1:8000/api/monthlyReports/createReport", user);
-      toast.success(response.data.message || "Report submitted successfully!");
-      setTimeout(() => navigate("/dashboard/monthlyReportTable"), 3000);
-    } catch (error) {
-      const msg = axios.isAxiosError(error)
-        ? error.response?.data?.message || 'Failed to submit report.'
-        : 'An unexpected error occurred.';
-      toast.error(msg);
-    }
-  };
-
-  const charLimits: Record<string, number> = {
+const charLimits: Record<string, number> = {
   challenges: 150,
   suggestion: 150,
   remarks: 150,
@@ -112,161 +19,396 @@ const MonthlyReport: React.FC = () => {
   items: 255,
 };
 
+const initialForm: MonthlyReportDTO = {
+  state: "",
+  region: "",
+  province: "",
+  coordinator_name: "",
+  prison_visited: "",
+  hospital_visited: "",
+  police_station_visited: "",
+  others: "",
+  items: "",
+  amount_budgeted: "",
+  amount_spent: "",
+  team_members: "",
+  souls_won: "",
+  challenges: "",
+  suggestion: "",
+  remarks: "",
+  report_created_by: "",
+  activity_date: "",
+};
+
+const fieldLabels: Record<keyof MonthlyReportDTO, string> = {
+  id: "ID",
+  state: "State",
+  region: "Region",
+  province: "Province",
+  coordinator_name: "Coordinator Name",
+  prison_visited: "Prison Visited",
+  hospital_visited: "Hospital Visited",
+  police_station_visited: "Police Station Visited",
+  others: "Other Places Visited",
+  items: "Items",
+  amount_budgeted: "Amount Budgeted",
+  amount_spent: "Amount Spent",
+  team_members: "Team Members",
+  souls_won: "Souls Won",
+  challenges: "Challenges",
+  suggestion: "Suggestion",
+  remarks: "Remarks",
+  report_created_by: "Report Created By",
+  activity_date: "Activity Date",
+};
+
+const textareaFields = ["challenges", "suggestion", "remarks", "others", "items"];
+
+const MonthlyReportCreate: React.FC = () => {
+  const [form, setForm] = useState<MonthlyReportDTO>(initialForm);
+  const [reviewMode, setReviewMode] = useState(false);
+
+  const navigate = useNavigate();
+  const createMutation = useCreateMonthlyReport();
+
+  const { data: regions = [] } = useMonthlyReportRegions();
+  const { data: provinces = [] } = useMonthlyReportProvinces(form.region);
+
+  const fieldEntries = useMemo(
+    () =>
+      [
+        ["state", "Enter your state"],
+        ["coordinator_name", "Enter coordinator name"],
+        ["prison_visited", "Enter prison visited"],
+        ["hospital_visited", "Enter hospital visited"],
+        ["police_station_visited", "Enter police station visited"],
+        ["others", "Other places visited"],
+        ["items", "Items e.g. Rice, Garri"],
+        ["amount_budgeted", "Enter budgeted amount"],
+        ["amount_spent", "Enter actual amount spent"],
+        ["team_members", "Total number who went"],
+        ["souls_won", "Souls won e.g. 5"],
+        ["challenges", "Challenges faced if any"],
+        ["suggestion", "Any suggestions?"],
+        ["remarks", "Any remarks"],
+        ["report_created_by", "Enter your name"],
+      ] as const,
+    []
+  );
+
+  const onInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+
+    if (charLimits[name] && value.length > charLimits[name]) {
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "region" ? { province: "" } : {}),
+    }));
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setReviewMode(true);
+  };
+
+  const onConfirmSubmit = async () => {
+    try {
+      await createMutation.mutateAsync(form);
+      setTimeout(() => navigate("/dashboard/monthlyReportTable"), 1500);
+    } catch (error: unknown) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || "Failed to submit report."
+        : "An unexpected error occurred.";
+
+      toast.error(message);
+    }
+  };
+
+  const renderField = (
+    name: keyof MonthlyReportDTO,
+    placeholder: string,
+    className = ""
+  ) => {
+    const value = (form[name] as string) ?? "";
+    const isTextarea = textareaFields.includes(name);
+    const isOptional = ["others", "challenges", "suggestion", "remarks"].includes(name);
+    const limit = charLimits[name];
+    const remaining = limit ? limit - value.length : null;
+
+    return (
+      <div key={name} className={className}>
+        <label htmlFor={name} className="mb-1.5 block text-sm font-medium text-slate-700">
+          {fieldLabels[name]}
+        </label>
+
+        {isTextarea ? (
+          <div className="relative">
+            <textarea
+              id={name}
+              name={name}
+              placeholder={placeholder}
+              value={value}
+              onChange={onInputChange}
+              required={!isOptional}
+              className="min-h-[96px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-16 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            />
+            {limit && (
+              <span
+                className={`pointer-events-none absolute bottom-3 right-4 text-[11px] ${
+                  remaining !== null && remaining < 20 ? "text-red-500" : "text-slate-400"
+                }`}
+              >
+                {remaining}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="relative">
+            <input
+              id={name}
+              type="text"
+              name={name}
+              placeholder={placeholder}
+              value={value}
+              onChange={onInputChange}
+              required={!isOptional}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            />
+            {limit && (
+              <span
+                className={`pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] ${
+                  remaining !== null && remaining < 20 ? "text-red-500" : "text-slate-400"
+                }`}
+              >
+                {remaining}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className='container mx-auto mt-10'>
-      <ToastContainer position='top-center' />
-      {reviewMode ? (
-        <div className='flex justify-center'>
-          <div className='w-full max-w-md p-8 bg-blue-200 shadow-md rounded'>
-            <h2 className='text-2xl font-bold mb-6'>Review Your Submission</h2>
-            {Object.entries(user).map(([key, val]) => (
-              <div key={key} className='mb-4'>
-                <strong className='capitalize'>{key.replace(/_/g, ' ')}:</strong> {val}
-              </div>
-            ))}
-            <div className='flex justify-between mt-6'>
+    <div className="min-h-screen bg-slate-50 px-4 py-6">
+      <ToastContainer position="top-right" theme="colored" />
+
+      <div className="mx-auto max-w-7xl">
+        {reviewMode ? (
+          <div className="mx-auto max-w-4xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+              Monthly Report
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Review Submission
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Confirm the details before sending the report.
+            </p>
+
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              {Object.entries(form).map(([key, val]) => (
+                <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">
+                    {key.replace(/_/g, " ")}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">
+                    {val || "-"}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
               <button
-                className='bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded'
+                type="button"
+                className="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 onClick={() => setReviewMode(false)}
               >
                 Edit
               </button>
+
+              <button
+                type="button"
+                className="rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50 hover:bg-green-700"
+                onClick={onConfirmSubmit}
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending ? "Submitting..." : "Submit Report"}
+              </button>
+
+              <Link
+                to="/dashboard/monthlyReportTable"
+                className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 hover:bg-red-100"
+              >
+                Cancel
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <button
-                  className='bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded mr-2'
-                  onClick={onConfirmSubmit}
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+                  Monthly Report
+                </p>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                  Create Monthly Report
+                </h2>
+                <p className="mt-2 text-sm text-slate-500">
+                  Capture field visitation, expenditure, outreach impact, and observations.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
-                  Submit
-                </button>
-                <Link to="/" className='bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded'>
-                  Cancel
+                  <FaArrowLeft className="text-xs" />
+                  <span>Back to Dashboard</span>
+                </Link>
+
+                <Link
+                  to="/dashboard/monthlyReportTable"
+                  className="rounded-2xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  View Reports
                 </Link>
               </div>
             </div>
-          </div>
-        </div>
-      ) : (
-        <div className='flex justify-center'>
-          <div className='w-full max-w-6xl p-8 bg-blue-200 shadow-md rounded'>
-            <h2 className='text-2xl font-bold mb-6 text-center'>Create Monthly Report</h2>
-            <form onSubmit={onSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium">Region</label>
-                  <select
-                     title='region'
-                    name="region"
-                    value={user.region}
-                    onChange={onInputChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  >
-                    <option value="">Select Region</option>
-                    {regions.map((r) => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium">Province</label>
-                  <select
-                    title='province'
-                    name="province"
-                    value={user.province}
-                    onChange={onInputChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  >
-                    <option value="">Select Province</option>
-                    {provinces.map((p) => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                </div>
-                {[
-                  ["state", "Enter Your State"],
-                  // ["region", "Enter Your Region"],
-                  // ["province", "Enter Your Province"],
-                  ["coordinator_name", "Enter Coordinator Name"],
-                  ["prison_visited", "Enter Name Of Prison"],
-                  ["hospital_visited", "Enter Name Of Hospital"],
-                  ["police_station_visited", "Enter Name Of Police Station"],
-                  ["others", "Other Places Visited"],
-                  ["items", "Items e.g Rice, Garri"],
-                  ["amount_budgeted", "Enter Budgeted Amount"],
-                  ["amount_spent", "Enter Actual Amount Spent"],
-                  ["team_members", "Total Number Who Went"],
-                  ["souls_won", "Souls Won e.g 5"],
-                  ["challenges", "Challenges Faced If Any"],
-                  ["suggestion", "Any Suggestions?"],
-                  ["remarks", "Any Remarks"],
-                  ["report_created_by", "Enter Your Name"]
-                ].map(([name, placeholder]) => (
-                  <div key={name}>
-                    <label htmlFor={name} className='block text-sm font-medium capitalize'>
-                      {name.replace(/_/g, " ")}
+            <form onSubmit={onSubmit} className="space-y-8">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+                <h3 className="text-lg font-semibold text-slate-900">Location & Leadership</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Record the location and responsible coordinator for this report.
+                </p>
+
+                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="region" className="mb-1.5 block text-sm font-medium text-slate-700">
+                      Region
+                    </label>
+                    <select
+                      id="region"
+                      name="region"
+                      value={form.region}
+                      onChange={onInputChange}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+                      required
+                      title="Region"
+                    >
+                      <option value="">Select Region</option>
+                      {regions.map((region) => (
+                        <option key={region} value={region}>
+                          {region}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="province" className="mb-1.5 block text-sm font-medium text-slate-700">
+                      Province
+                    </label>
+                    <select
+                      id="province"
+                      name="province"
+                      value={form.province}
+                      onChange={onInputChange}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+                      required
+                      title="Province"
+                    >
+                      <option value="">Select Province</option>
+                      {provinces.map((province) => (
+                        <option key={province} value={province}>
+                          {province}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {renderField("state", "Enter your state")}
+                  {renderField("coordinator_name", "Enter coordinator name")}
+                  {renderField("report_created_by", "Enter your name")}
+                  <div>
+                    <label htmlFor="activity_date" className="mb-1.5 block text-sm font-medium text-slate-700">
+                      Activity Date
                     </label>
                     <input
-                      type="text"
-                      name={name}
-                      placeholder={placeholder}
-                      value={user[name as keyof User] as string}
+                      id="activity_date"
+                      type="date"
+                      name="activity_date"
+                      value={form.activity_date}
                       onChange={onInputChange}
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      required={!["others", "challenges", "suggestion", "remarks"].includes(name)}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+                      required
                     />
-                    {charLimits[name] && (
-                        <div
-                          className={`text-sm mt-1 ${
-                            ((user[name as keyof User] as string)?.length || 0) >
-                            charLimits[name] - 20
-                              ? "text-red-500"
-                              : "text-gray-600"
-                          }`}
-                        >
-                          {charLimits[name] -
-                            ((user[name as keyof User] as string)?.length || 0)}{" "}
-                          / {charLimits[name]} characters left
-                        </div>
-                      )}
                   </div>
-                ))}
-                <div>
-                  <label htmlFor="activity_date" className='block text-sm font-medium'>Date Of Visitation</label>
-                  <input
-                    id='activity_date'
-                    type="date"
-                    name="activity_date"
-                    value={user.activity_date}
-                    onChange={onInputChange}
-                    className='mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                    required
-                  />
                 </div>
               </div>
 
-              <div className='flex justify-between mt-8'>
+              <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+                <h3 className="text-lg font-semibold text-slate-900">Visitation & Outreach</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Capture places visited, team strength, outreach items, and souls won.
+                </p>
+
+                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {renderField("prison_visited", "Enter prison visited")}
+                  {renderField("hospital_visited", "Enter hospital visited")}
+                  {renderField("police_station_visited", "Enter police station visited")}
+                  {renderField("team_members", "Total number who went")}
+                  {renderField("souls_won", "Souls won e.g. 5")}
+                  {renderField("others", "Other places visited")}
+                  {renderField("items", "Items e.g. Rice, Garri", "md:col-span-2")}
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+                <h3 className="text-lg font-semibold text-slate-900">Financials & Observations</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Record financial performance and notable field observations.
+                </p>
+
+                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {renderField("amount_budgeted", "Enter budgeted amount")}
+                  {renderField("amount_spent", "Enter actual amount spent")}
+                  {renderField("challenges", "Challenges faced if any")}
+                  {renderField("suggestion", "Any suggestions?")}
+                  {renderField("remarks", "Any remarks", "md:col-span-2")}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
                 <button
-                  type='submit'
-                  className='bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600'
+                  type="submit"
+                  className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
                 >
                   Review
                 </button>
+
                 <Link
-                  to="/"
-                  className='bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600'
+                  to="/dashboard/monthlyReportTable"
+                  className="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Cancel
                 </Link>
               </div>
             </form>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
 
-export default MonthlyReport;
+export default MonthlyReportCreate;

@@ -1,192 +1,100 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import React from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useUserProfile } from "../hooks/useUserProfile";
 
-interface User {
-  id: number;
-  title: string;
-  first_name: string;
-  others: string;
-  last_name: string;
-  email: string;
-  state: string;
-  city: string;
-  region: string;
-  province: string;
-  lga: string;
-  zone: string;
-  area: string;
-  parish: string;
-  position: string;
-  join_ministry: string;
-  occupation: string;
-  industry: string;
-  dob: string;
-  gender: string;
-  phone_whatsapp: string;
-  social_handle: string;
-  address_home: string;
-  nearest_busstop: string;
-  address_office: string;
-  next_of_kin: string;
-  next_of_kin_phone: string;
-  image_path: File | string;
-  ordination_category: string;
-}
+const DetailRow: React.FC<{ label: string; value?: string | null }> = ({
+  label,
+  value,
+}) => (
+  <div className="rounded-2xl border bg-slate-50 p-4">
+    <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
+    <p className="mt-2 text-sm font-semibold text-slate-900 whitespace-pre-wrap">
+      {value || "-"}
+    </p>
+  </div>
+);
 
-const UserProfileTableView: React.FC = () => {
+const UserProfileView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
+  const { data: profile, isLoading } = useUserProfile(id);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/userProfile/getUser/${id}`);
-        setUser(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [id]);
-
-  if (loading) {
-    return <div className="p-4 text-center">Loading...</div>;
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading profile...</div>;
   }
 
-  if (!user) {
-    return <div className="p-4 text-center">User not found</div>;
+  if (!profile) {
+    return <div className="p-8 text-center">Profile not found.</div>;
   }
 
   return (
-    <div className="p-4 bg-blue-200 shadow-md rounded-lg">
-      <h1 className="text-3xl font-bold mb-6 text-center">User Profile</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Title:</p>
-            <p>{user.title}</p>
+    <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <div className="mx-auto max-w-6xl rounded-3xl bg-white border p-6 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+              User Profile
+            </p>
+            <h1 className="text-2xl font-bold mt-2">
+              {profile.title} {profile.first_name} {profile.last_name}
+            </h1>
           </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">First Name:</p>
-            <p>{user.first_name}</p>
+
+          <div className="flex gap-3">
+            <Link
+              to={`/dashboard/userProfileEdit/${profile.id}`}
+              className="rounded-xl bg-green-600 text-white px-4 py-2 text-sm font-semibold"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => navigate("/dashboard/userprofile")}
+              className="rounded-xl border px-4 py-2 text-sm font-semibold"
+            >
+              Back
+            </button>
           </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Middle Name:</p>
-            <p>{user.others}</p>
+        </div>
+
+        {profile.image_path && typeof profile.image_path === "string" && (
+          <div className="mb-6">
+            <img
+              src={profile.image_path}
+              alt={`${profile.first_name} ${profile.last_name}`}
+              className="h-40 w-40 rounded-2xl object-cover border"
+            />
           </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Last Name:</p>
-            <p>{user.last_name}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Email:</p>
-            <p>{user.email}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">State:</p>
-            <p>{user.state}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Region:</p>
-            <p>{user.region}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Local Govt:</p>
-            <p>{user.lga}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Province:</p>
-            <p>{user.province}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Zone:</p>
-            <p>{user.zone}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Area:</p>
-            <p>{user.area}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Parish:</p>
-            <p>{user.parish}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Position In Parish:</p>
-            <p>{user.position}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Join Ministry When:</p>
-            <p>{user.join_ministry}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Your Occupation:</p>
-            <p>{user.occupation}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Your Industry:</p>
-            <p>{user.industry}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Date Of Birth:</p>
-            <p> {user.dob} </p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Phone Number:</p>
-            <p>{user.phone_whatsapp}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Preferred Social Media Handle:</p>
-            <p>{user.social_handle}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Home Address:</p>
-            <p>{user.address_home}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Nearest Bus Stop:</p>
-            <p>{user.nearest_busstop}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Office Address:</p>
-            <p>{user.address_office}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Next Of Kin name:</p>
-            <p>{user.next_of_kin}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Next Of Kin Phone Number:</p>
-            <p>{user.next_of_kin_phone}</p>
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Image:</p>
-            {user.image_path ? (
-              <img
-                src={
-                  typeof user.image_path === 'string' && user.image_path.startsWith('http')
-                    ? user.image_path
-                    : `http://127.0.0.1:8000/storage/${user.image_path}`
-                }
-                alt="User"
-                className="h-24 w-24 rounded-full border object-cover"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.onerror = null;
-                  target.src = '/placeholder.png';
-                }}
-              />
-            ) : (
-              <span className="italic text-gray-500">No Image</span>
-            )}
-          </div>
-          <div className="flex items-center">
-            <p className="w-36 text-gray-600">Ordination Category:</p>
-            <p>{user.ordination_category}</p>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <DetailRow label="Title" value={profile.title} />
+          <DetailRow label="First Name" value={profile.first_name} />
+          <DetailRow label="Middle Name" value={profile.others} />
+          <DetailRow label="Surname" value={profile.last_name} />
+          <DetailRow label="Email" value={profile.email} />
+          <DetailRow label="Phone" value={profile.phone_whatsapp} />
+          <DetailRow label="Gender" value={profile.gender} />
+          <DetailRow label="Date of Birth" value={profile.dob} />
+          <DetailRow label="Occupation" value={profile.occupation} />
+          <DetailRow label="Industry" value={profile.industry} />
+          <DetailRow label="Region" value={profile.region} />
+          <DetailRow label="Province" value={profile.province} />
+          <DetailRow label="State" value={profile.state} />
+          <DetailRow label="LGA" value={profile.lga} />
+          <DetailRow label="City" value={profile.city} />
+          <DetailRow label="Zone" value={profile.zone} />
+          <DetailRow label="Area" value={profile.area} />
+          <DetailRow label="Parish" value={profile.parish} />
+          <DetailRow label="Position" value={profile.position} />
+          <DetailRow label="Ordination Category" value={profile.ordination_category} />
+          <DetailRow label="Join Ministry" value={profile.join_ministry} />
+          <DetailRow label="Social Handle" value={profile.social_handle} />
+          <DetailRow label="Next of Kin" value={profile.next_of_kin} />
+          <DetailRow label="Next of Kin Phone" value={profile.next_of_kin_phone} />
+          <DetailRow label="Home Address" value={profile.address_home} />
+          <DetailRow label="Nearest Bus Stop" value={profile.nearest_busstop} />
+          <div className="md:col-span-2 xl:col-span-3">
+            <DetailRow label="Office Address" value={profile.address_office} />
           </div>
         </div>
       </div>
@@ -194,4 +102,4 @@ const UserProfileTableView: React.FC = () => {
   );
 };
 
-export default UserProfileTableView;
+export default UserProfileView;

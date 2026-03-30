@@ -6,13 +6,15 @@ import Conference from '../conference/Conference';
 import Leadership from '../leadership/Leadership';
 import Header from '../header/Header';
 import Footer from '../footer/Footer'
+import SpecialProjectsCarousel from '../carousel/Carousel';
+
 
 const HomePage: React.FC = () => {
   return (
     <div>
       <Header />
       <Banner />
-      <Project />
+      <SpecialProjectsCarousel />
       <Visitation />
       <Conference />
       <Leadership />

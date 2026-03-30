@@ -1,48 +1,49 @@
-import React, { useEffect } from 'react';
-import { deleteReport } from '../services/AuthServiceDuePayment';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-import axios from 'axios';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
+import { useDeleteMonthlyDueReport } from "../hooks/useMonthlyDue";
 
-const DeleteReport: React.FC = () => {
+const MonthlyDueDelete: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const deleteMutation = useDeleteMonthlyDueReport();
 
   useEffect(() => {
     if (!id) {
-      toast.error('Missing report ID');
-      navigate('/dashboard/monthlyDueTable');
+      toast.error("Missing report ID");
+      navigate("/dashboard/monthlyDueTable");
       return;
     }
 
     const handleDelete = async () => {
       try {
-        const response = await deleteReport(id);
-        toast.success(response.data.message || 'Report deleted successfully');
-        setTimeout(() => navigate('/dashboard/monthlyDueTable'), 2000);
-      } catch (error) {
+        await deleteMutation.mutateAsync(id);
+        setTimeout(() => navigate("/dashboard/monthlyDueTable"), 1500);
+      } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
-          const msg =
+          toast.error(
             error.response?.data?.message ||
-            error.response?.data?.error ||
-            'Failed to delete report';
-          toast.error(msg);
+              error.response?.data?.error ||
+              "Failed to delete report"
+          );
+        } else if (error instanceof Error) {
+          toast.error(error.message);
         } else {
-          toast.error('Unexpected error');
+          toast.error("Unexpected error");
         }
       }
     };
 
     handleDelete();
-  }, [id, navigate]);
+  }, [id, navigate, deleteMutation]);
 
   return (
-    <div>
-      <h2 className="text-xl text-center mt-10 font-bold">Deleting Report...</h2>
+    <div className="p-10 text-center">
+      <h2 className="text-xl font-bold">Deleting Report...</h2>
       <ToastContainer position="top-center" />
     </div>
   );
 };
 
-export default DeleteReport;
+export default MonthlyDueDelete;
