@@ -1,184 +1,168 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { getNote, updateNote, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
-import { useNavigate, useParams } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { ToastContainer, toast } from "react-toastify";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { useSecretaryNote, useUpdateSecretaryNote } from "../hooks/useSecretaryNote";
+import type { SecretaryNoteDTO } from "../types/secretaryNote";
 
-// Define the validation schema using yup
-const schema = yup.object().shape({
-  meetingVenue: yup.string().required('Core Duties is required'),
-  meetingAnchor: yup.string().required('Monthly is required'),
-  attendanceMen: yup.string().required('Task Done is required'),
-  attendanceWomen: yup.string().required('Women Info is required'),
-  attendanceChildren: yup.string().required('Children Info is required'),
-  attendanceTotal: yup.string().required('Total Attendance required'),
-  detailOfMeeting: yup.string().required('Please Give Some About Meeting'),
-  actionablePoints: yup.string().required('Amount Budgeted is required'),
-  actionablePointsAssigned: yup.string().required('Amount Spent is required'),
-  meetingDate: yup.string().required('Created Date is required'),
-  remarks: yup.string().optional(),
+const schema = yup.object({
+  meetingVenue: yup.string().required("Meeting venue is required"),
+  meetingAnchor: yup.string().required("Meeting anchor is required"),
+  attendanceMen: yup.string().required("Attendance for men is required"),
+  attendanceWomen: yup.string().required("Attendance for women is required"),
+  attendanceChildren: yup.string().required("Attendance for children is required"),
+  attendanceTotal: yup.string().required("Total attendance is required"),
+  detailOfMeeting: yup.string().required("Meeting detail is required"),
+  actionablePoints: yup.string().required("Actionable points are required"),
+  actionablePointsAssigned: yup.string().required("Assigned person is required"),
+  meetingDate: yup.string().required("Meeting date is required"),
 });
 
 const SecretaryNoteEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const reportId = id as string;
+  const noteId = id as string;
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Hook for navigation
+  const { data, isLoading } = useSecretaryNote(noteId);
+  const updateMutation = useUpdateSecretaryNote();
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<SecretaryNoteDTO>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<SecretaryNoteDTO>({
     resolver: yupResolver(schema),
   });
 
   useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        const response = await getNote(reportId);
-        const data = response.data;
-        console.log('Fetched data:', data); // Add logging here
-        setValue('meetingVenue', data.meetingVenue);
-        setValue('meetingAnchor', data.meetingAnchor);
-        setValue('attendanceMen', data.attendanceMen);
-        setValue('attendanceWomen', data.attendanceWomen);
-        setValue('attendanceChildren', data.attendanceChildren);
-        setValue('attendanceTotal', data.attendanceTotal);
-        setValue('detailOfMeeting', data.detailOfMeeting);
-        setValue('actionablePoints', data.actionablePoints);
-        setValue('actionablePointsAssigned', data.actionablePointsAssigned);
-        setValue('meetingDate', data.meetingDate);
-        setValue('createdDate', data.createdDate || '');
-      } catch (error) {
-        console.error('Error fetching report:', error); // Add logging here
-        toast.error('Failed to fetch report');
-      }
-    };
+    if (!data) return;
 
-    fetchReport();
-  }, [reportId, setValue]);
+    setValue("meetingVenue", data.meetingVenue);
+    setValue("meetingAnchor", data.meetingAnchor);
+    setValue("attendanceMen", data.attendanceMen);
+    setValue("attendanceWomen", data.attendanceWomen);
+    setValue("attendanceChildren", data.attendanceChildren);
+    setValue("attendanceTotal", data.attendanceTotal);
+    setValue("detailOfMeeting", data.detailOfMeeting);
+    setValue("actionablePoints", data.actionablePoints);
+    setValue("actionablePointsAssigned", data.actionablePointsAssigned);
+    setValue("meetingDate", data.meetingDate);
+  
+  }, [data, setValue]);
 
-  const onSubmit = async (data: SecretaryNoteDTO) => {
+  const onSubmit = async (formData: SecretaryNoteDTO) => {
     try {
-      const response = await updateNote(reportId, data);
-      console.log('Response from backend:', response); // Log the response for debugging
-      toast.success(response.data.message);
+      await updateMutation.mutateAsync({
+        id: noteId,
+        payload: formData,
+      });
 
-      // Introduce a short delay before navigating
-      setTimeout(() => {
-        navigate('/dashboard/secretaryNoteTable');
-      }, 3000); // Display message for 3 seconds
-
-    } catch (error) {
-      console.error('Error updating report:', error); // Log the error for debugging
-      toast.error('Failed to update report');
+      setTimeout(() => navigate("/dashboard/secretaryNoteTable"), 1500);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.error ||
+            "Failed to update note"
+        );
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to update note");
+      }
     }
   };
 
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading note...</div>;
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-      <h1 className='text-center text-gray-800'>Edit Note</h1>
-      <div className="mb-4">
-        <label className="block text-gray-700">Meeting Venue</label>
-        <input 
-          type="text" 
-          {...register('meetingVenue')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.meetingVenue && <p className="text-red-500 text-sm">{errors.meetingVenue.message}</p>}
+    <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <ToastContainer position="top-center" />
+
+      <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-6 shadow-sm">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+            Secretary Notes
+          </p>
+          <h1 className="text-2xl font-bold mt-2">Edit Note</h1>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
+          {[
+            ["meetingVenue", "Meeting Venue"],
+            ["meetingAnchor", "Meeting Anchor"],
+            ["attendanceMen", "Attendance Men"],
+            ["attendanceWomen", "Attendance Women"],
+            ["attendanceChildren", "Attendance Children"],
+            ["attendanceTotal", "Attendance Total"],
+            ["actionablePoints", "Actionable Points"],
+            ["actionablePointsAssigned", "Assigned To"],
+          ].map(([name, label]) => (
+            <div key={name}>
+              <label className="block text-sm font-medium mb-1">{label}</label>
+              <input
+                type="text"
+                {...register(name as keyof SecretaryNoteDTO)}
+                className="w-full rounded-xl border px-3 py-2.5"
+              />
+              {errors[name as keyof SecretaryNoteDTO] && (
+                <p className="text-red-500 text-xs mt-1">
+                  {String(errors[name as keyof SecretaryNoteDTO]?.message ?? "")}
+                </p>
+              )}
+            </div>
+          ))}
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Detail Of Meeting</label>
+            <textarea
+              {...register("detailOfMeeting")}
+              className="w-full rounded-xl border px-3 py-2.5 min-h-[110px]"
+            />
+            {errors.detailOfMeeting && (
+              <p className="text-red-500 text-xs mt-1">{errors.detailOfMeeting.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Meeting Date</label>
+            <input
+              type="date"
+              {...register("meetingDate")}
+              className="w-full rounded-xl border px-3 py-2.5"
+            />
+            {errors.meetingDate && (
+              <p className="text-red-500 text-xs mt-1">{errors.meetingDate.message}</p>
+            )}
+          </div>
+
+         
+
+          <div className="md:col-span-2 flex flex-wrap gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="rounded-xl bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
+            >
+              {updateMutation.isPending ? "Updating..." : "Update Note"}
+            </button>
+
+            <Link
+              to="/dashboard/secretaryNoteTable"
+              className="rounded-xl border px-5 py-2.5 text-sm font-semibold"
+            >
+              Cancel
+            </Link>
+          </div>
+        </form>
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Meeting Anchor</label>
-        <input 
-          type="text" 
-          {...register('meetingAnchor')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.meetingAnchor && <p className="text-red-500 text-sm">{errors.meetingAnchor.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Attendance Men</label>
-        <input 
-          type="text" 
-          {...register('attendanceMen')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceMen && <p className="text-red-500 text-sm">{errors.attendanceMen.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Attendance Women</label>
-        <input 
-          type="text" 
-          {...register('attendanceWomen')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceWomen && <p className="text-red-500 text-sm">{errors.attendanceWomen.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Attendance Children</label>
-        <input 
-          type="text" 
-          {...register('attendanceChildren')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceChildren && <p className="text-red-500 text-sm">{errors.attendanceChildren.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Attendance Total</label>
-        <input 
-          type="text" 
-          {...register('attendanceTotal')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceTotal && <p className="text-red-500 text-sm">{errors.attendanceTotal.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Detail Of Meeting</label>
-        <input 
-          type="text" 
-          {...register('detailOfMeeting')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.detailOfMeeting && <p className="text-red-500 text-sm">{errors.detailOfMeeting.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Actionable Points</label>
-        <input 
-          type="text" 
-          {...register('actionablePoints')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.actionablePoints && <p className="text-red-500 text-sm">{errors.actionablePoints.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Actionable Points Assigned</label>
-        <input 
-          type="text" 
-          {...register('actionablePointsAssigned')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.actionablePointsAssigned && <p className="text-red-500 text-sm">{errors.actionablePointsAssigned.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Meeting Date</label>
-        <input 
-          type="date" 
-          {...register('meetingDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.meetingDate && <p className="text-red-500 text-sm">{errors.meetingDate.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Created Date</label>
-        <input 
-          type="date" 
-          {...register('createdDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
-      </div>
-      <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Update Report</button>
-      <ToastContainer position='top-center' />
-    </form>
+    </div>
   );
 };
 

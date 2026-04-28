@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@tailwind variants;
 
 .custom-container {
     @apply container mx-auto my-8;
@@ -71,4 +70,25 @@ body {
   body {
     font-size: 1.75rem; /* xl:text-3xl */
   }
+}
+
+.nphm-toast {
+  min-height: 52px;
+  width: 300px;
+  max-width: calc(100vw - 20px);
+  border-radius: 16px;
+  padding: 8px 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  font-size: 0.88rem;
+}
+
+.nphm-toast-body {
+  padding: 0;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.nphm-toast-progress {
+  height: 3px;
 }

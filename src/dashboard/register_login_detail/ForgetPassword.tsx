@@ -1,42 +1,45 @@
-import React, { useState } from 'react';
-import { forgotPasswordAPICall } from '../services/AuthServiceLoginRegister';
-import { toast, ToastContainer } from 'react-toastify';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import { useDashboardForgotPassword } from "../hooks/useDashboardAuth";
+
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (typeof responseData?.message === "string") return responseData.message;
+
+    if (responseData?.message && typeof responseData.message === "object") {
+      const firstMessage = Object.values(responseData.message).flat().find(Boolean);
+      if (typeof firstMessage === "string") return firstMessage;
+    }
+
+    if (typeof responseData?.error === "string") return responseData.error;
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Failed to send reset link";
+};
 
 const ForgotPassword: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const forgotPasswordMutation = useDashboardForgotPassword();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
-      const response = await forgotPasswordAPICall({ email });
-
-      toast.success(response.data.message || 'Reset link sent successfully');
-      setEmail('');
+      await forgotPasswordMutation.mutateAsync({ email });
+      setEmail("");
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        toast.error(
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Failed to send reset link'
-        );
-      } else {
-        toast.error('Unexpected error occurred');
-      }
-    } finally {
-      setLoading(false);
+      toast.error(getApiErrorMessage(error));
     }
   };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-blue-200 shadow-md rounded-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Forgot Password
-      </h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Forgot Password</h2>
 
       <p className="text-sm text-gray-600 text-center mb-6">
         Enter your email address and we’ll send you a reset link.
@@ -59,15 +62,18 @@ const ForgotPassword: React.FC = () => {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={forgotPasswordMutation.isPending}
           className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
         >
-          {loading ? 'Sending...' : 'Send Reset Link'}
+          {forgotPasswordMutation.isPending ? "Sending..." : "Send Reset Link"}
         </button>
       </form>
 
       <div className="text-center mt-4">
-        <Link to="/dashboard/loginUser" className="text-sm text-blue-600 hover:underline">
+        <Link
+          to="/dashboard/loginUser"
+          className="text-sm text-blue-600 hover:underline"
+        >
           Back to Login
         </Link>
       </div>

@@ -1,276 +1,265 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
-import axios, { AxiosResponse } from "axios";
-import * as XLSX from "xlsx";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import { FaEye, FaEdit, FaTrash, FaArrowLeft, FaSearch } from "react-icons/fa";
+import { ToastContainer } from "react-toastify";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
+import { useDeleteUserProfile, useUserProfiles } from "../hooks/useUserProfile";
+import type { UserProfileDTO } from "../types/userProfile";
+import ProfileAvatar from "../../components/avatar/ProfileAvatar";
+import { getStorageImageUrl } from "../../utils/getStorageImageUrl";
 
-interface User {
-  id: number;
-  title: string;
-  first_name: string;
-  others: string;
-  last_name: string;
-  email: string;
-  state: string;
-  region: string;
-  province: string;
-  image_path?: string;
-}
+const truncateText = (value: string | null | undefined, max = 22): string => {
+  if (!value) return "-";
+  return value.length > max ? `${value.slice(0, max)}...` : value;
+};
 
 const UserProfileTable: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [usersPerPage, setUsersPerPage] = useState<number>(10);
-  const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
+  const { data = [], isLoading } = useUserProfiles();
+  const deleteMutation = useDeleteUserProfile();
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchUsers = async () => {
-    try {
-      const response: AxiosResponse<User[]> = await axios.get("https://app.rccgphm.org/api/userProfile/getAllUsers");
-      setUsers(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setLoading(false);
-    }
-  };
+  const profiles = useMemo(() => {
+    return data.filter((item: UserProfileDTO) => {
+      const haystack = [
+        item.first_name,
+        item.last_name,
+        item.email,
+        item.region,
+        item.province,
+        item.parish,
+        item.phone_whatsapp,
+        item.position,
+      ]
+        .join(" ")
+        .toLowerCase();
 
-  const handleDelete = (id: number) => {
+      return haystack.includes(searchTerm.toLowerCase());
+    });
+  }, [data, searchTerm]);
+
+  console.log(
+    profiles.slice(0, 5).map((profile) => ({
+      id: profile.id,
+      image_path: profile.image_path,
+      resolved: getStorageImageUrl(profile.image_path),
+    }))
+  );
+
+  const handleDelete = (id: number, fullName: string) => {
     confirmAlert({
-      title: 'Confirm to delete',
-      message: 'Are you sure you want to delete this user?',
+      title: "Confirm deletion",
+      message: `Are you sure you want to delete ${fullName}?`,
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: async () => {
-            try {
-              await axios.delete(`https://app.rccgphm.org/api/userProfile/deleteUser/${id}`);
-              setUsers(users.filter(user => user.id !== id));
-              toast.success("User deleted successfully");
-            } catch (error) {
-              toast.error("Error deleting user");
-              console.error("Error deleting user:", error);
-            }
-          }
+            await deleteMutation.mutateAsync(id);
+          },
         },
         {
-          label: 'No',
-          onClick: () => toast.info("Deletion cancelled")
-        }
-      ]
+          label: "No",
+          onClick: () => undefined,
+        },
+      ],
     });
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleUsersPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setUsersPerPage(Number(event.target.value));
-    setCurrentPage(1); // Reset to first page when changing users per page
-  };
-
-  const handleCheckboxChange = (id: number) => {
-    const updatedSelectedUsers = new Set(selectedUsers);
-    if (updatedSelectedUsers.has(id)) {
-      updatedSelectedUsers.delete(id);
-    } else {
-      updatedSelectedUsers.add(id);
-    }
-    setSelectedUsers(updatedSelectedUsers);
-  };
-
-  const exportToExcel = (exportAll: boolean = false) => {
-    const dataToExport = exportAll ? users : users.filter(user => selectedUsers.has(user.id));
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Users");
-    XLSX.writeFile(wb, "UsersData.xlsx");
-  };
-
-  // Pagination
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = users.filter(user =>
-    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.last_name.toLowerCase().includes(searchTerm.toLowerCase())
-  ).slice(indexOfFirstUser, indexOfLastUser);
-
-  const totalPages = Math.ceil(users.length / usersPerPage);
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-  if (loading) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 px-4 py-6">
+        <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
+          <p className="text-center text-slate-500">Loading profiles...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div className="flex justify-between items-center mb-4 p-2 rounded-xl">
-        <input
-          type="text"
-          placeholder="Search by name"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="p-2 border rounded w-1/3"
-        />
-        <div className="flex space-x-2">
-          <Link to="/dashboard/register" className="p-2 bg-gray-400 text-white rounded text-xl">Create User</Link>
-          <button
-            onClick={() => exportToExcel(true)}
-            className="p-2 bg-blue-500 text-white rounded"
-          >
-            Export All
-          </button>
-          <button
-            onClick={() => exportToExcel()}
-            className="p-2 bg-green-500 text-white rounded"
-            disabled={selectedUsers.size === 0}
-          >
-            Export Selected
-          </button>
+    <div className="min-h-screen bg-slate-50 px-4 py-6">
+      <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+              User Profiles
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Registered Members
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              View and manage ministry member records from one place.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back to Dashboard</span>
+            </Link>
+
+            <Link
+              to="/dashboard/register"
+              className="inline-flex items-center rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Add New Profile
+            </Link>
+          </div>
+        </div>
+
+        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative w-full lg:max-w-md">
+            <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by name, email, parish, phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
+            />
+          </div>
+
+          <div className="text-sm text-slate-500">
+            {profiles.length} record{profiles.length === 1 ? "" : "s"}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-3xl border border-slate-200">
+          <table className="w-full min-w-[1120px] border-collapse">
+            <thead className="bg-slate-50">
+              <tr className="text-left text-sm font-semibold text-slate-500">
+                <th className="px-6 py-4">Member</th>
+                <th className="px-6 py-4">Phone</th>
+                <th className="px-6 py-4">Region</th>
+                <th className="px-6 py-4">Province</th>
+                <th className="px-6 py-4">Parish</th>
+                <th className="px-6 py-4">Position</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {profiles.map((profile, index) => {
+                const fullName =
+                  `${profile.title ?? ""} ${profile.first_name ?? ""} ${profile.last_name ?? ""}`
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                return (
+                  <tr
+                    key={profile.id}
+                    className={`border-t border-slate-100 transition hover:bg-slate-50 ${
+                      index === 0 ? "border-t-0" : ""
+                    }`}
+                  >
+                    <td className="px-6 py-5">
+                      <div className="flex min-w-[280px] items-center gap-4">
+                        <ProfileAvatar
+                          imagePath={profile.image_path}
+                          alt={fullName}
+                          size={46}
+                        />
+
+                        <div className="min-w-0">
+                          <p
+                            className="truncate text-base font-semibold text-slate-900"
+                            title={fullName}
+                          >
+                            {truncateText(fullName, 28)}
+                          </p>
+                          <p
+                            className="truncate text-sm text-slate-500"
+                            title={profile.email ?? ""}
+                          >
+                            {truncateText(profile.email, 30)}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5 text-sm text-slate-700">
+                      <span title={profile.phone_whatsapp ?? ""}>
+                        {truncateText(profile.phone_whatsapp, 15)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-5 text-sm text-slate-700">
+                      <span title={profile.region ?? ""}>
+                        {truncateText(profile.region, 14)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-5 text-sm text-slate-700">
+                      <span title={profile.province ?? ""}>
+                        {truncateText(profile.province, 16)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-5 text-sm text-slate-700">
+                      <span title={profile.parish ?? ""}>
+                        {truncateText(profile.parish, 18)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-5 text-sm text-slate-700">
+                      <span title={profile.position ?? ""}>
+                        {truncateText(profile.position, 16)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex justify-end">
+                        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                          <Link
+                            to={`/dashboard/userProfileView/${profile.id}`}
+                            className="rounded-lg p-2 text-blue-600 transition hover:bg-blue-50"
+                            aria-label={`View ${fullName}`}
+                            title={`View ${fullName}`}
+                          >
+                            <FaEye />
+                          </Link>
+
+                          <Link
+                            to={`/dashboard/userProfileEdit/${profile.id}`}
+                            className="rounded-lg p-2 text-emerald-600 transition hover:bg-emerald-50"
+                            aria-label={`Edit ${fullName}`}
+                            title={`Edit ${fullName}`}
+                          >
+                            <FaEdit />
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(profile.id as number, fullName)}
+                            className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+                            aria-label={`Delete ${fullName}`}
+                            title={`Delete ${fullName}`}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {profiles.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-16 text-center text-slate-500">
+                    No profiles found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-      <table className="min-w-full table-auto bg-cyan-50 rounded-md shadow-md">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="px-2 py-1">
-              <input
-                itemID=""
-                type="checkbox"
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    const newSelectedUsers = new Set(users.map(user => user.id));
-                    setSelectedUsers(newSelectedUsers);
-                  } else {
-                    setSelectedUsers(new Set());
-                  }
-                }}
-                checked={selectedUsers.size === users.length}
-              />
-            </th>
-            <th className="px-2 py-1">SN</th>
-            <th className="px-2 py-1">Title</th>
-            <th className="px-2 py-1">First Name</th>
-            <th className="px-2 py-1">Last Name</th>
-            <th className="px-2 py-1">Email</th>
-            <th className="px-2 py-1">State</th>
-            <th className="px-2 py-1">Region</th>
-            <th className="px-2 py-1">Province</th>
-            <th className="px-2 py-1">Image</th>
-            <th className="px-2 py-1">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentUsers.map((user, index) => (
-            <tr key={user.id} className="border-b-2 border-gray-400 hover:bg-white">
-              <td className="px-2 py-1">
 
-                <input
-                  itemID=""
-                  type="checkbox"
-                  checked={selectedUsers.has(user.id)}
-                  onChange={() => handleCheckboxChange(user.id)}
-                />
-              </td>
-              <td className="px-2 py-1">{indexOfFirstUser + index + 1}</td>
-              <td className="px-2 py-1">{user.title}</td>
-              <td className="px-2 py-1">{user.first_name}</td>
-              <td className="px-2 py-1">{user.last_name}</td>
-              <td className="px-2 py-1">{user.email}</td>
-              <td className="px-2 py-1">{user.state}</td>
-              <td className="px-2 py-1">{user.region}</td>
-              <td className="px-2 py-1">{user.province}</td>
-              <td className="px-2 py-1">
-                {user.image_path ? (
-                  <img
-                    src={
-                      user.image_path.startsWith('http')
-                        ? user.image_path
-                        : `https://app.rccgphm.org/storage/${user.image_path}`
-                    }
-                    alt="User"
-                    className="h-14 w-14 rounded-full border object-cover"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      target.onerror = null;
-                      target.src = '/placeholder.png'; // fallback image path in public folder
-                    }}
-                  />
-                ) : (
-                  <span className="text-gray-400 italic">No Image</span>
-                )}
-
-              </td>
-              <td className="px-2 py-1 flex space-x-2 justify-center">
-                <Link to={`/dashboard/userprofileView/${user.id}`} className="text-blue-500 hover:text-blue-700">
-                  <FaEye />
-                </Link>
-                <Link to={`/dashboard/userprofileEdit/${user.id}`} className="text-yellow-500 hover:text-yellow-700">
-                  <FaEdit />
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={() => handleDelete(user.id)}
-                  title="Delete"
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <FaTrash />
-                </button>
-
-              </td>
-            </tr>
-
-          ))}
-        </tbody>
-      </table>
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={() => paginate(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-4 mb-1 ml-1 py-2 bg-yellow-500 rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <label htmlFor="usersPerPage" className="block text-sm font-semibold mb-1">
-          <span>Page {currentPage} of {totalPages}</span>
-        </label>
-        <select
-          id="usersPerPage"
-          value={usersPerPage}
-          onChange={handleUsersPerPageChange}
-          className="ml-2 p-2 border rounded mb-1"
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-        </select>
-        <button
-          onClick={() => paginate(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 mb-1 mr-2 py-2 bg-green-500 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
-      <ToastContainer position="top-right" autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop={true}
-        closeOnClick={true}
-        pauseOnHover={true}
-        draggable={true}
-        theme="colored"
-      />
+      <ToastContainer position="top-right" theme="colored" />
     </div>
   );
 };

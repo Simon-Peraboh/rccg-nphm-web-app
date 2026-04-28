@@ -1,170 +1,312 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { createNote, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
-import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { ToastContainer, toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { FaArrowLeft } from "react-icons/fa";
+import { useCreateSecretaryNote } from "../hooks/useSecretaryNote";
+import type { SecretaryNoteDTO } from "../types/secretaryNote";
 
-// Define the validation schema using yup
-const schema = yup.object().shape({
-  meetingVenue: yup.string().required('Core Duties is required'),
-  meetingAnchor: yup.string().required('Monthly is required'),
-  attendanceMen: yup.string().required('Task Done is required'),
-  attendanceWomen: yup.string().required('Women Info is required'),
-  attendanceChildren: yup.string().required('Children Info is required'),
-  attendanceTotal: yup.string().required('Total Attendance required'),
-  detailOfMeeting: yup.string().required('Please Give Some About Meeting'),
-  actionablePoints: yup.string().required('Amount Budgeted is required'),
-  actionablePointsAssigned: yup.string().required('Amount Spent is required'),
-  meetingDate: yup.string().required('Created Date is required'),
-  createdDate: yup.string().optional(),
+const schema = yup.object({
+  meetingVenue: yup.string().required("Meeting venue is required"),
+  meetingAnchor: yup.string().required("Meeting anchor is required"),
+  attendanceMen: yup.string().required("Attendance for men is required"),
+  attendanceWomen: yup.string().required("Attendance for women is required"),
+  attendanceChildren: yup.string().required("Attendance for children is required"),
+  attendanceTotal: yup.string().required("Total attendance is required"),
+  detailOfMeeting: yup.string().required("Meeting detail is required"),
+  actionablePoints: yup.string().required("Actionable points are required"),
+  actionablePointsAssigned: yup.string().required("Assigned person is required"),
+  meetingDate: yup.string().required("Meeting date is required"),
 });
 
 const SecretaryNoteCreate: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<SecretaryNoteDTO>({
-    resolver: yupResolver(schema),
-  });
+  const navigate = useNavigate();
+  const createMutation = useCreateSecretaryNote();
 
-  const navigator = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SecretaryNoteDTO>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+  meetingVenue: "",
+  meetingAnchor: "",
+  attendanceMen: "",
+  attendanceWomen: "",
+  attendanceChildren: "",
+  attendanceTotal: "",
+  detailOfMeeting: "",
+  actionablePoints: "",
+  actionablePointsAssigned: "",
+  meetingDate: "",
+},
+  });
 
   const onSubmit = async (data: SecretaryNoteDTO) => {
     try {
-      const response = await createNote(data);
-      toast.success(response.data.message);
-      // Introduce a short delay before navigating
-      setTimeout(() => {
-        navigator('/dashboard/secretaryNoteTable');
-      }, 3000); // Display message for 3 seconds
-    } catch (error) {
-      toast.error('Failed to create report');
+      await createMutation.mutateAsync(data);
+      setTimeout(() => navigate("/dashboard/secretaryNoteTable"), 1500);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.error ||
+            "Failed to create note"
+        );
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to create note");
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-      <h1 className='text top-1 text-center text-gray-800'>Create Monthly Report</h1>
-      <div className="mb-4">
-        <label className="block text-gray-700">Meeting Venue:</label>
-        <input 
-          type="text" 
-          placeholder='Enter Meeting Venue'
-          {...register('meetingVenue')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.meetingVenue && <p className="text-red-500 text-sm">{errors.meetingVenue.message}</p>}
-      </div>
+    <div className="min-h-screen bg-slate-50 px-4 py-6">
+      <ToastContainer position="top-right" theme="colored" />
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Meeting Anchor</label>
-        <input 
-          type="text"
-          placeholder='Enter Who Anchor The Meeting'
-          {...register('meetingAnchor')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.meetingAnchor && <p className="text-red-500 text-sm">{errors.meetingAnchor.message}</p>}
-      </div>
+      <div className="mx-auto max-w-5xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+              Secretary Notes
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Create Minutes of Meeting
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Capture meeting details, attendance, action items, and accountability in one clean record.
+            </p>
+          </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Attendance Men</label>
-        <input 
-          type="text" 
-          placeholder='Enter The Number Of Men'
-          {...register('attendanceMen')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceMen && <p className="text-red-500 text-sm">{errors.attendanceMen.message}</p>}
-      </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back to Dashboard</span>
+            </Link>
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Attendance Women</label>
-        <input 
-          type="text"
-          placeholder='Enter The Number Of Women'
-          {...register('attendanceWomen')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceWomen && <p className="text-red-500 text-sm">{errors.attendanceWomen.message}</p>}
-      </div>
+            <Link
+              to="/dashboard/secretaryNoteTable"
+              className="rounded-2xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              View Notes
+            </Link>
+          </div>
+        </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Attendance Children</label>
-        <input 
-          type="text" 
-          placeholder='Enter The Number Of Children '
-          {...register('attendanceChildren')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceChildren && <p className="text-red-500 text-sm">{errors.attendanceChildren.message}</p>}
-      </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Meeting Information</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Record where the meeting happened, who anchored it, and when it took place.
+            </p>
 
-      <div className="mb-4">
-        <label className="block text-gray-700"> Total Attendance</label>
-        <input 
-          type="text"
-          placeholder='Enter Total Attendance'
-          {...register('attendanceTotal')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.attendanceTotal && <p className="text-red-500 text-sm">{errors.attendanceTotal.message}</p>}
-      </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div>
+                <label htmlFor="meetingVenue" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Meeting Venue
+                </label>
+                <input
+                  id="meetingVenue"
+                  type="text"
+                  placeholder="Enter meeting venue"
+                  {...register("meetingVenue")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.meetingVenue && (
+                  <p className="mt-1 text-xs text-red-500">{errors.meetingVenue.message}</p>
+                )}
+              </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Detail Of Meeting</label>
-        <textarea
-        placeholder='Enter Meeting Detail'
-          {...register('detailOfMeeting', { required: 'Meeting Details required' })} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        ></textarea>
-        {errors.detailOfMeeting && <p className="text-red-500 text-sm">{errors.detailOfMeeting.message}</p>}
-      </div>
+              <div>
+                <label htmlFor="meetingAnchor" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Meeting Anchor
+                </label>
+                <input
+                  id="meetingAnchor"
+                  type="text"
+                  placeholder="Enter who anchored the meeting"
+                  {...register("meetingAnchor")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.meetingAnchor && (
+                  <p className="mt-1 text-xs text-red-500">{errors.meetingAnchor.message}</p>
+                )}
+              </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Actionable Points</label>
-        <input 
-          type="text"
-          placeholder='Enter Actionable Points '
-          {...register('actionablePoints')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.actionablePoints && <p className="text-red-500 text-sm">{errors.actionablePoints.message}</p>}
-      </div>
+              <div>
+                <label htmlFor="meetingDate" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Date of Meeting
+                </label>
+                <input
+                  id="meetingDate"
+                  type="date"
+                  {...register("meetingDate")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.meetingDate && (
+                  <p className="mt-1 text-xs text-red-500">{errors.meetingDate.message}</p>
+                )}
+              </div>
+            </div>
+          </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Actionable Points Assigned To Who</label>
-        <input 
-          type="text"
-          placeholder='Actionable Points Assigned To Who'
-          {...register('actionablePointsAssigned')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.actionablePointsAssigned && <p className="text-red-500 text-sm">{errors.actionablePointsAssigned.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Date Of Meeting</label>
-        <input 
-          type="date" 
-          {...register('meetingDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.meetingDate && <p className="text-red-500 text-sm">{errors.meetingDate.message}</p>}
-      </div>
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Attendance Breakdown</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Record who was present and the total attendance count.
+            </p>
 
-      {/* <div className="mb-4">
-        <label className="block text-gray-700">Remark</label>
-        <input 
-          type="text"
-          placeholder='Enter Remarks If Any'
-          {...register('createdDate')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.createdDate && <p className="text-red-500 text-sm">{errors.createdDate.message}</p>}
-      </div> */}
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div>
+                <label htmlFor="attendanceMen" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Attendance Men
+                </label>
+                <input
+                  id="attendanceMen"
+                  type="text"
+                  placeholder="Enter number of men"
+                  {...register("attendanceMen")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.attendanceMen && (
+                  <p className="mt-1 text-xs text-red-500">{errors.attendanceMen.message}</p>
+                )}
+              </div>
 
-      <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
-      <ToastContainer position='top-center' />
-    </form>
+              <div>
+                <label htmlFor="attendanceWomen" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Attendance Women
+                </label>
+                <input
+                  id="attendanceWomen"
+                  type="text"
+                  placeholder="Enter number of women"
+                  {...register("attendanceWomen")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.attendanceWomen && (
+                  <p className="mt-1 text-xs text-red-500">{errors.attendanceWomen.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="attendanceChildren" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Attendance Children
+                </label>
+                <input
+                  id="attendanceChildren"
+                  type="text"
+                  placeholder="Enter number of children"
+                  {...register("attendanceChildren")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.attendanceChildren && (
+                  <p className="mt-1 text-xs text-red-500">{errors.attendanceChildren.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="attendanceTotal" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Total Attendance
+                </label>
+                <input
+                  id="attendanceTotal"
+                  type="text"
+                  placeholder="Enter total attendance"
+                  {...register("attendanceTotal")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.attendanceTotal && (
+                  <p className="mt-1 text-xs text-red-500">{errors.attendanceTotal.message}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Meeting Outcome</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Document what happened, what needs action, and who owns the next step.
+            </p>
+
+            <div className="mt-5 grid gap-4">
+              <div>
+                <label htmlFor="detailOfMeeting" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Detail of Meeting
+                </label>
+                <textarea
+                  id="detailOfMeeting"
+                  {...register("detailOfMeeting")}
+                  placeholder="Enter meeting details"
+                  className="min-h-[130px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"
+                />
+                {errors.detailOfMeeting && (
+                  <p className="mt-1 text-xs text-red-500">{errors.detailOfMeeting.message}</p>
+                )}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label htmlFor="actionablePoints" className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Actionable Points
+                  </label>
+                  <textarea
+                    id="actionablePoints"
+                    {...register("actionablePoints")}
+                    placeholder="Enter actionable points"
+                    className="min-h-[110px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"
+                  />
+                  {errors.actionablePoints && (
+                    <p className="mt-1 text-xs text-red-500">{errors.actionablePoints.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="actionablePointsAssigned" className="mb-1.5 block text-sm font-medium text-slate-700">
+                    Assigned To
+                  </label>
+                  <input
+                    id="actionablePointsAssigned"
+                    type="text"
+                    placeholder="Who owns the action points"
+                    {...register("actionablePointsAssigned")}
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                  />
+                  {errors.actionablePointsAssigned && (
+                    <p className="mt-1 text-xs text-red-500">{errors.actionablePointsAssigned.message}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              disabled={createMutation.isPending}
+              className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+            >
+              {createMutation.isPending ? "Creating..." : "Create Note"}
+            </button>
+
+            <Link
+              to="/dashboard/secretaryNoteTable"
+              className="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Cancel
+            </Link>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

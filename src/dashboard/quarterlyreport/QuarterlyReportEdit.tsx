@@ -1,107 +1,153 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { getReport, updateReport, QuarterlyReportDTO } from '../services/AuthServiceQuarterlyReport';
-import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { ToastContainer, toast } from "react-toastify";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { useQuarterlyReport, useUpdateQuarterlyReport } from "../hooks/useQuarterlyReport";
+import type { QuarterlyReportDTO } from "../types/quarterlyReport";
 
-// Define the validation schema using yup
-const schema = yup.object().shape({
-  whichYear: yup.string().required('Year is required'),
-  period: yup.string().required('Period is required'),
-  totalSouls: yup.string().required('Souls is required'),
-  totalAmount: yup.string().required('Amount is required'),
- 
+const schema = yup.object({
+  whichYear: yup.string().required("Year is required"),
+  period: yup.string().required("Period is required"),
+  totalSouls: yup.string().required("Souls is required"),
+  totalAmount: yup.string().required("Amount is required"),
 });
 
 const QuarterlyReportEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const reportId = id as string;
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Hook for navigation
+  const { data, isLoading } = useQuarterlyReport(reportId);
+  const updateMutation = useUpdateQuarterlyReport();
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<QuarterlyReportDTO>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<QuarterlyReportDTO>({
     resolver: yupResolver(schema),
   });
 
   useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        const response = await getReport(reportId);
-        const data = response.data;
-        console.log('Fetched data:', data); // Add logging here
-        setValue('whichYear', data.whichYear);
-        setValue('period', data.period);
-        setValue('totalSouls', data.totalSouls);
-        setValue('totalAmount', data.totalAmount);
-        } catch (error) {
-        console.error('Error fetching report:', error); // Add logging here
-        toast.error('Failed to fetch report');
-      }
-    };
+    if (!data) return;
 
-    fetchReport();
-  }, [reportId, setValue]);
+    setValue("whichYear", data.whichYear);
+    setValue("period", data.period);
+    setValue("totalSouls", data.totalSouls);
+    setValue("totalAmount", data.totalAmount);
+  }, [data, setValue]);
 
-  const onSubmit = async (data: QuarterlyReportDTO) => {
+  const onSubmit = async (formData: QuarterlyReportDTO) => {
     try {
-      const response = await updateReport(reportId, data);
-      console.log('Response from backend:', response); // Log the response for debugging
-      toast.success(response.data.message);
+      await updateMutation.mutateAsync({
+        id: reportId,
+        payload: formData,
+      });
 
-      // Introduce a short delay before navigating
-      setTimeout(() => {
-        navigate('/dashboard/quarterlyReportTable');
-      }, 3000); // Display message for 3 seconds
-
-    } catch (error) {
-      console.error('Error updating report:', error); // Log the error for debugging
-      toast.error('Failed to update report');
+      setTimeout(() => navigate("/dashboard/quarterlyReportTable"), 1500);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.error ||
+            "Failed to update report"
+        );
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to update report");
+      }
     }
   };
 
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading report...</div>;
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-      <h1 className='text-center text-gray-800'>Edit Report</h1>
-      <div className="mb-4">
-        <label className="block text-gray-700">Year</label>
-        <input 
-          type="text" 
-          {...register('whichYear')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.whichYear && <p className="text-red-500 text-sm">{errors.whichYear.message}</p>}
+    <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <ToastContainer position="top-center" />
+
+      <div className="mx-auto max-w-2xl rounded-3xl bg-white border p-6 shadow-sm">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+            Quarterly Report
+          </p>
+          <h1 className="text-2xl font-bold mt-2">Edit Quarterly Report</h1>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Year</label>
+            <input
+              type="text"
+              {...register("whichYear")}
+              className="w-full rounded-xl border px-3 py-2.5"
+            />
+            {errors.whichYear && (
+              <p className="text-red-500 text-xs mt-1">{errors.whichYear.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Period</label>
+            <input
+              type="text"
+              {...register("period")}
+              className="w-full rounded-xl border px-3 py-2.5"
+            />
+            {errors.period && (
+              <p className="text-red-500 text-xs mt-1">{errors.period.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Total Souls</label>
+            <input
+              type="text"
+              {...register("totalSouls")}
+              className="w-full rounded-xl border px-3 py-2.5"
+            />
+            {errors.totalSouls && (
+              <p className="text-red-500 text-xs mt-1">{errors.totalSouls.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Total Amount</label>
+            <input
+              type="text"
+              {...register("totalAmount")}
+              className="w-full rounded-xl border px-3 py-2.5"
+            />
+            {errors.totalAmount && (
+              <p className="text-red-500 text-xs mt-1">{errors.totalAmount.message}</p>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="rounded-xl bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
+            >
+              {updateMutation.isPending ? "Updating..." : "Update Report"}
+            </button>
+
+            <Link
+              to="/dashboard/quarterlyReportTable"
+              className="rounded-xl border px-5 py-2.5 text-sm font-semibold"
+            >
+              Cancel
+            </Link>
+          </div>
+        </form>
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Period</label>
-        <input 
-          type="text" 
-          {...register('period')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.period && <p className="text-red-500 text-sm">{errors.period.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Total Souls</label>
-        <input 
-          type="text" 
-          {...register('totalSouls')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.totalSouls && <p className="text-red-500 text-sm">{errors.totalSouls.message}</p>}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Total Amount</label>
-        <input 
-          type="text" 
-          {...register('totalAmount')} 
-          className="w-full p-2 border border-gray-300 rounded mt-1"
-        />
-        {errors.totalAmount && <p className="text-red-500 text-sm">{errors.totalAmount.message}</p>}
-      </div>
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Update Report</button>
-    </form>
+    </div>
   );
 };
 

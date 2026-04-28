@@ -1,1 +1,0 @@
-export { default as pics1 } from "../../assets/Images/confab_flyer2.jpg";

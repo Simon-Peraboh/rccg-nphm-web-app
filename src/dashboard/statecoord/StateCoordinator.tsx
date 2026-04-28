@@ -1,325 +1,320 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router';
+import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft, FaFacebookF, FaUser } from "react-icons/fa";
+import { useCreateStateCoordinator, useStateCoordinatorStates } from "../hooks/useStateCoordinator";
+import type { StateCoordinatorDTO } from "../types/stateCoordinator";
 
-// The states are expected as an array of strings.
-type StateOptions = string[];
+const LOCAL_STORAGE_KEY = "nphm_state_coordinator_form";
 
-interface FormDataType {
-  full_name: string;
-  state: string;
-  province: string;
-  facebook: string;
-  twitter: string;
-  instagram: string;
-  image_path: File | null;
-}
-
-const defaultFormData: FormDataType = {
-  full_name: '',
-  state: '',
-  province: '',
-  facebook: '',
-  twitter: '',
-  instagram: '',
+const defaultFormData: StateCoordinatorDTO = {
+  full_name: "",
+  state: "",
+  province: "",
+  facebook: "",
+  twitter: "",
+  instagram: "",
   image_path: null,
 };
 
-
-const LOCAL_STORAGE_KEY = "nphm_form";
-
-const loadFromLocalStorage = (): FormDataType | null => {
+const loadFromLocalStorage = (): StateCoordinatorDTO | null => {
   const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+
   try {
-    const parsedData = saved ? JSON.parse(saved) : null;
-    if (parsedData) {
-      parsedData.image_path = null; // Reset image_path as null since JSON doesn't support Files
+    const parsed = saved ? JSON.parse(saved) : null;
+    if (parsed) {
+      parsed.image_path = null;
     }
-    return parsedData;
-  } catch (error) {
+    return parsed;
+  } catch {
     return null;
   }
 };
 
-const saveToLocalStorage = (data: FormDataType) => {
-  const sanitizedData = { ...data, image_path: data.image_path instanceof File ? data.image_path : null };
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitizedData));
+const saveToLocalStorage = (data: StateCoordinatorDTO) => {
+  const sanitized = {
+    ...data,
+    image_path: data.image_path instanceof File ? null : data.image_path,
+  };
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitized));
 };
-
 
 const StateCoordinatorForm: React.FC = () => {
   const navigate = useNavigate();
-  const [stateOptions, setStateOptions] = useState<StateOptions>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [, setErrors] = useState<Record<string, string>>({});
+  const { data: stateOptions = [] } = useStateCoordinatorStates();
+  const createMutation = useCreateStateCoordinator();
+
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [form, setForm] = useState<FormDataType>(() => loadFromLocalStorage() ?? defaultFormData);
-  
-  
-  // Fetch the available states from backend
-  useEffect(() => {
-    axios
-      .get('https://app.rccgphm.org/api/stateCoordinators/states')
-      .then((response) => {
-        console.log("Fetched states response:", response.data);
-        if (Array.isArray(response.data)) {
-          setStateOptions(response.data);
-          setForm((prev) => ({
-            ...prev,
-            state: response.data[0] || '',
-          }));
-        } else {
-          toast.error('Unexpected data format for states.', {
-            position: "top-right",
-            autoClose: 5000,
-          });
-          console.error("Unexpected states format:", response.data);
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching states:', error);
-        toast.error('Failed to load state options.', {
-          position: "top-right",
-          autoClose: 5000,
-        });
-      });
-  }, []);
+  const [form, setForm] = useState<StateCoordinatorDTO>(
+    () => loadFromLocalStorage() ?? defaultFormData
+  );
 
   useEffect(() => {
-      const saved = loadFromLocalStorage();
-      if (saved) setForm(saved);
-    }, []);
-    
-    useEffect(() => {
-      saveToLocalStorage(form);
-    }, [form]);
-  
+    saveToLocalStorage(form);
+  }, [form]);
 
-  // Update formData for inputs
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    if (!form.state && stateOptions.length > 0) {
+      setForm((prev) => ({
+        ...prev,
+        state: stateOptions[0],
+      }));
+    }
+  }, [stateOptions, form.state]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    setForm((prev) => ({ ...prev, image_path: file }));
+
     if (file) {
-      setForm(prev => ({ ...prev, image_path: file }));
-      setPreviewUrl(URL.createObjectURL(file)); // 🔍 creates temporary preview URL
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setErrors({});
+    try {
+      await createMutation.mutateAsync(form);
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
 
-  const submissionData = new FormData();
-
-  Object.entries(form).forEach(([key, val]) => {
-    if (val !== null && val !== undefined) {
-      submissionData.append(key, val as string | Blob);
-    }
-  });
-
-  try {
-    const response = await axios.post(
-      'https://app.rccgphm.org/api/stateCoordinators/create',
-      submissionData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
-
-    if (response.status >= 200 && response.status < 300) {
-      const successMsg = response.data.message || '✅ Form submitted successfully!';
-      toast.success(successMsg, {
-        position: 'top-right',
-        autoClose: 5000,
-      });
-      console.log("✅ Submission response:", response);
-      // Optionally reset form here
-    } else {
-      console.warn("⚠️ Unexpected status:", response.status);
-    }
       setTimeout(() => {
-        navigate("/");
-      }, 3000);
-
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response?.data) {
-      const errorData = error.response.data;
-      const validationErrors = errorData.errors ?? (
-        typeof errorData.message === 'object' ? errorData.message : null
-      );
-
-      if (validationErrors) {
-        Object.entries(validationErrors).forEach(([field, messages]) => {
-          const msgStr = Array.isArray(messages) ? messages.join(' ') : String(messages);
-          toast.error(`${field}: ${msgStr}`, {
-            position: 'top-right',
-            autoClose: 5000,
-          });
-        });
-        setErrors(validationErrors);
-      } else {
-        const fallbackMsg = errorData.message || '❌ Error submitting form.';
-        toast.error(fallbackMsg, {
-          position: 'top-right',
-          autoClose: 5000,
-        });
-        console.error("Server Error:", fallbackMsg);
-      }
-    } else {
-      toast.error('❌ Network or unexpected error.', {
-        position: 'top-right',
-        autoClose: 5000,
-      });
-      console.error("Unknown error:", error);
+        navigate("/Connect");
+      }, 1500);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Submission failed");
     }
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
-    <div className="max-w-xl mx-auto p-10 bg-blue-200 shadow-md rounded-lg">
-  <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-    State Coordinator Form
-  </h2>
-  <form onSubmit={handleSubmit} encType="multipart/form-data">
-    {/* Full Name */}
-    <div className="mb-5">
-      <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
-        Full Name
-      </label>
-      <input
-        type="text"
-        id="full_name"
-        name="full_name"
-        value={form.full_name}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-      />
-    </div>
+    <div className="min-h-screen bg-slate-50 px-4 py-6">
+      <ToastContainer position="top-right" theme="colored" autoClose={4000} />
 
-    {/* State */}
-    <div className="mb-5">
-      <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-        State
-      </label>
-      <select
-        id="state"
-        name="state"
-        value={form.state}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-      >
-        {stateOptions.map((state, index) => (
-          <option key={index} value={state}>
-            {state}
-          </option>
-        ))}
-      </select>
-    </div>
+      <div className="mx-auto max-w-5xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+              State Coordinators
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Coordinator Profile Form
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Capture coordinator identity, location, social presence, and profile image in one clean workflow.
+            </p>
+          </div>
 
-    {/* Province */}
-    <div className="mb-5">
-      <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">
-        Province
-      </label>
-      <input
-        type="text"
-        id="province"
-        name="province"
-        value={form.province}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-      />
-    </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back to Dashboard</span>
+            </Link>
 
-    {/* Facebook URL */}
-    <div className="mb-5">
-      <label htmlFor="facebook" className="block text-sm font-medium text-gray-700 mb-1">
-        Facebook URL
-      </label>
-      <input
-        type="url"
-        id="facebook"
-        name="facebook"
-        value={form.facebook}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-      />
-    </div>
-
-    {/* Twitter URL */}
-    <div className="mb-5">
-      <label htmlFor="twitter" className="block text-sm font-medium text-gray-700 mb-1">
-        Twitter URL
-      </label>
-      <input
-        type="url"
-        id="twitter"
-        name="twitter"
-        value={form.twitter}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-      />
-    </div>
-
-    {/* Instagram URL */}
-    <div className="mb-5">
-      <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 mb-1">
-        Instagram URL
-      </label>
-      <input
-        type="url"
-        id="instagram"
-        name="instagram"
-        value={form.instagram}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-      />
-    </div>
-
-    {/* Profile Image with Preview */}
-    <div className="mb-5">
-      <label htmlFor="image_path" className="block text-sm font-semibold text-gray-700 mb-1">
-        Upload Image
-      </label>
-      <input
-        id="image_path"
-        type="file"
-        name="image_path"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      />
-      {previewUrl && (
-        <div className="mt-4">
-          <p className="text-sm text-gray-600">Image Preview:</p>
-          <img src={previewUrl} alt="Preview" className="h-40 rounded shadow-lg mt-2" />
+            <Link
+              to="/dashboard/stateCoordinators"
+              className="rounded-2xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              View Coordinators
+            </Link>
+          </div>
         </div>
-      )}
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <div className="flex items-center gap-2">
+              <FaUser className="text-slate-500" />
+              <h2 className="text-lg font-semibold text-slate-900">Identity & Coverage</h2>
+            </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Record the coordinator’s full name, state, and province assignment.
+            </p>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Full Name
+                </label>
+                <input
+                  id="full_name"
+                  type="text"
+                  name="full_name"
+                  value={form.full_name}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                  placeholder="Enter full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="state" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  State
+                </label>
+                <select
+                  id="state"
+                  name="state"
+                  value={form.state}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                  title="Select state"
+                >
+                  <option value="">Select state</option>
+                  {stateOptions.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="province" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Province
+                </label>
+                <input
+                  id="province"
+                  type="text"
+                  name="province"
+                  value={form.province}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                  placeholder="Enter province"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <div className="flex items-center gap-2">
+              <FaFacebookF className="text-slate-500" />
+              <h2 className="text-lg font-semibold text-slate-900">Social Media Presence</h2>
+            </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Add public profile links so coordinators are easier to identify and connect with.
+            </p>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div>
+                <label htmlFor="facebook" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Facebook URL
+                </label>
+                <input
+                  id="facebook"
+                  type="url"
+                  name="facebook"
+                  value={form.facebook}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                  placeholder="https://facebook.com/..."
+                />
+              </div>
+
+              <div>
+                <label htmlFor="twitter" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Twitter / X URL
+                </label>
+                <input
+                  id="twitter"
+                  type="url"
+                  name="twitter"
+                  value={form.twitter}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                  placeholder="https://x.com/..."
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="instagram" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Instagram URL
+                </label>
+                <input
+                  id="instagram"
+                  type="url"
+                  name="instagram"
+                  value={form.instagram}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                  placeholder="https://instagram.com/..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Profile Image</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Upload a clear image to make the coordinator easier to recognize in the system.
+            </p>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+              <div>
+                <label htmlFor="image_path" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Upload Image
+                </label>
+                <input
+                  id="image_path"
+                  type="file"
+                  name="image_path"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
+                  title="Upload coordinator image"
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  Use a clear portrait photo. Blurry images weaken the record.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center">
+                <div className="w-full rounded-3xl border border-dashed border-slate-300 bg-white p-4">
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Coordinator preview"
+                      className="h-56 w-full rounded-2xl object-cover shadow-sm"
+                    />
+                  ) : (
+                    <div className="flex h-56 w-full items-center justify-center rounded-2xl bg-slate-100 text-sm text-slate-400">
+                      Image preview will appear here
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              disabled={createMutation.isPending}
+              className="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-500 disabled:opacity-50"
+            >
+              {createMutation.isPending ? "Submitting..." : "Submit Coordinator"}
+            </button>
+
+            <Link
+              to="/dashboard/stateCoordinators"
+              className="rounded-2xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancel
+            </Link>
+          </div>
+        </form>
+      </div>
     </div>
-
-    {/* Submit Button */}
-    <button
-      type="submit"
-      className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
-      disabled={loading}
-    >
-      {loading ? 'Submitting...' : 'Submit'}
-    </button>
-  </form>
-
-  <ToastContainer position="top-right" autoClose={4000} />
-</div>
-
   );
 };
 
