@@ -93,7 +93,7 @@ const UserProfileTable: React.FC = () => {
             </Link>
 
             <Link
-              to="/dashboard/registerUser"
+              to="/dashboard/register"
               className="inline-flex items-center rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
               Add New Profile

@@ -4,6 +4,24 @@ import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { useDashboardResetPassword } from "../hooks/useDashboardAuth";
 
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (typeof responseData?.message === "string") return responseData.message;
+
+    if (responseData?.message && typeof responseData.message === "object") {
+      const firstMessage = Object.values(responseData.message).flat().find(Boolean);
+      if (typeof firstMessage === "string") return firstMessage;
+    }
+
+    if (typeof responseData?.error === "string") return responseData.error;
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Password reset failed";
+};
+
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -40,24 +58,7 @@ const ResetPassword: React.FC = () => {
         navigate("/dashboard/loginUser");
       }, 2000);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          "Password reset failed";
-
-        toast.error(message);
-
-        if (error.response?.status === 400) {
-          setTimeout(() => {
-            navigate("/dashboard/forgetPassword");
-          }, 2000);
-        }
-      } else if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Unexpected error occurred");
-      }
+      toast.error(getApiErrorMessage(error));
     }
   };
 

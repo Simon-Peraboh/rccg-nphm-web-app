@@ -4,6 +4,24 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { useDashboardForgotPassword } from "../hooks/useDashboardAuth";
 
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (typeof responseData?.message === "string") return responseData.message;
+
+    if (responseData?.message && typeof responseData.message === "object") {
+      const firstMessage = Object.values(responseData.message).flat().find(Boolean);
+      if (typeof firstMessage === "string") return firstMessage;
+    }
+
+    if (typeof responseData?.error === "string") return responseData.error;
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Failed to send reset link";
+};
+
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const forgotPasswordMutation = useDashboardForgotPassword();
@@ -15,17 +33,7 @@ const ForgotPassword: React.FC = () => {
       await forgotPasswordMutation.mutateAsync({ email });
       setEmail("");
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        toast.error(
-          error.response?.data?.error ||
-            error.response?.data?.message ||
-            "Failed to send reset link"
-        );
-      } else if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Unexpected error occurred");
-      }
+      toast.error(getApiErrorMessage(error));
     }
   };
 

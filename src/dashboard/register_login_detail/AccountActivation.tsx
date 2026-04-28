@@ -1,8 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useDashboardAccountActivation } from "../hooks/useDashboardAuth";
+
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (typeof responseData?.message === "string") return responseData.message;
+
+    if (responseData?.message && typeof responseData.message === "object") {
+      const firstMessage = Object.values(responseData.message).flat().find(Boolean);
+      if (typeof firstMessage === "string") return firstMessage;
+    }
+
+    if (typeof responseData?.error === "string") return responseData.error;
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Account activation failed";
+};
 
 const AccountActivation: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -22,12 +40,22 @@ const AccountActivation: React.FC = () => {
       setToken(t);
     } else {
       toast.error("Invalid activation link");
-      navigate("/");
+      navigate("/dashboard/loginUser");
     }
   }, [location.search, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!token) {
+      toast.error("Activation token is missing");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
     try {
       await activationMutation.mutateAsync({
@@ -39,19 +67,7 @@ const AccountActivation: React.FC = () => {
 
       setTimeout(() => navigate("/dashboard/loginUser"), 2000);
     } catch (error: unknown) {
-      console.error("Activation error:", error);
-
-      if (axios.isAxiosError(error)) {
-        toast.error(
-          error.response?.data?.message ||
-            error.response?.data?.error ||
-            "Account activation failed"
-        );
-      } else if (error instanceof Error) {
-        toast.error(error.message || "Account activation failed");
-      } else {
-        toast.error("Account activation failed");
-      }
+      toast.error(getApiErrorMessage(error));
     }
   };
 

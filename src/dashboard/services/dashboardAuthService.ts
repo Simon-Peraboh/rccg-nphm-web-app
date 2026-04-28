@@ -1,16 +1,16 @@
 import { dashboardApi } from "../lib/axios";
 import type {
+  ActivateAccountDTO,
+  ApiMessageResponse,
+  ForgotPasswordDTO,
+  RegisterDTO,
+  ResetPasswordDTO,
+} from "../types/auth";
+import type {
   DashboardAuthResponse,
   DashboardLoginDTO,
   DashboardLoggedInUser,
 } from "../types/dashboard";
-import type {
-  ActivateAccountDTO,
-  ForgotPasswordDTO,
-  RegisterDTO,
-  ResetPasswordDTO,
-  ApiMessageResponse,
-} from "../types/auth";
 
 const TOKEN_KEY = "dashboard_token";
 const USER_KEY = "dashboard_user";
@@ -37,7 +37,7 @@ export const activateDashboardAccountAPICall = async (
   payload: ActivateAccountDTO
 ): Promise<ApiMessageResponse> => {
   const response = await dashboardApi.post<ApiMessageResponse>(
-    "/accountActivation",
+    "/userManager/accountActivation",
     payload
   );
   return response.data;
@@ -47,7 +47,7 @@ export const forgotDashboardPasswordAPICall = async (
   payload: ForgotPasswordDTO
 ): Promise<ApiMessageResponse> => {
   const response = await dashboardApi.post<ApiMessageResponse>(
-    "/forgotPassword",
+    "/userManager/forgotPassword",
     payload
   );
   return response.data;
@@ -57,7 +57,7 @@ export const resetDashboardPasswordAPICall = async (
   payload: ResetPasswordDTO
 ): Promise<ApiMessageResponse> => {
   const response = await dashboardApi.post<ApiMessageResponse>(
-    "/resetPassword",
+    "/userManager/resetPassword",
     payload
   );
   return response.data;

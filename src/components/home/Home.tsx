@@ -1,6 +1,5 @@
 
 import Banner from '../banner/Banner';
-import Project from '../projects/Projects';
 import Visitation from '../visitation/Visitation';
 import Conference from '../conference/Conference';
 import Leadership from '../leadership/Leadership';

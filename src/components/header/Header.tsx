@@ -4,10 +4,15 @@ import { Menu, X, ChevronDown, HeartHandshake } from "lucide-react";
 import Logo from "../../assets/Images/logo1_ed3.jpg";
 import SectionContainer from "../layout/SectionContainer";
 
+type NavChild = {
+  label: string;
+  to: string;
+};
+
 type NavItem = {
   label: string;
   to?: string;
-  children?: { label: string; to: string }[];
+  children?: NavChild[];
 };
 
 const primaryNav: NavItem[] = [
@@ -38,16 +43,15 @@ const Header: React.FC = () => {
   const [desktopMorePinned, setDesktopMorePinned] = useState(false);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
-  const desktopMoreRef = useRef<HTMLDivElement | null>(null);
+  const desktopDropdownRef = useRef<HTMLDivElement | null>(null);
   const desktopMoreButtonRef = useRef<HTMLButtonElement | null>(null);
   const desktopMenuItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
-  const closeAll = () => {
+  const mobileNavItems = useMemo(() => primaryNav, []);
+
+  const closeMobileMenu = () => {
     setMobileOpen(false);
     setMobileMoreOpen(false);
-    setDesktopMoreOpen(false);
-    setDesktopMorePinned(false);
-    window.scrollTo(0, 0);
   };
 
   const closeDesktopMore = () => {
@@ -55,9 +59,29 @@ const Header: React.FC = () => {
     setDesktopMorePinned(false);
   };
 
+  const closeAll = () => {
+    closeMobileMenu();
+    closeDesktopMore();
+    window.scrollTo(0, 0);
+  };
+
   const openDesktopMore = (pinned = false) => {
     setDesktopMoreOpen(true);
     setDesktopMorePinned(pinned);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileOpen((prev) => {
+      const next = !prev;
+      if (!next) {
+        setMobileMoreOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const toggleMobileMore = () => {
+    setMobileMoreOpen((prev) => !prev);
   };
 
   const focusDesktopMenuItem = (index: number) => {
@@ -71,37 +95,45 @@ const Header: React.FC = () => {
     items[safeIndex]?.focus();
   };
 
-  const mobileNavItems = useMemo(() => primaryNav, []);
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (!desktopMoreRef.current) return;
-      if (!desktopMoreRef.current.contains(event.target as Node)) {
-        closeDesktopMore();
-      }
-    };
-
-    const handleDocumentFocusIn = (event: FocusEvent) => {
-      if (!desktopMoreOpen || !desktopMoreRef.current) return;
-      if (!desktopMoreRef.current.contains(event.target as Node)) {
-        closeDesktopMore();
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("focusin", handleDocumentFocusIn);
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("focusin", handleDocumentFocusIn);
-    };
-  }, [desktopMoreOpen]);
-
   useEffect(() => {
     if (!desktopMoreOpen) {
       desktopMenuItemRefs.current = [];
     }
   }, [desktopMoreOpen]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!desktopDropdownRef.current) return;
+
+      if (!desktopDropdownRef.current.contains(event.target as Node)) {
+        closeDesktopMore();
+      }
+    };
+
+    const handleFocusOutside = (event: FocusEvent) => {
+      if (!desktopMoreOpen || !desktopDropdownRef.current) return;
+
+      if (!desktopDropdownRef.current.contains(event.target as Node)) {
+        closeDesktopMore();
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("focusin", handleFocusOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("focusin", handleFocusOutside);
+    };
+  }, [desktopMoreOpen]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   const handleDesktopMoreButtonClick = () => {
     if (desktopMoreOpen && desktopMorePinned) {
@@ -120,6 +152,7 @@ const Header: React.FC = () => {
       case "Enter":
       case " ": {
         event.preventDefault();
+
         if (desktopMoreOpen && desktopMorePinned) {
           closeDesktopMore();
         } else {
@@ -198,7 +231,7 @@ const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <SectionContainer className="flex items-center justify-between py-3">
+      <SectionContainer className="relative flex items-center justify-between py-3">
         <Link to="/" onClick={closeAll} className="flex min-w-0 items-center gap-3">
           <img
             src={Logo}
@@ -210,18 +243,21 @@ const Header: React.FC = () => {
               RCCG NPHM
             </p>
             <p className="truncate text-xs font-medium text-slate-500">
-              Prison & Hospital Ministry
+              Prison &amp; Hospital Ministry
             </p>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 xl:gap-8 lg:flex">
+        <nav
+          aria-label="Primary navigation"
+          className="hidden items-center gap-6 xl:gap-8 lg:flex"
+        >
           {primaryNav.map((item) => {
             if (item.children?.length) {
               return (
                 <div
                   key={item.label}
-                  ref={desktopMoreRef}
+                  ref={desktopDropdownRef}
                   className="relative"
                   onMouseEnter={() => {
                     if (!desktopMorePinned) {
@@ -243,13 +279,14 @@ const Header: React.FC = () => {
                     }
                     className="flex items-center gap-1 text-sm font-semibold text-slate-700 transition hover:text-blue-700"
                     aria-expanded={desktopMoreOpen}
-                    aria-haspopup="menu"
+                    aria-haspopup={true}
                     aria-controls="desktop-more-menu"
                   >
                     {item.label}
                     <ChevronDown
-                      className={`h-4 w-4 transition-transform ${desktopMoreOpen ? "rotate-180" : ""
-                        }`}
+                      className={`h-4 w-4 transition-transform ${
+                        desktopMoreOpen ? "rotate-180" : ""
+                      }`}
                     />
                   </button>
 
@@ -257,15 +294,12 @@ const Header: React.FC = () => {
                     <div className="absolute right-0 top-full pt-3">
                       <div
                         id="desktop-more-menu"
-                        role="menu"
-                        aria-label="More"
                         className="w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl"
                       >
                         {item.children.map((child, index) => (
                           <NavLink
                             key={child.to}
                             to={child.to}
-                            role="menuitem"
                             ref={(element) => {
                               desktopMenuItemRefs.current[index] = element;
                             }}
@@ -291,7 +325,6 @@ const Header: React.FC = () => {
                         ))}
                       </div>
                     </div>
-
                   )}
                 </div>
               );
@@ -333,9 +366,11 @@ const Header: React.FC = () => {
         </div>
 
         <button
-          aria-label="Open navigation menu"
+          type="button"
+          aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={mobileOpen}
           className="inline-flex rounded-xl border border-slate-200 p-2 text-slate-700 transition hover:bg-slate-50 lg:hidden"
-          onClick={() => setMobileOpen(true)}
+          onClick={toggleMobileMenu}
         >
           <Menu className="h-6 w-6" />
         </button>
@@ -344,44 +379,50 @@ const Header: React.FC = () => {
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden">
           <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"
-            onClick={() => setMobileOpen(false)}
+            className="absolute inset-0 bg-slate-900/35 backdrop-blur-[2px]"
+            onClick={closeMobileMenu}
           />
 
-          <aside className="absolute right-0 top-0 flex h-full w-[88%] max-w-sm flex-col bg-white shadow-2xl">
+          <div className="absolute inset-x-0 top-0 bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
               <div>
                 <p className="text-base font-bold text-slate-900">RCCG NPHM</p>
                 <p className="text-xs text-slate-500">Care. Outreach. Restoration.</p>
               </div>
+
               <button
+                type="button"
                 aria-label="Close navigation menu"
-                className="rounded-xl border border-slate-200 p-2 text-slate-700"
-                onClick={() => setMobileOpen(false)}
+                className="rounded-xl border border-slate-200 p-2 text-slate-700 transition hover:bg-slate-50"
+                onClick={closeMobileMenu}
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <div className="space-y-2">
+            <div className="max-h-[calc(100vh-80px)] overflow-y-auto px-4 py-4">
+              <nav aria-label="Mobile navigation" className="space-y-2">
                 {mobileNavItems.map((item) => {
                   if (item.children?.length) {
                     return (
-                      <div key={item.label} className="rounded-2xl border border-slate-200">
+                      <div key={item.label} className="rounded-2xl border border-slate-200 bg-white">
                         <button
+                          type="button"
+                          aria-expanded={mobileMoreOpen}
+                          aria-controls="mobile-more-menu"
                           className="flex w-full items-center justify-between px-4 py-4 text-left text-sm font-semibold text-slate-800"
-                          onClick={() => setMobileMoreOpen((prev) => !prev)}
+                          onClick={toggleMobileMore}
                         >
-                          {item.label}
+                          <span>{item.label}</span>
                           <ChevronDown
-                            className={`h-4 w-4 transition-transform ${mobileMoreOpen ? "rotate-180" : ""
-                              }`}
+                            className={`h-4 w-4 transition-transform ${
+                              mobileMoreOpen ? "rotate-180" : ""
+                            }`}
                           />
                         </button>
 
                         {mobileMoreOpen && (
-                          <div className="border-t border-slate-200 px-2 py-2">
+                          <div id="mobile-more-menu" className="border-t border-slate-200 px-2 py-2">
                             {item.children.map((child) => (
                               <NavLink
                                 key={child.to}
@@ -415,7 +456,7 @@ const Header: React.FC = () => {
                           "block rounded-2xl border px-4 py-4 text-sm font-semibold transition",
                           isActive
                             ? "border-blue-200 bg-blue-50 text-blue-700"
-                            : "border-slate-200 text-slate-800 hover:bg-slate-50",
+                            : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
                         ].join(" ")
                       }
                     >
@@ -423,34 +464,35 @@ const Header: React.FC = () => {
                     </NavLink>
                   );
                 })}
-              </div>
-            </div>
-            <div className="border-t border-slate-200 p-4">
-              <div className="grid grid-cols-1 gap-3">
+              </nav>
+
+              <div className="mt-4 grid grid-cols-1 gap-3 border-t border-slate-200 pt-4">
                 <Link
                   to="/donation"
                   onClick={closeAll}
-                  className="rounded-xl bg-red-600 px-4 py-3 text-center text-sm font-semibold text-white"
+                  className="rounded-xl bg-red-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-red-700"
                 >
                   Donate
                 </Link>
+
                 <Link
                   to="/dashboard/register"
                   onClick={closeAll}
-                  className="rounded-xl border border-blue-200 px-4 py-3 text-center text-sm font-semibold text-blue-700"
+                  className="rounded-xl border border-blue-200 px-4 py-3 text-center text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
                 >
                   HopOnboard
                 </Link>
+
                 <Link
                   to="/dashboard/loginUser"
                   onClick={closeAll}
-                  className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-700"
+                  className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Login
                 </Link>
               </div>
             </div>
-          </aside>
+          </div>
         </div>
       )}
     </header>
