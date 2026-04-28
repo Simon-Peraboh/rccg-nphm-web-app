@@ -1,77 +1,70 @@
-import React, { useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { resetPasswordAPICall } from '../services/AuthServiceLoginRegister';
-import { toast, ToastContainer } from 'react-toastify';
-import axios from 'axios';
+import React, { useState } from "react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import axios from "axios";
+import { useDashboardResetPassword } from "../hooks/useDashboardAuth";
+
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (typeof responseData?.message === "string") return responseData.message;
+
+    if (responseData?.message && typeof responseData.message === "object") {
+      const firstMessage = Object.values(responseData.message).flat().find(Boolean);
+      if (typeof firstMessage === "string") return firstMessage;
+    }
+
+    if (typeof responseData?.error === "string") return responseData.error;
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Password reset failed";
+};
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const token = searchParams.get('token');
+  const token = searchParams.get("token");
 
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const resetPasswordMutation = useDashboardResetPassword();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!token) {
-      toast.error('Invalid reset link.');
-      navigate('/forgetPassword');
+      toast.error("Invalid reset link.");
+      navigate("/dashboard/forgetPassword");
       return;
     }
-
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match.');
+      toast.error("Passwords do not match.");
       return;
     }
 
-
-    setLoading(true);
-
     try {
-      const response = await resetPasswordAPICall({
+      await resetPasswordMutation.mutateAsync({
         token,
         password,
         password_confirmation: confirmPassword,
       });
 
-      toast.success(response.data.message || 'Password reset successful');
-
       setTimeout(() => {
-        navigate('/dashboard/loginUser');
+        navigate("/dashboard/loginUser");
       }, 2000);
-
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Password reset failed';
-
-        toast.error(message);
-
-        if (error.response?.status === 400) {
-          setTimeout(() => {
-            navigate('/dashboard/forgetPassword');
-          }, 2000);
-        }
-      } else {
-        toast.error('Unexpected error occurred');
-      }
-    } finally {
-      setLoading(false);
+      toast.error(getApiErrorMessage(error));
     }
   };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-blue-200 shadow-md rounded-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Reset Password
-      </h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Reset Password</h2>
 
       <p className="text-sm text-gray-600 text-center mb-6">
         Enter your new password below.
@@ -110,15 +103,18 @@ const ResetPassword: React.FC = () => {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={resetPasswordMutation.isPending}
           className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
         >
-          {loading ? 'Resetting...' : 'Reset Password'}
+          {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
         </button>
       </form>
 
       <div className="text-center mt-4">
-        <Link to="/dashboard/loginUser" className="text-sm text-blue-600 hover:underline">
+        <Link
+          to="/dashboard/loginUser"
+          className="text-sm text-blue-600 hover:underline"
+        >
           Back to Login
         </Link>
       </div>

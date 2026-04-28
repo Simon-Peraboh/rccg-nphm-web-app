@@ -1,32 +1,33 @@
-import React from 'react';
-import { deleteList } from '../services/AuthServiceTodoList';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { useDeleteTodo } from "../hooks/useTodos";
 
-const TodoListDelete: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
+const TodoDeletePage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const deleteMutation = useDeleteTodo();
 
-     // Type assertion to ensure `id` is a string
-     const reportId = id as string;
-
+  useEffect(() => {
+    if (!id) {
+      navigate("/dashboard/todos");
+      return;
+    }
 
     const handleDelete = async () => {
-        try {
-            const response = await deleteList(reportId);
-            toast.success(response.data.message);
-            navigate('/dashboard/todoListTable'); // Redirect to list view after deletion
-        } catch (error) {
-            toast.error('Failed to delete report');
-        }
+      await deleteMutation.mutateAsync(id);
+      setTimeout(() => navigate("/dashboard/todos"), 1000);
     };
 
-    return (
-        <div>
-            <h2>Delete Report</h2>
-            <button onClick={handleDelete}>Confirm Delete</button>
-        </div>
-    );
+    handleDelete();
+  }, [id, navigate, deleteMutation]);
+
+  return (
+    <div className="p-10 text-center">
+      <h2 className="text-xl font-bold">Deleting Task...</h2>
+      <ToastContainer position="top-right" />
+    </div>
+  );
 };
 
-export default TodoListDelete;
+export default TodoDeletePage;

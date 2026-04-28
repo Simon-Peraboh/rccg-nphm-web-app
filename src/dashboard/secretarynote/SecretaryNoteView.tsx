@@ -1,89 +1,118 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getNote, SecretaryNoteDTO } from '../services/AuthServiceSecretaryNote';
-import { toast, ToastContainer } from 'react-toastify';
+import React from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { useSecretaryNote } from "../hooks/useSecretaryNote";
+
+const DetailRow: React.FC<{ label: string; value?: string | null }> = ({
+  label,
+  value,
+}) => (
+  <div className="rounded-2xl border bg-slate-50 p-4">
+    <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
+    <p className="mt-2 text-sm font-semibold text-slate-900 whitespace-pre-wrap">
+      {value || "-"}
+    </p>
+  </div>
+);
 
 const SecretaryNoteView: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const reportId = id as string;
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-    const [report, setReport] = useState<SecretaryNoteDTO | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+  const { data: note, isLoading, isError, error } = useSecretaryNote(id);
 
-    useEffect(() => {
-        const fetchReport = async () => {
-            try {
-                const response = await getNote(reportId);
-                setReport(response.data);
-                console.log(response);
-                setLoading(false);
-            } catch (error) {
-                toast.error('Failed to fetch report');
-                setLoading(false);
-            }
-        };
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-slate-100 px-4 py-6">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-8 shadow-sm text-center">
+          <h2 className="text-2xl font-bold text-red-600">Invalid Note</h2>
+          <p className="mt-3 text-slate-600">No note ID was provided.</p>
+          <button
+            onClick={() => navigate("/dashboard/secretaryNoteTable")}
+            className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold"
+          >
+            Back to Notes
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-        fetchReport();
-    }, [reportId]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-100 px-4 py-6">
+        <div className="mx-auto max-w-5xl rounded-3xl bg-white border p-8 shadow-sm">
+          <p className="text-slate-600">Loading note details...</p>
+        </div>
+      </div>
+    );
+  }
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!report) {
-        return <div>Report not found</div>;
-    }
+  if (isError || !note) {
+    const message =
+      error instanceof Error ? error.message : "Could not load note details.";
 
     return (
-        <div className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-            <h1 className="text-2xl font-bold mb-4 text-center">Secretary Note Details</h1>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Meeting Venue:</label>
-                <p>{report.meetingVenue}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Meeting Anchor:</label>
-                <p>{report.meetingAnchor}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Attendance Men:</label>
-                <p>{report.attendanceMen}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Attendance Women:</label>
-                <p>{report.attendanceWomen}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Attendance Children:</label>
-                <p>{report.attendanceChildren}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Attendance Total:</label>
-                <p>{report.attendanceTotal}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Detail Of Meeting:</label>
-                <p>{report.detailOfMeeting}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Actionable Points:</label>
-                <p>{report.actionablePoints}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Actionable Points Assigned:</label>
-                <p>{report.actionablePointsAssigned}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Date Of Meeting:</label>
-                <p>{report.meetingDate}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Created Date:</label>
-                <p>{report.createdDate}</p>
-            </div>
-            <ToastContainer position='top-center' />
+      <div className="min-h-screen bg-slate-100 px-4 py-6">
+        <div className="mx-auto max-w-5xl rounded-3xl bg-white border p-8 shadow-sm text-center">
+          <h2 className="text-2xl font-bold text-red-600">Note Load Error</h2>
+          <p className="mt-3 text-slate-600">{message}</p>
+          <button
+            onClick={() => navigate("/dashboard/secretaryNoteTable")}
+            className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold"
+          >
+            Back to Notes
+          </button>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <div className="mx-auto max-w-6xl rounded-3xl bg-white border p-6 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+              Secretary Notes
+            </p>
+            <h1 className="text-2xl font-bold mt-2">Meeting Note Details</h1>
+          </div>
+
+          <div className="flex gap-3 flex-wrap">
+            <Link
+              to={`/dashboard/secretaryNoteEdit/${note.id}`}
+              className="rounded-xl bg-green-600 px-4 py-2.5 text-white text-sm font-semibold"
+            >
+              Edit Note
+            </Link>
+
+            <button
+              onClick={() => navigate("/dashboard/secretaryNoteTable")}
+              className="rounded-xl border px-4 py-2.5 text-sm font-semibold"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <DetailRow label="Meeting Venue" value={note.meetingVenue} />
+          <DetailRow label="Meeting Anchor" value={note.meetingAnchor} />
+          <DetailRow label="Attendance Men" value={note.attendanceMen} />
+          <DetailRow label="Attendance Women" value={note.attendanceWomen} />
+          <DetailRow label="Attendance Children" value={note.attendanceChildren} />
+          <DetailRow label="Attendance Total" value={note.attendanceTotal} />
+          <DetailRow label="Actionable Points" value={note.actionablePoints} />
+          <DetailRow label="Assigned To" value={note.actionablePointsAssigned} />
+          <DetailRow label="Meeting Date" value={note.meetingDate} />
+          <DetailRow label="Created Date" value={note.created_at} />
+          <div className="md:col-span-2 xl:col-span-3">
+            <DetailRow label="Detail Of Meeting" value={note.detailOfMeeting} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default SecretaryNoteView;

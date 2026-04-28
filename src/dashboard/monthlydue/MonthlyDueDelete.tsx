@@ -1,33 +1,49 @@
-import React from 'react';
-import { deleteReport } from '../services/AuthServiceDuePayment';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
+import { useDeleteMonthlyDueReport } from "../hooks/useMonthlyDue";
 
-const DeleteReport: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
+const MonthlyDueDelete: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const deleteMutation = useDeleteMonthlyDueReport();
 
-     // Type assertion to ensure `id` is a string
-     const reportId = id as string;
-
+  useEffect(() => {
+    if (!id) {
+      toast.error("Missing report ID");
+      navigate("/dashboard/monthlyDueTable");
+      return;
+    }
 
     const handleDelete = async () => {
-        try {
-            const response = await deleteReport(reportId);
-            toast.success(response.data.message);
-            navigate('/monthlyDuesReport'); // Redirect to list view after deletion
-        } catch (error) {
-            toast.error('Failed to delete report');
+      try {
+        await deleteMutation.mutateAsync(id);
+        setTimeout(() => navigate("/dashboard/monthlyDueTable"), 1500);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          toast.error(
+            error.response?.data?.message ||
+              error.response?.data?.error ||
+              "Failed to delete report"
+          );
+        } else if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error("Unexpected error");
         }
+      }
     };
 
-    return (
-        <div>
-            <h2>Delete Report</h2>
-            <button onClick={handleDelete}>Confirm Delete</button>
-            <ToastContainer position='top-center' />
-        </div>
-    );
+    handleDelete();
+  }, [id, navigate, deleteMutation]);
+
+  return (
+    <div className="p-10 text-center">
+      <h2 className="text-xl font-bold">Deleting Report...</h2>
+      <ToastContainer position="top-center" />
+    </div>
+  );
 };
 
-export default DeleteReport;
+export default MonthlyDueDelete;

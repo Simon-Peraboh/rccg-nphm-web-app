@@ -1,96 +1,191 @@
-import React from 'react';
-import { FaFacebookF, FaTwitter, FaLinkedinIn, FaYoutube, FaInstagram } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaLinkedinIn,
+  FaYoutube,
+  FaInstagram,
+} from "react-icons/fa";
+import {
+  HiOutlineLocationMarker,
+  HiOutlineMail,
+  HiOutlinePhone,
+} from "react-icons/hi";
+import SectionContainer from "../layout/SectionContainer";
 
 const Footer: React.FC = () => {
-  const year: number = new Date().getFullYear();
+  const year = new Date().getFullYear();
+
+  const socialLinks = [
+    {
+      href: "https://facebook.com/rccgphm",
+      label: "Facebook",
+      icon: <FaFacebookF className="h-4 w-4" />,
+    },
+    {
+      href: "https://twitter.com/rccgphm",
+      label: "Twitter",
+      icon: <FaTwitter className="h-4 w-4" />,
+    },
+    {
+      href: "https://linkedin.com/company/rccgphm",
+      label: "LinkedIn",
+      icon: <FaLinkedinIn className="h-4 w-4" />,
+    },
+    {
+      href: "https://youtube.com/@rccgphm",
+      label: "YouTube",
+      icon: <FaYoutube className="h-4 w-4" />,
+    },
+    {
+      href: "https://instagram.com/rccgphm",
+      label: "Instagram",
+      icon: <FaInstagram className="h-4 w-4" />,
+    },
+  ];
+
+  const quickLinks = [
+    { label: "Home", to: "/" },
+    { label: "Who We Are", to: "/we-are" },
+    { label: "In Action", to: "/in-action" },
+    { label: "Conference", to: "/conference" },
+  ];
+
+  const ministryLinks = [
+    { label: "Connect", to: "/connect" },
+    { label: "Report", to: "/report" },
+    { label: "Contact Us", to: "/contact" },
+    { label: "HopOnboard", to: "/dashboard/register" },
+  ];
 
   return (
-    <footer className="font-sans bg-blue-200 text-gray-600">
-      {/* Social top bar */}
-      <div className="flex flex-col items-center justify-between px-6 py-6 border-b border-gray-300 lg:flex-row">
-        <span className="text-center text-sm font-semibold mb-4 lg:mb-0">
-          Get connected with us on social networks:
-        </span>
-        <div className="flex gap-5 text-lg">
-          <a href="https://facebook.com/rccgphm" title="Facebook" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition">
-            <FaFacebookF />
-          </a>
-          <a href="https://twitter.com/rccgphm" title="Twitter" target="_blank" rel="noopener noreferrer" className="hover:text-sky-500 transition">
-            <FaTwitter />
-          </a>
-          <a href="https://linkedin.com/company/rccgphm" title="LinkedIn" target="_blank" rel="noopener noreferrer" className="hover:text-blue-700 transition">
-            <FaLinkedinIn />
-          </a>
-          <a href="https://youtube.com/@rccgphm" title="YouTube" target="_blank" rel="noopener noreferrer" className="hover:text-red-600 transition">
-            <FaYoutube />
-          </a>
-          <a href="https://instagram.com/rccgphm" title="Instagram" target="_blank" rel="noopener noreferrer" className="hover:text-pink-500 transition">
-            <FaInstagram />
-          </a>
-        </div>
-      </div>
+    <footer className="relative overflow-hidden border-t border-slate-200 bg-white text-slate-700">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.05),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.04),transparent_22%)]" />
 
-      {/* Footer body */}
-      <div className="grid grid-cols-1 gap-8 px-6 py-10 text-center md:grid-cols-2 lg:grid-cols-4 md:text-left">
-        <div>
-          <h6 className="mb-4 font-bold uppercase">RCCG NPHM</h6>
-          <p>
-            Arm of RCCG in charge of outreach to inmates in Prisons, Police Stations, Hospitals, and Old People’s Homes across Nigeria.
-          </p>
-        </div>
-
-        {/* More Info Section */}
-        <div>
-          <h6 className="mb-4 flex justify-center font-semibold uppercase md:justify-start">
-            More Info
-          </h6>
-          {['Love', 'Grace', 'Peace', 'Anointing'].map((text) => (
-            <p key={text} className="mb-2">
-              <a className="text-gray-500 hover:underline hover:text-blue-700 transition duration-200 cursor-pointer">
-                {text}
-              </a>
+      <SectionContainer>
+        <div className="flex flex-col gap-5 border-b border-slate-200 py-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-700">
+              Stay Connected
             </p>
-          ))}
-        </div>
-
-        {/* Useful Links Section */}
-        <div>
-          <h6 className="mb-4 flex justify-center font-semibold uppercase md:justify-start">
-            Useful Links
-          </h6>
-          <p className="mb-2">
-            <a
-              href="https://www.rccgphm.org/"
-              className="text-gray-500 hover:underline hover:text-blue-700 transition duration-200 cursor-pointer"
-            >
-              Website
-            </a>
-          </p>
-          {['Settings', 'Orders', 'Help'].map((text) => (
-            <p key={text} className="mb-2">
-              <a className="text-gray-500 hover:underline hover:text-blue-700 transition duration-200 cursor-pointer">
-                {text}
-              </a>
+            <p className="mt-1 text-sm text-slate-600">
+              Follow the ministry and stay informed on outreach, conferences, and impact stories.
             </p>
-          ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {socialLinks.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={item.label}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700 hover:shadow-md"
+              >
+                {item.icon}
+              </a>
+            ))}
+          </div>
         </div>
 
+        <div className="grid gap-10 py-12 md:grid-cols-2 xl:grid-cols-4">
+          <div>
+            <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+              RCCG NPHM
+            </h3>
+            <p className="mt-4 max-w-sm text-base leading-8 text-slate-600">
+              An arm of RCCG committed to outreach and care for inmates in prisons,
+              police stations, hospitals, and old people’s homes across Nigeria.
+            </p>
+          </div>
 
-        <div>
-          <h6 className="mb-4 font-bold uppercase">Contact</h6>
-          <p className="mb-2">Redemption City, Lagos-Ibadan Expressway</p>
-          <p className="mb-2">prisonandhosp@rccgph.org</p>
-          <p className="mb-2">+234 803 491 4638</p>
-          <p className="mb-2">WhatsApp: +234 708 422 2323</p>
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-900">
+              Quick Links
+            </h4>
+            <div className="mt-5 space-y-3">
+              {quickLinks.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="block text-sm text-slate-600 transition hover:text-blue-700"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-900">
+              Ministry Access
+            </h4>
+            <div className="mt-5 space-y-3">
+              {ministryLinks.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="block text-sm text-slate-600 transition hover:text-blue-700"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                to="/donation"
+                className="block text-sm font-semibold text-red-600 transition hover:text-red-700"
+              >
+                Donate
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-900">
+              Contact
+            </h4>
+
+            <div className="mt-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 shadow-sm text-blue-700">
+                  <HiOutlineLocationMarker className="h-5 w-5" />
+                </span>
+                <p className="text-sm leading-7 text-slate-600">
+                  Redemption City, Lagos-Ibadan Expressway, Nigeria
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 shadow-sm text-blue-700">
+                  <HiOutlineMail className="h-5 w-5" />
+                </span>
+                <a
+                  href="mailto:prisonandhosp@rccgph.org"
+                  className="text-sm text-slate-600 transition hover:text-blue-700"
+                >
+                  prisonandhosp@rccgph.org
+                </a>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 shadow-sm text-blue-700">
+                  <HiOutlinePhone className="h-5 w-5" />
+                </span>
+                <div className="space-y-1 text-sm text-slate-600">
+                  <p>+234 803 491 4638</p>
+                  <p>WhatsApp: +234 708 422 2323</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-
-      </div>
-
-      {/* Copyright */}
-      <div className="bg-blue-200 py-4 text-center text-sm">
-        <span className="text-gray-600">&copy; {year} RCCG NPHM. All rights reserved.</span>
-      </div>
+        <div className="flex flex-col gap-3 border-t border-slate-200 py-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} RCCG NPHM. All rights reserved.</p>
+          <p>Reaching out with the love of Christ.</p>
+        </div>
+      </SectionContainer>
     </footer>
   );
 };

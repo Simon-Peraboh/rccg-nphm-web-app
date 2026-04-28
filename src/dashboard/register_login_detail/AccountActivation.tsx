@@ -1,135 +1,132 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { activateAccountAPICall } from '../services/AuthServiceLoginRegister';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useDashboardAccountActivation } from "../hooks/useDashboardAuth";
+
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (typeof responseData?.message === "string") return responseData.message;
+
+    if (responseData?.message && typeof responseData.message === "object") {
+      const firstMessage = Object.values(responseData.message).flat().find(Boolean);
+      if (typeof firstMessage === "string") return firstMessage;
+    }
+
+    if (typeof responseData?.error === "string") return responseData.error;
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Account activation failed";
+};
 
 const AccountActivation: React.FC = () => {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [token, setToken] = useState('');
-  const [tempPassword, setTempPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [strength, setStrength] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [token, setToken] = useState("");
+  const [tempPassword, setTempPassword] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
+  const activationMutation = useDashboardAccountActivation();
 
   useEffect(() => {
     const query = new URLSearchParams(location.search);
-    const t = query.get('token');
-    if (t) setToken(t);
-    else {
-      toast.error('Invalid activation link');
-      navigate('/');
+    const t = query.get("token");
+
+    if (t) {
+      setToken(t);
+    } else {
+      toast.error("Invalid activation link");
+      navigate("/dashboard/loginUser");
     }
   }, [location.search, navigate]);
-
-  useEffect(() => {
-    const getStrength = (pwd: string) => {
-      if (pwd.length < 6) return 'Weak';
-      if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[!@#$%^&*]/.test(pwd)) return 'Strong';
-      return 'Medium';
-    };
-    setStrength(getStrength(newPassword));
-  }, [newPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (newPassword !== confirmPassword) {
-      toast.error('New password and confirmation do not match');
+    if (!token) {
+      toast.error("Activation token is missing");
       return;
     }
 
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
     try {
-      await activateAccountAPICall(token, tempPassword, newPassword, confirmPassword);
-      toast.success('Account activated successfully! You can now log in.');
-      setTimeout(() => navigate('/dashboard/loginUser'), 2000);
+      await activationMutation.mutateAsync({
+        token,
+        temporary_password: tempPassword,
+        new_password: newPassword,
+        new_password_confirmation: confirmPassword,
+      });
+
+      setTimeout(() => navigate("/dashboard/loginUser"), 2000);
     } catch (error: unknown) {
-      console.error('Activation error:', error);
-
-      if (error instanceof Error) {
-        toast.error(error.message || 'Account activation failed');
-      } else {
-        toast.error('Account activation failed');
-      }
+      toast.error(getApiErrorMessage(error));
     }
-  }
-
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-blue-200 px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Activate Your Account</h2>
+    <div className="max-w-md mx-auto mt-10 p-5 bg-blue-200 shadow-md rounded-md">
+      <h2 className="text-2xl font-bold mb-5 text-center">Activate Your Account</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Temporary Password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={tempPassword}
-              onChange={(e) => setTempPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md shadow-sm"
-              placeholder="From email"
-            />
-          </div>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Temporary Password
+          </label>
+          <input
+            type="password"
+            value={tempPassword}
+            onChange={(e) => setTempPassword(e.target.value)}
+            required
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            placeholder="Enter temporary password from email"
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md shadow-sm"
-              placeholder="Enter new password"
-            />
-            {newPassword && (
-              <p className={`text-sm mt-1 font-medium ${strength === 'Strong' ? 'text-green-600' : strength === 'Medium' ? 'text-yellow-600' : 'text-red-600'}`}>
-                Strength: {strength}
-              </p>
-            )}
-          </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            New Password
+          </label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            placeholder="Enter new password"
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md shadow-sm"
-              placeholder="Re-enter new password"
-            />
-          </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Confirm New Password
+          </label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            placeholder="Re-enter new password"
+          />
+        </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              id="showPassword"
-              type="checkbox"
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-              className="form-checkbox"
-            />
-            <label htmlFor="showPassword" className="text-sm text-gray-600">
-              Show Passwords
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
-          >
-            Activate Account
-          </button>
-        </form>
-
-        <ToastContainer position="top-right" />
-      </div>
+        <button
+          type="submit"
+          disabled={activationMutation.isPending}
+          className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+        >
+          {activationMutation.isPending ? "Activating..." : "Activate Account"}
+        </button>
+      </form>
     </div>
-
   );
 };
 

@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { loginAPICall, saveLoggedInUser, storeToken } from '../services/AuthServiceLoginRegister';
-import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router";
+import axios from "axios";
 import { checkNetworkSpeed } from "../services/NetworkSpeedService";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { useDashboardLogin } from "../hooks/useDashboardAuth";
 
 const LoginUser: React.FC = () => {
-  const [usernameOrEmail, setUsernameOrEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
+  const loginMutation = useDashboardLogin();
 
   useEffect(() => {
     checkNetworkSpeed();
 
-    // Retest every 10 seconds
     const interval = setInterval(checkNetworkSpeed, 10000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -25,34 +25,29 @@ const LoginUser: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await loginAPICall({ usernameOrEmail, password });
+      await loginMutation.mutateAsync({
+        usernameOrEmail,
+        password,
+      });
 
-      const { user, token, message } = response.data;
-
-      // Save session
-      storeToken(token);
-      saveLoggedInUser({ email: user.email, role: user.role });
-
-      toast.success(message || 'Login successful');
-      setTimeout(() => navigate('/dashboard'), 1500);
-
+      setTimeout(() => navigate("/dashboard"), 1500);
     } catch (error: unknown) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
 
       if (axios.isAxiosError(error)) {
-        // Pull out backend message cleanly
         const backendMessage =
           error.response?.data?.message ||
           error.response?.data?.error ||
-          'Login failed. Please try again.';
+          "Login failed. Please try again.";
 
         toast.error(backendMessage);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
       } else {
-        toast.error('Unexpected error occurred. Please try again.');
+        toast.error("Unexpected error occurred. Please try again.");
       }
     }
   };
-
 
   return (
     <div className="max-w-md mx-auto mt-10 p-5 bg-blue-200 shadow-md rounded-md">
@@ -60,7 +55,9 @@ const LoginUser: React.FC = () => {
 
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Username or Email</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Username or Email
+          </label>
           <input
             type="text"
             value={usernameOrEmail}
@@ -74,7 +71,7 @@ const LoginUser: React.FC = () => {
         <div>
           <label className="block text-sm font-medium text-gray-700">Password</label>
           <input
-            type={showPassword ? 'text' : 'password'}
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -105,12 +102,12 @@ const LoginUser: React.FC = () => {
           </div>
         </div>
 
-
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+          disabled={loginMutation.isPending}
+          className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
         >
-          Login
+          {loginMutation.isPending ? "Logging in..." : "Login"}
         </button>
       </form>
 

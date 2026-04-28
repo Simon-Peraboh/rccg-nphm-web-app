@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://app.rccgphm.org/',
+        target: 'https://app2.rccgphm.org/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }

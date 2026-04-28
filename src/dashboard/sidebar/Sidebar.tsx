@@ -1,111 +1,159 @@
-// components/Sidebar.tsx
-
-import React from 'react';
-import { FaHome, FaAngleLeft, FaAngleRight, FaRegistered } from 'react-icons/fa';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import { FaHome, FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { MdLeaderboard } from "react-icons/md";
 import { GiDatabase } from "react-icons/gi";
 import { FcTodoList } from "react-icons/fc";
 import { SiLibreofficewriter } from "react-icons/si";
 import { TbReport, TbFileReport, TbReportMoney, TbMessageReport } from "react-icons/tb";
-import { Link } from 'react-router-dom';
-import { getLoggedInUser } from '../services/AuthServiceLoginRegister';
+import { getSessionUser, hasRequiredRole } from "../utils/authSession";
+import { HiOutlinePhotograph } from "react-icons/hi";
 
 interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
 }
 
+interface SidebarItem {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  roles?: string[];
+}
+
+const sidebarItems: SidebarItem[] = [
+  { to: "/dashboard", label: "Dashboard", icon: <FaHome /> },
+  {
+    to: "/dashboard/userprofile",
+    label: "National Database",
+    icon: <GiDatabase />,
+    roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
+    to: "/dashboard/nationalReportTable",
+    label: "National Report",
+    icon: <TbMessageReport />,
+    roles: ["SUPER_ADMIN"],
+  },
+  {
+    to: "/dashboard/monthlyReportTable",
+    label: "Monthly Report",
+    icon: <TbFileReport />,
+    roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"],
+  },
+  {
+    to: "/dashboard/specialProjectsTable",
+    label: "Special Projects",
+    icon: <TbReport />,
+    roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"],
+  },
+  {
+    to: "/dashboard/ministryActivities",
+    label: "Ministry Activities",
+    icon: <HiOutlinePhotograph />,
+    roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"],
+  },
+  {
+    to: "/dashboard/monthlyDueTable",
+    label: "Monthly Due Report",
+    icon: <TbReportMoney />,
+    roles: ["SUPER_ADMIN", "TREASURER"],
+  },
+  {
+    to: "/dashboard/todoListTable",
+    label: "Todo List",
+    icon: <FcTodoList />,
+    roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"],
+  },
+  {
+    to: "/dashboard/secretaryNoteTable",
+    label: "Secretary Note",
+    icon: <SiLibreofficewriter />,
+    roles: ["SUPER_ADMIN", "SECRETARY"],
+  },
+  {
+    to: "/dashboard/stateCoordinators",
+    label: "State Coordinators",
+    icon: <MdLeaderboard />,
+    roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"],
+  },
+  {
+    to: "/dashboard/registerUser",
+    label: "Register User",
+    icon: <TbMessageReport />,
+    roles: ["SUPER_ADMIN"],
+  },
+];
+
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
-  const user = getLoggedInUser();
-  console.log('Sidebar User:', user);
+  const user = getSessionUser();
 
-  const hasRole = (roles: string[]) => {
-    if (!user) return false;
-    const userRole = user.role?.replace('ROLE_', ''); // Ensure user.role is defined before replacing
-    return roles.includes(userRole);
-  };
-
-  const secretaryNoteRoles = ['SUPER_ADMIN', 'SECRETARY'];
-  const nationalDatabaseRoles = ['SUPER_ADMIN', 'ADMIN'];
-  const monthlyDueReportRoles = ['SUPER_ADMIN', 'TREASURER'];
-  const generalRoles = ['SUPER_ADMIN', 'SECRETARY', 'ADMIN', 'TREASURER', 'USER'];
-  const onlyRoles = ['SUPER_ADMIN'];
+  const visibleItems = sidebarItems.filter((item) =>
+    hasRequiredRole(user, item.roles)
+  );
 
   return (
-    <div className={`h-screen ${isCollapsed ? 'w-16' : 'w-64'} bg-gray-500 text-white fixed flex flex-col transition-all duration-300`}>
-      <div className="p-4 flex justify-between items-center">
-        <span className="text-2xl font-bold">{!isCollapsed && 'Logo'}</span>
-        <button onClick={onToggleCollapse} className="focus:outline-none">
+    <aside
+      className={`fixed inset-y-0 left-0 top-0 z-30 flex flex-col border-r border-slate-200 bg-slate-950 text-white shadow-2xl transition-all duration-300 dark:border-slate-800 ${isCollapsed ? "w-20" : "w-72"
+        }`}
+    >
+      <div className="flex items-center justify-between border-b border-slate-800 px-5 py-5">
+        <div className="overflow-hidden">
+          {!isCollapsed ? (
+            <>
+              <h1 className="text-xl font-bold tracking-tight">RCCG NPHM</h1>
+              <p className="text-xs text-slate-400">Flagship Admin Console</p>
+            </>
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 text-lg font-black">
+              N
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          title="Toggle sidebar"
+          onClick={onToggleCollapse}
+          aria-label="Toggle sidebar"
+          className="rounded-xl border border-slate-700 p-2 text-slate-300 transition hover:bg-slate-800"
+        >
           {isCollapsed ? <FaAngleRight /> : <FaAngleLeft />}
         </button>
       </div>
-      <nav className="flex-grow px-4 py-2 space-y-2 overflow-y-auto">
-        <Link to="/dashboard" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-          <FaHome />
-          {!isCollapsed && <span>Dashboard</span>}
-        </Link>
-        {hasRole(nationalDatabaseRoles) && (
-          <Link to="/dashboard/userprofile" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <GiDatabase />
-            {!isCollapsed && <span>National Database</span>}
-          </Link>
-        )}
-         {hasRole(onlyRoles) && (
-          <Link to="/dashboard/nationalReportTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <TbMessageReport />
-            {!isCollapsed && <span>National Report</span>}
-          </Link>
-        )}
-         {hasRole(generalRoles) && (
-          <Link to="/dashboard/monthlyReportTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <TbFileReport />
-            {!isCollapsed && <span>Monthly Report</span>}
-          </Link>
-        )}
-        {hasRole(generalRoles) && (
-          <Link to="/dashboard/specialProjectsTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <TbReport />
-            {!isCollapsed && <span>Special Projects</span>}
-          </Link>
-        )}
-        {hasRole(monthlyDueReportRoles) && (
-          <Link to="/dashboard/monthlyDueTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <TbReportMoney />
-            {!isCollapsed && <span>Monthly Due Report</span>}
-          </Link>
-        )}
-        {hasRole(generalRoles) && (
-          <Link to="/dashboard/conferenceTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <FaRegistered />
-            {!isCollapsed && <span>Conference Registration</span>}
-          </Link>
-        )}
-        {hasRole(generalRoles) && (
-          <Link to="/dashboard/todoListTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <FcTodoList />
-            {!isCollapsed && <span>TodoList</span>}
-          </Link>
-        )}
-          {hasRole(secretaryNoteRoles) && (
-          <Link to="/dashboard/secretaryNoteTable" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <SiLibreofficewriter />
-            {!isCollapsed && <span>Secretary Note</span>}
-          </Link>
-        )}
-        {hasRole(generalRoles) && (
-          <Link to="/dashboard/stateCoordinators" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <MdLeaderboard  />
-            {!isCollapsed && <span>State Coordinators</span>}
-          </Link>
-        )}
-         {hasRole(onlyRoles) && (
-          <Link to="/dashboard/registerUser" className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded">
-            <TbMessageReport />
-            {!isCollapsed && <span>Register User</span>}
-          </Link>
-        )}
+
+      <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
+        {visibleItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${isActive
+                ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg"
+                : "text-slate-300 hover:bg-slate-900 hover:text-white"
+              }`
+            }
+          >
+            <span className="text-lg">{item.icon}</span>
+            {!isCollapsed && <span className="truncate">{item.label}</span>}
+          </NavLink>
+        ))}
       </nav>
-    </div>
+
+      {!isCollapsed && user && (
+        <div className="border-t border-slate-800 px-4 py-4">
+          <div className="rounded-2xl bg-slate-900 p-4">
+            <p className="text-xs uppercase tracking-widest text-slate-500">
+              Signed in
+            </p>
+            <p className="mt-2 truncate text-sm font-semibold text-slate-200">
+              {user.email}
+            </p>
+            <p className="mt-1 text-xs text-cyan-400">{user.role}</p>
+          </div>
+        </div>
+      )}
+    </aside>
   );
 };
 

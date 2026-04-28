@@ -1,137 +1,254 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { createReport, MonthlyDuePaymentDTO } from '../services/AuthServiceDuePayment';
-import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router';
-import axios from 'axios';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useNavigate, Link } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import { useCreateMonthlyDueReport } from "../hooks/useMonthlyDue";
+import type { MonthlyDuePaymentDTO } from "../types/monthlyDue";
 
-// Define the validation schema using yup
-const schema = yup.object().shape({
-    amount: yup.string().required('Amount is required'),
-    province: yup.string().required('Province is required'),
-    paymentDate: yup.string().required('Payment date is required'),
-    provinceCoordinator: yup.string().required('Province Coordinator Name is required'),
-    refMonth: yup.string().required('Reference month is required'),
-    whoPaid: yup.string().optional(),
-    remark: yup.string().optional(),
+const schema = yup.object({
+  amount: yup.string().required("Amount is required"),
+  province: yup.string().required("Province is required"),
+  paymentDate: yup.string().required("Payment date is required"),
+  provinceCoordinator: yup.string().required("Province Coordinator Name is required"),
+  refMonth: yup.string().required("Reference month is required"),
+  whoPaid: yup.string().optional(),
+  remark: yup.string().optional(),
 });
 
 const MonthlyDueCreate: React.FC = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm<MonthlyDuePaymentDTO>({
-        resolver: yupResolver(schema),
-    });
+  const navigate = useNavigate();
+  const createMutation = useCreateMonthlyDueReport();
 
-    const navigator = useNavigate(); 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<MonthlyDuePaymentDTO>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      amount: "",
+      province: "",
+      paymentDate: "",
+      provinceCoordinator: "",
+      refMonth: "",
+      whoPaid: "",
+      remark: "",
+    },
+  });
 
-    const onSubmit = async (data: MonthlyDuePaymentDTO) => {
-      try {
-        const response = await createReport(data);
-        toast.success(response.data.message || "Report created successfully");
-        setTimeout(() => navigator('/dashboard/monthlyDueTable'), 3000);
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          const responseData = error.response?.data;
-          let message = "Failed to create report";
-    
-          if (typeof responseData?.message === 'string') {
-            message = responseData.message;
-          } else if (typeof responseData?.errors === 'object') {
-            // Laravel-style validation errors
-            const allErrors = Object.values(responseData.errors).flat().join(' ');
-            message = allErrors;
-          }
-    
-          toast.error(message);
-        } else {
-          toast.error("An unexpected error occurred");
+  const onSubmit = async (data: MonthlyDuePaymentDTO) => {
+    try {
+      await createMutation.mutateAsync(data);
+      setTimeout(() => navigate("/dashboard/monthlyDueTable"), 1500);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        let message = "Failed to create report";
+
+        if (typeof responseData?.message === "string") {
+          message = responseData.message;
+        } else if (typeof responseData?.errors === "object" && responseData?.errors) {
+          message = Object.values(responseData.errors).flat().join(" ");
         }
+
+        toast.error(message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unexpected error occurred");
       }
-    };
+    }
+  };
 
-    return (
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-            <div className="mb-4">
-                <label className="block text-gray-700">Amount Paid</label>
-                <input 
-                    type="text" 
-                    placeholder='Enter Amount Paid'
-                    {...register('amount')}
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                />
-                {errors.amount && <p className="text-red-500 text-sm">{errors.amount.message}</p>}
-            </div>
+  return (
+    <div className="min-h-screen bg-slate-50 px-4 py-6">
+      <ToastContainer position="top-right" theme="colored" />
 
-            <div className="mb-4">
-                <label className="block text-gray-700">Province</label>
-                <input 
-                    type="text" 
-                    placeholder='Enter Province Name'
-                    {...register('province')} 
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                />
-                {errors.province && <p className="text-red-500 text-sm">{errors.province.message}</p>}
-            </div>
+      <div className="mx-auto max-w-4xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+              Monthly Due Management
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Create Monthly Due Report
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Record due payments clearly and consistently across provinces and months.
+            </p>
+          </div>
 
-            <div className="mb-4">
-                <label className="block text-gray-700">Payment Date</label>
-                <input 
-                    type="date" 
-                    {...register('paymentDate')} 
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                />
-                {errors.paymentDate && <p className="text-red-500 text-sm">{errors.paymentDate.message}</p>}
-            </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back to Dashboard</span>
+            </Link>
 
-            <div className="mb-4">
-                <label className="block text-gray-700">Province Coordinator Name</label>
-                <input 
-                    type="text"
-                    placeholder='Enter Province Coordinator Name'
-                    {...register('provinceCoordinator')} 
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                />
-                {errors.provinceCoordinator && <p className="text-red-500 text-sm">{errors.provinceCoordinator.message}</p>}
-            </div>
+            <Link
+              to="/dashboard/monthlyDueTable"
+              className="rounded-2xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              View Reports
+            </Link>
+          </div>
+        </div>
 
-            <div className="mb-4">
-                <label className="block text-gray-700">Reference Month</label>
-                <input 
-                    type="text"
-                    placeholder='Enter Monthly Paid For'
-                    {...register('refMonth')} 
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                />
-                {errors.refMonth && <p className="text-red-500 text-sm">{errors.refMonth.message}</p>}
-            </div>
-            
-            <div className="mb-4">
-                <label className="block text-gray-700">Who Paid</label>
-                <input 
-                    type="text"
-                    placeholder='Who Made The Payment'
-                    {...register('whoPaid')} 
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                />
-                {errors.whoPaid && <p className="text-red-500 text-sm">{errors.whoPaid.message}</p>}
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Payment Details</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Capture the amount, province, payment date, and reference month.
+            </p>
 
-            <div className="mb-4">
-                <label className="block text-gray-700">Remark</label>
-                <input 
-                    type="text" 
-                    placeholder='Enter Remarks If Any'
-                    {...register('remark')} 
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div>
+                <label htmlFor="amount" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Amount Paid
+                </label>
+                <input
+                  id="amount"
+                  type="text"
+                  placeholder="Enter amount paid"
+                  {...register("amount")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
                 />
-                {errors.remark && <p className="text-red-500 text-sm">{errors.remark.message}</p>}
-            </div>
+                {errors.amount && (
+                  <p className="mt-1 text-xs text-red-500">{errors.amount.message}</p>
+                )}
+              </div>
 
-            <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">Create Report</button>
-            <ToastContainer position='top-center' />
+              <div>
+                <label htmlFor="province" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Province
+                </label>
+                <input
+                  id="province"
+                  type="text"
+                  placeholder="Enter province name"
+                  {...register("province")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.province && (
+                  <p className="mt-1 text-xs text-red-500">{errors.province.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="paymentDate" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Payment Date
+                </label>
+                <input
+                  id="paymentDate"
+                  type="date"
+                  {...register("paymentDate")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.paymentDate && (
+                  <p className="mt-1 text-xs text-red-500">{errors.paymentDate.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="refMonth" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Reference Month
+                </label>
+                <input
+                  id="refMonth"
+                  type="text"
+                  placeholder="Enter month paid for"
+                  {...register("refMonth")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.refMonth && (
+                  <p className="mt-1 text-xs text-red-500">{errors.refMonth.message}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Responsible Party</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Record the province coordinator and optionally who made the payment.
+            </p>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="provinceCoordinator"
+                  className="mb-1.5 block text-sm font-medium text-slate-700"
+                >
+                  Province Coordinator
+                </label>
+                <input
+                  id="provinceCoordinator"
+                  type="text"
+                  placeholder="Enter province coordinator name"
+                  {...register("provinceCoordinator")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+                {errors.provinceCoordinator && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.provinceCoordinator.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="whoPaid" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Who Paid
+                </label>
+                <input
+                  id="whoPaid"
+                  type="text"
+                  placeholder="Who made the payment"
+                  {...register("whoPaid")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="remark" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Remark
+                </label>
+                <input
+                  id="remark"
+                  type="text"
+                  placeholder="Enter remark if any"
+                  {...register("remark")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              disabled={createMutation.isPending}
+              className="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+            >
+              {createMutation.isPending ? "Creating..." : "Create Report"}
+            </button>
+
+            <Link
+              to="/dashboard/monthlyDueTable"
+              className="rounded-2xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Cancel
+            </Link>
+          </div>
         </form>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default MonthlyDueCreate;

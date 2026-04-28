@@ -1,119 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getReport, MonthlyReportDTO } from '../services/AuthServiceMonthlyReport';
-import { toast } from 'react-toastify';
+import React from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { useMonthlyReport } from "../hooks/useMonthlyReport";
+
+const DetailRow: React.FC<{ label: string; value?: string | null }> = ({
+  label,
+  value,
+}) => (
+  <div className="rounded-2xl border bg-slate-50 p-4">
+    <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
+    <p className="mt-2 text-base font-semibold text-slate-900 whitespace-pre-wrap">
+      {value || "-"}
+    </p>
+  </div>
+);
 
 const MonthlyReportView: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const reportId = id as string;
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-    const [report, setReport] = useState<MonthlyReportDTO | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+  const { data: report, isLoading, isError, error } = useMonthlyReport(id);
 
-    useEffect(() => {
-        const fetchReport = async () => {
-            try {
-                const response = await getReport(reportId);
-                setReport(response.data);
-                setLoading(false);
-            } catch (error) {
-                toast.error('Failed to fetch report');
-                setLoading(false);
-            }
-        };
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-slate-100 px-4 py-8">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-8 shadow-sm text-center">
+          <h2 className="text-2xl font-bold text-red-600">Invalid Report</h2>
+          <p className="mt-3 text-slate-600">No report ID was provided.</p>
+          <button
+            onClick={() => navigate("/dashboard/monthlyReportTable")}
+            className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold"
+          >
+            Back to Reports
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-        fetchReport();
-    }, [reportId]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-100 px-4 py-8">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-8 shadow-sm">
+          <p className="text-slate-600">Loading report details...</p>
+        </div>
+      </div>
+    );
+  }
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!report) {
-        return <div>Report not found</div>;
-    }
+  if (isError || !report) {
+    const message =
+      error instanceof Error ? error.message : "Could not load report details.";
 
     return (
-        <div className="max-w-lg mx-auto p-4 shadow-lg rounded-md bg-white">
-            <h1 className="text-2xl font-bold mb-4 text-center">Monthly Report Details</h1>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">State:</label>
-                <p>{report.state}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Region:</label>
-                <p>{report.region}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Province:</label>
-                <p>{report.province}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Province Coordinator:</label>
-                <p>{report.coordinator_name}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Prison Visited:</label>
-                <p>{report.prison_visited}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Hospital Visited:</label>
-                <p>{report.hospital_visited}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Police Station Visited:</label>
-                <p>{report.police_station_visited}</p>
-            </div>
-            {/* <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Province Coordinator:</label>
-                <p>{report.coordinatorName}</p>
-            </div> */}
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Other Places Visited:</label>
-                <p>{report.others}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Items Used For The Visit:</label>
-                <p>{report.items}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Amount Budgeted:</label>
-                <p>{report.amount_budgeted}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Amount Spent:</label>
-                <p>{report.amount_spent}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Team Members:</label>
-                <p>{report.team_members}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Souls Won:</label>
-                <p>{report.souls_won}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Challenges:</label>
-                <p>{report.challenges}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Suggestion:</label>
-                <p>{report.suggestion}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Remark:</label>
-                <p>{report.remarks}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Date Of Visitation:</label>
-                <p>{report.activity_date}</p>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold">Created Date:</label>
-                <p>{report.report_created_by}</p>
-            </div>
+      <div className="min-h-screen bg-slate-100 px-4 py-8">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-white border p-8 shadow-sm text-center">
+          <h2 className="text-2xl font-bold text-red-600">Report Load Error</h2>
+          <p className="mt-3 text-slate-600">{message}</p>
+          <button
+            onClick={() => navigate("/dashboard/monthlyReportTable")}
+            className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold"
+          >
+            Back to Reports
+          </button>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 px-4 py-8">
+      <div className="mx-auto max-w-6xl rounded-3xl bg-white border p-8 shadow-sm">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
+              Monthly Report
+            </p>
+            <h1 className="text-3xl font-bold mt-2">Report Details</h1>
+            <p className="text-slate-600 mt-2">
+              Full view of submitted monthly field report.
+            </p>
+          </div>
+
+          <div className="flex gap-3 flex-wrap">
+            <Link
+              to={`/dashboard/monthlyReportEdit/${report.id}`}
+              className="rounded-xl bg-green-600 px-4 py-3 text-white font-semibold"
+            >
+              Edit Report
+            </Link>
+
+            <button
+              onClick={() => navigate("/dashboard/monthlyReportTable")}
+              className="rounded-xl border px-4 py-3 font-semibold"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <DetailRow label="State" value={report.state} />
+          <DetailRow label="Region" value={report.region} />
+          <DetailRow label="Province" value={report.province} />
+          <DetailRow label="Coordinator Name" value={report.coordinator_name} />
+          <DetailRow label="Prison Visited" value={report.prison_visited} />
+          <DetailRow label="Hospital Visited" value={report.hospital_visited} />
+          <DetailRow label="Police Station Visited" value={report.police_station_visited} />
+          <DetailRow label="Other Places Visited" value={report.others} />
+          <DetailRow label="Items" value={report.items} />
+          <DetailRow label="Amount Budgeted" value={report.amount_budgeted} />
+          <DetailRow label="Amount Spent" value={report.amount_spent} />
+          <DetailRow label="Team Members" value={report.team_members} />
+          <DetailRow label="Souls Won" value={report.souls_won} />
+          <DetailRow label="Challenges" value={report.challenges} />
+          <DetailRow label="Suggestion" value={report.suggestion} />
+          <DetailRow label="Remarks" value={report.remarks} />
+          <DetailRow label="Report Created By" value={report.report_created_by} />
+          <DetailRow label="Activity Date" value={report.activity_date} />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default MonthlyReportView;
