@@ -6,15 +6,18 @@ import { ToastContainer, toast } from "react-toastify";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useSpecialProject, useUpdateSpecialProject } from "../hooks/useSpecialProjects";
-<<<<<<< HEAD
-import type {
-  SpecialProjectsReportFormValues,
-} from "../types/specialProjects";
-=======
 import type { SpecialProjectsReportDTO } from "../types/specialProjects";
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
-const schema = yup.object({
+type SpecialProjectEditFormValues = Omit<
+  SpecialProjectsReportDTO,
+  | "id"
+  | "projectBeforeImage"
+  | "projectInProgressImage"
+  | "projectCompletedImage"
+  | "slug"
+>;
+
+const schema: yup.ObjectSchema<SpecialProjectEditFormValues> = yup.object({
   projectName: yup.string().required("Project name is required"),
   projectDescription: yup.string().required("Project description is required"),
   projectLocation: yup.string().required("Project location is required"),
@@ -41,11 +44,7 @@ const SpecialProjectsEdit: React.FC = () => {
     handleSubmit,
     setValue,
     formState: { errors },
-<<<<<<< HEAD
-  } = useForm<SpecialProjectsReportFormValues>({
-=======
-  } = useForm<SpecialProjectsReportDTO>({
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
+  } = useForm<SpecialProjectEditFormValues>({
     resolver: yupResolver(schema),
   });
 
@@ -65,11 +64,7 @@ const SpecialProjectsEdit: React.FC = () => {
     setValue("projectRemarks", data.projectRemarks || "");
   }, [data, setValue]);
 
-<<<<<<< HEAD
-  const onSubmit = async (formData: SpecialProjectsReportFormValues) => {
-=======
-  const onSubmit = async (formData: SpecialProjectsReportDTO) => {
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
+  const onSubmit = async (formData: SpecialProjectEditFormValues) => {
     try {
       await updateMutation.mutateAsync({
         id: reportId,
@@ -109,7 +104,7 @@ const SpecialProjectsEdit: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
-          {[
+          {([
             ["projectName", "Project Name"],
             ["projectLocation", "Project Location"],
             ["state", "State"],
@@ -117,26 +112,17 @@ const SpecialProjectsEdit: React.FC = () => {
             ["projectCost", "Project Cost"],
             ["projectManager", "Project Manager"],
             ["projectAid", "Funding Detail"],
-          ].map(([name, label]) => (
+          ] satisfies Array<[keyof SpecialProjectEditFormValues, string]>).map(([name, label]) => (
             <div key={name}>
               <label className="block text-sm font-medium mb-1">{label}</label>
               <input
                 type="text"
-<<<<<<< HEAD
-                {...register(name as keyof SpecialProjectsReportFormValues)}
+                {...register(name)}
                 className="w-full rounded-xl border px-3 py-2.5"
               />
-              {errors[name as keyof SpecialProjectsReportFormValues] && (
+              {errors[name] && (
                 <p className="text-red-500 text-xs mt-1">
-                  {String(errors[name as keyof SpecialProjectsReportFormValues]?.message ?? "")}
-=======
-                {...register(name as keyof SpecialProjectsReportDTO)}
-                className="w-full rounded-xl border px-3 py-2.5"
-              />
-              {errors[name as keyof SpecialProjectsReportDTO] && (
-                <p className="text-red-500 text-xs mt-1">
-                  {String(errors[name as keyof SpecialProjectsReportDTO]?.message ?? "")}
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
+                  {String(errors[name]?.message ?? "")}
                 </p>
               )}
             </div>

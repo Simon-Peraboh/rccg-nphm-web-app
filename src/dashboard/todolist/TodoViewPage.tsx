@@ -46,13 +46,8 @@ const TodoViewPage: React.FC = () => {
         <div className="grid gap-4 md:grid-cols-2">
           <DetailRow label="Task" value={todo.task} />
           <DetailRow label="Assignee" value={todo.assignee} />
-<<<<<<< HEAD
           <DetailRow label="Start Date" value={todo.startDate} />
           <DetailRow label="Due Date" value={todo.dueDate} />
-=======
-          <DetailRow label="Start Date" value={todo.start_date} />
-          <DetailRow label="Due Date" value={todo.due_date} />
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
           <DetailRow label="Status" value={todo.status} />
           <DetailRow label="Priority" value={todo.priority} />
           <DetailRow label="Assigned" value={todo.assigned ? "Yes" : "No"} />

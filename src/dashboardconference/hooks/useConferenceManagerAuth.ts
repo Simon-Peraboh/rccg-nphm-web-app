@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { queryClient } from "../lib/queryClient";
 import {
   adminLoginAPICall,
+  assistedMemberLoginAPICall,
   createAdminAPICall,
   logoutConferenceAPICall,
   memberLoginAPICall,
@@ -15,6 +16,7 @@ import {
 } from "../services/conferenceManagerStorage";
 import type {
   AdminLoginDTO,
+  AssistedMemberLoginDTO,
   CreateAdminDTO,
   MemberLoginDTO,
   RegisterConferenceDTO,
@@ -29,6 +31,15 @@ export const useRegisterConference = () =>
 export const useMemberLogin = () =>
   useMutation({
     mutationFn: (payload: MemberLoginDTO) => memberLoginAPICall(payload),
+    onSuccess: (data) => {
+      storeConferenceToken(data.token);
+      saveConferenceUser(data.user);
+    },
+  });
+
+export const useAssistedMemberLogin = () =>
+  useMutation({
+    mutationFn: (payload: AssistedMemberLoginDTO) => assistedMemberLoginAPICall(payload),
     onSuccess: (data) => {
       storeConferenceToken(data.token);
       saveConferenceUser(data.user);

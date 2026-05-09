@@ -1,12 +1,10 @@
 import axios from "axios";
 import { getConferenceToken} from "../services/conferenceManagerStorage";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "https://app2.rccgphm.org/api";
+
 export const conferenceApi = axios.create({
-<<<<<<< HEAD
-  baseURL: "https://app2.rccgphm.org/api/conference-manager",
-=======
-  baseURL: "http://127.0.0.1:8000/api/conference-manager",
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
+  baseURL: `${API_BASE_URL.replace(/\/+$/, "")}/conference-manager`,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",

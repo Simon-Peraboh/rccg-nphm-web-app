@@ -9,10 +9,6 @@ import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import axios from "axios";
 import imageCompression from "browser-image-compression";
-<<<<<<< HEAD
-import { getStorageImageUrl, PLACEHOLDER_IMAGE } from "../../utils/getStorageImageUrl";
-=======
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 import {
     useCreateMinistryActivity,
     useDeleteMinistryActivity,
@@ -24,12 +20,9 @@ import type {
     MinistryActivityFormValues,
 } from "../types/ministryActivities";
 
-<<<<<<< HEAD
-=======
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 const PLACEHOLDER_IMAGE = "/placeholder.png";
 
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 const schema: yup.ObjectSchema<MinistryActivityFormValues> = yup.object({
     title: yup.string().required("Title is required"),
     caption: yup.string().optional(),
@@ -39,8 +32,6 @@ const schema: yup.ObjectSchema<MinistryActivityFormValues> = yup.object({
     isPublished: yup.boolean().default(true),
 });
 
-<<<<<<< HEAD
-=======
 const normalizeImageUrl = (imagePath?: string | File | null): string | null => {
     if (!imagePath || typeof imagePath !== "string") {
         return null;
@@ -57,7 +48,6 @@ const normalizeImageUrl = (imagePath?: string | File | null): string | null => {
 
     return `${API_BASE_URL}/storage/${normalizedPath}`;
 };
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 const getApiErrorMessage = (error: unknown): string => {
     if (axios.isAxiosError(error)) {
@@ -299,28 +289,12 @@ const MinistryActivityAdminPage: React.FC = () => {
                             </p>
 
                             <div className="mt-5">
-<<<<<<< HEAD
-                                <label
-                                    htmlFor="image"
-                                    className="block text-sm font-medium text-slate-700 mb-1"
-                                >
-                                    Upload Image
-                                </label>
-
                                 <input
-                                    id="image"
-=======
-                                <input
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
                                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
                                 />
-<<<<<<< HEAD
-
-=======
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                                 {errors.image && (
                                     <p className="mt-1 text-xs text-red-500">{errors.image.message}</p>
                                 )}
@@ -333,10 +307,6 @@ const MinistryActivityAdminPage: React.FC = () => {
                                     />
                                 )}
                             </div>
-<<<<<<< HEAD
-
-=======
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                         </div>
 
                         <div className="flex flex-wrap gap-3">
@@ -374,11 +344,7 @@ const MinistryActivityAdminPage: React.FC = () => {
                         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                             {activities.map((activity) => {
                                 const imageUrl =
-<<<<<<< HEAD
-                                    getStorageImageUrl(activity.imageUrl || activity.image) || PLACEHOLDER_IMAGE;
-=======
                                     normalizeImageUrl(activity.imageUrl || activity.image) || PLACEHOLDER_IMAGE;
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
                                 return (
                                     <article

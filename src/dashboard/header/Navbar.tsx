@@ -17,10 +17,7 @@ const Navbar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-<<<<<<< HEAD
-=======
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   const [userEmail, setUserEmail] = useState("Guest");
   const [firstName, setFirstName] = useState("Guest");
 
@@ -68,40 +65,6 @@ const Navbar: React.FC = () => {
     }
   };
 
-<<<<<<< HEAD
-  const handleLogout = () => {
-    const toastId = toast.info(
-      <div className="space-y-3">
-        <p className="text-sm">Are you sure you want to log out?</p>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            title="Confirm logout"
-            onClick={() => {
-              clearSession();
-              toast.dismiss(toastId);
-              navigate("/dashboard/loginUser");
-            }}
-            className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white"
-          >
-            Yes
-          </button>
-          <button
-            type="button"
-            title="Cancel logout"
-            onClick={() => toast.dismiss(toastId)}
-            className="rounded-lg bg-slate-500 px-3 py-1.5 text-sm font-semibold text-white"
-          >
-            No
-          </button>
-        </div>
-      </div>,
-      {
-        autoClose: false,
-        closeOnClick: false,
-      }
-    );
-=======
   useEffect(() => {
     if (!isLogoutConfirmOpen) {
       return;
@@ -132,7 +95,6 @@ const Navbar: React.FC = () => {
     toast.dismiss();
     toast.success("Logged out successfully.");
     navigate("/dashboard/loginUser", { replace: true });
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   };
 
   return (
@@ -229,11 +191,7 @@ const Navbar: React.FC = () => {
                 <button
                   type="button"
                   title="Logout"
-<<<<<<< HEAD
-                  onClick={handleLogout}
-=======
                   onClick={requestLogout}
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                   className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <FaSignOutAlt />
@@ -287,11 +245,7 @@ const Navbar: React.FC = () => {
             <button
               type="button"
               title="Logout"
-<<<<<<< HEAD
-              onClick={handleLogout}
-=======
               onClick={requestLogout}
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
               className="block w-full rounded-xl px-4 py-2 text-left text-sm text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Logout
@@ -299,8 +253,6 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       )}
-<<<<<<< HEAD
-=======
 
       {isLogoutConfirmOpen && (
         <div
@@ -342,13 +294,8 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       )}
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     </header>
   );
 };
 
-<<<<<<< HEAD
 export default Navbar;
-=======
-export default Navbar;
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

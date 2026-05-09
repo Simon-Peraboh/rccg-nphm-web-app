@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-// BankAccounts.tsx
-const bankAccounts = [
-=======
 import { FaGlobeAfrica, FaLandmark } from "react-icons/fa";
 
 type BankAccount = {
@@ -12,66 +8,28 @@ type BankAccount = {
 };
 
 const localCurrencyAccounts: BankAccount[] = [
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   {
     bank: "GTBank",
     accountNo: "0224362729",
     accountName: "RCCG Prison and Hospital Ministry",
-<<<<<<< HEAD
-=======
     currency: "NGN",
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   },
   {
     bank: "GTBank",
     accountNo: "0678287531",
     accountName: "RCCG PHM Project / Conference",
-<<<<<<< HEAD
-=======
     currency: "NGN",
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   },
   {
     bank: "Premium Trust Bank",
     accountNo: "0040149420",
     accountName: "RCCG Prison and Hospital Ministry",
-<<<<<<< HEAD
-=======
     currency: "NGN",
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   },
   {
     bank: "Jubilee Life Mortgage Bank",
     accountNo: "0000943479",
     accountName: "RCCG (National) Prison & Hospital Ministry",
-<<<<<<< HEAD
-  },
-];
-
-const BankAccounts = () => {
-  return (
-    <div className="max-w-3xl mx-auto bg-blue-200 p-6 rounded-lg shadow">
-      <h2 className="text-2xl font-bold text-center mb-6 text-blue-700">
-        Naira Accounts
-      </h2>
-
-      <div className="space-y-4">
-        {bankAccounts.map((acct, index) => (
-          <div
-            key={index}
-            className="border rounded-md p-4 hover:bg-blue-50 transition"
-          >
-            <p className="font-semibold text-lg">{acct.bank}</p>
-            <p>
-              <span className="font-medium">Acct. No:</span> {acct.accountNo}
-            </p>
-            <p>
-              <span className="font-medium">Acct. Name:</span> {acct.accountName}
-            </p>
-          </div>
-        ))}
-      </div>
-=======
     currency: "NGN",
   },
 ];
@@ -192,7 +150,6 @@ const BankAccounts = () => {
           </div>
         )}
       </section>
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     </div>
   );
 };

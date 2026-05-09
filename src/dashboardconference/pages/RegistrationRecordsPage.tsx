@@ -1,45 +1,120 @@
-<<<<<<< HEAD
-import React from "react";
-import axios from "axios";
-=======
 import React, { useMemo, useState } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import { FaSearch } from "react-icons/fa";
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
-import { useRegistrationRecords } from "../hooks/useConferenceManagerQueries";
+import { toast } from "react-toastify";
+import {
+  useBulkAssistedRegistration,
+  useRegistrationRecords,
+} from "../hooks/useConferenceManagerQueries";
+import { getConferenceApiErrorMessage } from "../services/conferenceManagerService";
 import { exportToCsv } from "../utils/exportToCsv";
 import { formatDisplayDate } from "../utils/formatters";
-import type { RegistrationRecordItem } from "../types/conferenceManager";
+import type {
+  BulkAssistedRegistrationResponse,
+  BulkAssistedRegistrationRow,
+  RegistrationRecordItem,
+} from "../types/conferenceManager";
 
-<<<<<<< HEAD
-const RegistrationRecordsPage: React.FC = () => {
-  const { data, isLoading, isError, error } = useRegistrationRecords();
+type SheetRow = Record<string, unknown>;
 
-  const records: RegistrationRecordItem[] = data ?? [];
+const normalizeHeader = (header: string) =>
+  header.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-  const handleExport = () => {
-    const exportRows = records.map((item) => ({
-      FullName: item.conference_user?.full_name ?? "",
-      Email: item.conference_user?.email ?? "",
-      PhoneNumber: item.conference_user?.phone_number ?? "",
-      RegistrationCode: item.registration_code ?? "",
-      ConferenceTitle: item.conference_event?.title ?? "",
-      ConferenceYear: item.conference_event?.year ?? "",
-      Theme: item.conference_event?.theme ?? "",
-      State: item.state ?? "",
-      Region: item.region ?? "",
-      Province: item.province ?? "",
-      Position: item.position ?? "",
-      Accommodation: item.accommodation ? "Yes" : "No",
-      ArrivalDate: item.arrival_date ?? "",
-      DepartureDate: item.departure_date ?? "",
-      FirstTimer: item.first_timer ? "Yes" : "No",
-      Status: item.status ?? "",
-      CreatedAt: item.created_at ?? "",
-    }));
+const getSheetValue = (row: SheetRow, aliases: string[]) => {
+  const normalizedRow = Object.entries(row).reduce<Record<string, unknown>>(
+    (acc, [key, value]) => {
+      acc[normalizeHeader(key)] = value;
+      return acc;
+    },
+    {}
+  );
 
-    exportToCsv(exportRows, "conference-registrations");
-=======
+  for (const alias of aliases) {
+    const value = normalizedRow[normalizeHeader(alias)];
+
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return value;
+    }
+  }
+
+  return "";
+};
+
+const getSheetText = (row: SheetRow, aliases: string[]) =>
+  String(getSheetValue(row, aliases)).trim();
+
+const getSheetBoolean = (row: SheetRow, aliases: string[]) => {
+  const value = getSheetValue(row, aliases);
+
+  if (typeof value === "boolean") return value;
+
+  const text = String(value).trim().toLowerCase();
+
+  return ["1", "true", "yes", "y"].includes(text);
+};
+
+const getSheetDate = (row: SheetRow, aliases: string[]) => {
+  const text = getSheetText(row, aliases);
+
+  if (!text) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
+
+  const parsedDate = new Date(text);
+
+  return Number.isNaN(parsedDate.getTime())
+    ? null
+    : parsedDate.toISOString().slice(0, 10);
+};
+
+const parseAssistedRegistrationRows = async (
+  file: File
+): Promise<BulkAssistedRegistrationRow[]> => {
+  const workbook = XLSX.read(await file.arrayBuffer(), {
+    type: "array",
+    raw: false,
+    cellDates: true,
+  });
+  const firstSheetName = workbook.SheetNames[0];
+
+  if (!firstSheetName) {
+    return [];
+  }
+
+  const sheet = workbook.Sheets[firstSheetName];
+  const rows = XLSX.utils.sheet_to_json<SheetRow>(sheet, { defval: "", raw: false });
+
+  return rows
+    .map((row) => ({
+      full_name: getSheetText(row, ["full name", "fullname", "name", "member name"]),
+      phone_number: getSheetText(row, [
+        "phone number",
+        "phone",
+        "phone no",
+        "phone no.",
+        "mobile",
+        "mobile number",
+      ]),
+      state: getSheetText(row, ["state"]),
+      region: getSheetText(row, ["region"]),
+      province: getSheetText(row, ["province"]),
+      position: getSheetText(row, ["position", "office", "role"]) || "Member",
+      accommodation: getSheetBoolean(row, ["accommodation", "needs accommodation"]),
+      arrival_date: getSheetDate(row, ["arrival date", "arrival"]),
+      departure_date: getSheetDate(row, ["departure date", "departure"]),
+      first_timer: getSheetBoolean(row, ["first timer", "first time", "first_timer"]),
+    }))
+    .filter((row) =>
+      [
+        row.full_name,
+        row.phone_number,
+        row.state,
+        row.region,
+        row.province,
+      ].some(Boolean)
+    );
+};
+
 const toExportRow = (item: RegistrationRecordItem) => ({
   FullName: item.conference_user?.full_name ?? "",
   Email: item.conference_user?.email ?? "",
@@ -62,8 +137,13 @@ const toExportRow = (item: RegistrationRecordItem) => ({
 
 const RegistrationRecordsPage: React.FC = () => {
   const { data, isLoading, isError, error } = useRegistrationRecords();
+  const bulkAssistedMutation = useBulkAssistedRegistration();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkFileName, setBulkFileName] = useState("");
+  const [bulkRows, setBulkRows] = useState<BulkAssistedRegistrationRow[]>([]);
+  const [bulkResults, setBulkResults] =
+    useState<BulkAssistedRegistrationResponse | null>(null);
 
   const records: RegistrationRecordItem[] = useMemo(() => data ?? [], [data]);
 
@@ -80,6 +160,19 @@ const RegistrationRecordsPage: React.FC = () => {
   const selectedRecords = useMemo(
     () => records.filter((item) => selectedIds.has(item.id)),
     [records, selectedIds]
+  );
+
+  const invalidBulkRows = useMemo(
+    () =>
+      bulkRows.filter(
+        (row) =>
+          !row.full_name ||
+          !row.phone_number ||
+          !row.state ||
+          !row.region ||
+          !row.province
+      ),
+    [bulkRows]
   );
 
   const allFilteredSelected =
@@ -118,7 +211,74 @@ const RegistrationRecordsPage: React.FC = () => {
     const exportRows = selectedRecords.map(toExportRow);
 
     exportToCsv(exportRows, "conference-registrations-selected");
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
+  };
+
+  const handleBulkFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      const rows = await parseAssistedRegistrationRows(file);
+
+      setBulkFileName(file.name);
+      setBulkRows(rows);
+      setBulkResults(null);
+
+      if (rows.length === 0) {
+        toast.warning("No registration rows were found in the selected file.");
+      } else {
+        toast.success(`${rows.length} registration row${rows.length === 1 ? "" : "s"} loaded.`);
+      }
+    } catch {
+      setBulkFileName("");
+      setBulkRows([]);
+      setBulkResults(null);
+      toast.error("Could not read the selected Excel file.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handleBulkSubmit = async () => {
+    if (bulkRows.length === 0) {
+      toast.error("Please choose an Excel file first.");
+      return;
+    }
+
+    if (invalidBulkRows.length > 0) {
+      toast.error("Some rows are missing full name, phone number, state, region, or province.");
+      return;
+    }
+
+    try {
+      const response = await bulkAssistedMutation.mutateAsync(bulkRows);
+      setBulkResults(response);
+    } catch (error: unknown) {
+      toast.error(
+        getConferenceApiErrorMessage(error, "Could not process assisted registrations.")
+      );
+    }
+  };
+
+  const handleExportBulkResults = () => {
+    if (!bulkResults) return;
+
+    exportToCsv(
+      bulkResults.data.map((item) => ({
+        Row: item.row,
+        Status: item.status,
+        FullName: item.full_name,
+        FirstName: item.first_name ?? "",
+        PhoneNumber: item.phone_number ?? "",
+        Passcode: item.passcode ?? "",
+        RegistrationCode: item.registration_code ?? "",
+        Message: item.message,
+      })),
+      "conference-assisted-registration-passcodes"
+    );
   };
 
   if (isLoading) {
@@ -152,20 +312,6 @@ const RegistrationRecordsPage: React.FC = () => {
           <h1 className="text-3xl font-bold mt-2">All Registration Records</h1>
         </div>
 
-<<<<<<< HEAD
-        <button
-          onClick={handleExport}
-          className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm font-medium"
-        >
-          Export CSV
-        </button>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1300px] border-separate border-spacing-y-3">
-          <thead>
-            <tr className="text-left text-sm text-slate-500">
-=======
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative">
             <FaSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -185,6 +331,146 @@ const RegistrationRecordsPage: React.FC = () => {
             Export Selected ({selectedRecords.length})
           </button>
         </div>
+      </div>
+
+      <div className="mb-6 border-y border-slate-200 py-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
+              Assisted Registration
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-slate-950">
+              Excel upload for members without email
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Required columns: Full Name, Phone Number, State, Region, Province.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Choose Excel
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleBulkFileChange}
+                className="sr-only"
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={handleBulkSubmit}
+              disabled={bulkRows.length === 0 || bulkAssistedMutation.isPending}
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {bulkAssistedMutation.isPending ? "Processing..." : "Process Upload"}
+            </button>
+          </div>
+        </div>
+
+        {bulkRows.length > 0 && (
+          <div className="mt-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+              <p>
+                {bulkFileName} loaded with {bulkRows.length} row
+                {bulkRows.length === 1 ? "" : "s"}.
+              </p>
+              <p className={invalidBulkRows.length ? "font-semibold text-red-600" : "text-green-700"}>
+                {invalidBulkRows.length
+                  ? `${invalidBulkRows.length} row${invalidBulkRows.length === 1 ? "" : "s"} need required fields`
+                  : "All preview rows have required fields"}
+              </p>
+            </div>
+
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full min-w-[760px] border-separate border-spacing-y-2 text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500">
+                    <th className="px-3">Name</th>
+                    <th className="px-3">Phone</th>
+                    <th className="px-3">State</th>
+                    <th className="px-3">Region</th>
+                    <th className="px-3">Province</th>
+                    <th className="px-3">Position</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bulkRows.slice(0, 6).map((row, index) => (
+                    <tr key={`${row.phone_number}-${index}`} className="bg-slate-50">
+                      <td className="rounded-l-xl px-3 py-3">{row.full_name || "-"}</td>
+                      <td className="px-3 py-3">{row.phone_number || "-"}</td>
+                      <td className="px-3 py-3">{row.state || "-"}</td>
+                      <td className="px-3 py-3">{row.region || "-"}</td>
+                      <td className="px-3 py-3">{row.province || "-"}</td>
+                      <td className="rounded-r-xl px-3 py-3">{row.position || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {bulkResults && (
+          <div className="mt-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="grid gap-3 text-sm sm:grid-cols-4">
+                <span className="rounded-xl bg-slate-100 px-3 py-2">
+                  Total: {bulkResults.summary.total}
+                </span>
+                <span className="rounded-xl bg-green-50 px-3 py-2 text-green-700">
+                  Created: {bulkResults.summary.created}
+                </span>
+                <span className="rounded-xl bg-blue-50 px-3 py-2 text-blue-700">
+                  Registered: {bulkResults.summary.registered}
+                </span>
+                <span className="rounded-xl bg-red-50 px-3 py-2 text-red-700">
+                  Failed: {bulkResults.summary.failed}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleExportBulkResults}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Export Passcodes
+              </button>
+            </div>
+
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full min-w-[900px] border-separate border-spacing-y-2 text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500">
+                    <th className="px-3">Row</th>
+                    <th className="px-3">Status</th>
+                    <th className="px-3">Name</th>
+                    <th className="px-3">First Name</th>
+                    <th className="px-3">Phone</th>
+                    <th className="px-3">Passcode</th>
+                    <th className="px-3">Code</th>
+                    <th className="px-3">Message</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bulkResults.data.map((item) => (
+                    <tr key={`${item.row}-${item.phone_number}`} className="bg-slate-50">
+                      <td className="rounded-l-xl px-3 py-3">{item.row}</td>
+                      <td className="px-3 py-3 capitalize">{item.status}</td>
+                      <td className="px-3 py-3">{item.full_name}</td>
+                      <td className="px-3 py-3">{item.first_name ?? "-"}</td>
+                      <td className="px-3 py-3">{item.phone_number ?? "-"}</td>
+                      <td className="px-3 py-3 font-semibold">{item.passcode ?? "-"}</td>
+                      <td className="px-3 py-3">{item.registration_code ?? "-"}</td>
+                      <td className="rounded-r-xl px-3 py-3">{item.message}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
@@ -215,7 +501,6 @@ const RegistrationRecordsPage: React.FC = () => {
                   className="h-4 w-4 rounded border-slate-300 text-blue-600"
                 />
               </th>
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
               <th className="px-4">Member</th>
               <th className="px-4">Email</th>
               <th className="px-4">Phone</th>
@@ -231,11 +516,6 @@ const RegistrationRecordsPage: React.FC = () => {
           </thead>
 
           <tbody>
-<<<<<<< HEAD
-            {records.map((item) => (
-              <tr key={item.id} className="bg-slate-50">
-                <td className="px-4 py-4 rounded-l-2xl">
-=======
             {filteredRecords.map((item) => (
               <tr key={item.id} className="bg-slate-50">
                 <td className="px-4 py-4 rounded-l-2xl">
@@ -248,7 +528,6 @@ const RegistrationRecordsPage: React.FC = () => {
                   />
                 </td>
                 <td className="px-4 py-4">
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                   {item.conference_user?.full_name ?? "Unknown"}
                 </td>
                 <td className="px-4 py-4">{item.conference_user?.email ?? "-"}</td>
@@ -266,19 +545,12 @@ const RegistrationRecordsPage: React.FC = () => {
               </tr>
             ))}
 
-<<<<<<< HEAD
-            {records.length === 0 && (
-              <tr>
-                <td colSpan={11} className="py-10 text-center text-slate-500">
-                  No registration records found.
-=======
             {filteredRecords.length === 0 && (
               <tr>
                 <td colSpan={12} className="py-10 text-center text-slate-500">
                   {records.length === 0
                     ? "No registration records found."
                     : "No registration records match your search."}
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                 </td>
               </tr>
             )}
@@ -289,8 +561,4 @@ const RegistrationRecordsPage: React.FC = () => {
   );
 };
 
-<<<<<<< HEAD
 export default RegistrationRecordsPage;
-=======
-export default RegistrationRecordsPage;
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

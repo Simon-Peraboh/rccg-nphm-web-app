@@ -11,11 +11,6 @@ const toFormData = (payload: StateCoordinatorDTO): FormData => {
 
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
-<<<<<<< HEAD
-      if (key === "image_path" && value instanceof File) {
-        formData.append(key, value);
-      } else if (key !== "image_path") {
-=======
       if (key === "image_path") {
         if (value instanceof Blob) {
           formData.append(
@@ -25,7 +20,6 @@ const toFormData = (payload: StateCoordinatorDTO): FormData => {
           );
         }
       } else {
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
         formData.append(key, String(value));
       }
     }
@@ -39,8 +33,6 @@ export const getStateCoordinatorStatesAPICall = async (): Promise<string[]> => {
   return Array.isArray(response.data) ? response.data : [];
 };
 
-<<<<<<< HEAD
-=======
 export const getStateCoordinatorsAPICall = async (): Promise<StateCoordinatorDTO[]> => {
   const response = await dashboardApi.get<StateCoordinatorDTO[]>(
     `${BASE_PATH}/admin/all`
@@ -49,7 +41,6 @@ export const getStateCoordinatorsAPICall = async (): Promise<StateCoordinatorDTO
   return Array.isArray(response.data) ? response.data : [];
 };
 
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 export const createStateCoordinatorAPICall = async (
   payload: StateCoordinatorDTO
 ): Promise<StateCoordinatorResponse> => {
@@ -64,9 +55,6 @@ export const createStateCoordinatorAPICall = async (
   );
 
   return response.data;
-<<<<<<< HEAD
-};
-=======
 };
 
 export const deleteStateCoordinatorAPICall = async (
@@ -78,4 +66,3 @@ export const deleteStateCoordinatorAPICall = async (
 
   return response.data;
 };
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

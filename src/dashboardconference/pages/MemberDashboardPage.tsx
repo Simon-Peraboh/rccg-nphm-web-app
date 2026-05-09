@@ -7,14 +7,9 @@ import {
 } from "../hooks/useConferenceManagerQueries";
 import type { ConferenceActivity } from "../types/conferenceManager";
 import { useConferenceLogout } from '../hooks/useConferenceManagerAuth';
-<<<<<<< HEAD
-import { useNavigate } from "react-router";
-import { formatDisplayDate } from "../utils/formatters";
-=======
 import { Link, useNavigate } from "react-router-dom";
 import { formatDisplayDate } from "../utils/formatters";
 import { FaArrowLeft, FaDownload, FaFileAlt } from "react-icons/fa";
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 const statusBadge = (status?: string) => {
   switch (status) {
@@ -29,8 +24,6 @@ const statusBadge = (status?: string) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 const DEFAULT_ACTIVITY_DOCUMENT_URL =
   "/documents/RMF_2026_CONVENTION_PROGRAM_OUTLINE.pdf";
@@ -63,7 +56,6 @@ const getActivityDocumentName = (activity: ConferenceActivity) =>
   activity.document_name ??
   DEFAULT_ACTIVITY_DOCUMENT_NAME;
 
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 const MemberDashboardPage: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
 
@@ -166,8 +158,6 @@ const MemberDashboardPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap gap-3">
-<<<<<<< HEAD
-=======
               {data.user.role === "admin" && (
                 <Link
                   to="/dashboardconference/admin"
@@ -178,7 +168,6 @@ const MemberDashboardPage: React.FC = () => {
                 </Link>
               )}
 
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
               <button
                 onClick={handleMarkAttendance}
                 disabled={markAttendanceMutation.isPending || !data.current_registration}
@@ -309,8 +298,6 @@ const MemberDashboardPage: React.FC = () => {
                           {activity.description}
                         </p>
                       )}
-<<<<<<< HEAD
-=======
 
                       {getActivityDocumentUrl(activity) && (
                         <a
@@ -325,7 +312,6 @@ const MemberDashboardPage: React.FC = () => {
                           <FaDownload />
                         </a>
                       )}
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                     </div>
 
                     <div className="text-sm text-slate-600">

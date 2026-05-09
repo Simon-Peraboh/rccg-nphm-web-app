@@ -7,10 +7,6 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { useDeleteUserProfile, useUserProfiles } from "../hooks/useUserProfile";
 import type { UserProfileDTO } from "../types/userProfile";
 import ProfileAvatar from "../../components/avatar/ProfileAvatar";
-<<<<<<< HEAD
-import { getStorageImageUrl } from "../../utils/getStorageImageUrl";
-=======
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 const truncateText = (value: string | null | undefined, max = 22): string => {
   if (!value) return "-";
@@ -42,17 +38,6 @@ const UserProfileTable: React.FC = () => {
     });
   }, [data, searchTerm]);
 
-<<<<<<< HEAD
-  console.log(
-    profiles.slice(0, 5).map((profile) => ({
-      id: profile.id,
-      image_path: profile.image_path,
-      resolved: getStorageImageUrl(profile.image_path),
-    }))
-  );
-
-=======
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   const handleDelete = (id: number, fullName: string) => {
     confirmAlert({
       title: "Confirm deletion",

@@ -17,9 +17,11 @@ import {
   createConferenceEventAPICall,
   deleteConferenceEventAPICall,
   createConferenceActivityAPICall,
+  bulkAssistedRegistrationAPICall,
 } from "../services/conferenceManagerService";
 
 import type {
+  BulkAssistedRegistrationRow,
   CreateConferenceActivityDTO,
   CreateConferenceEventDTO,
 } from "../types/conferenceManager";
@@ -155,12 +157,7 @@ export const useCreateConferenceActivity = () => {
       conferenceEventId: number;
       payload: CreateConferenceActivityDTO;
     }) => createConferenceActivityAPICall(conferenceEventId, payload),
-<<<<<<< HEAD
-    onSuccess: async (data) => {
-      toast.success(data.message || "Conference activity created successfully");
-=======
     onSuccess: async () => {
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
       await queryClient.invalidateQueries({
         queryKey: conferenceQueryKeys.events,
       });
@@ -179,6 +176,23 @@ export const useRegistrationRecords = () =>
     queryKey: conferenceQueryKeys.registrations,
     queryFn: getRegistrationRecordsAPICall,
   });
+
+export const useBulkAssistedRegistration = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (rows: BulkAssistedRegistrationRow[]) =>
+      bulkAssistedRegistrationAPICall(rows),
+    onSuccess: async (data) => {
+      toast.success(data.message || "Assisted registrations processed.");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: conferenceQueryKeys.registrations }),
+        queryClient.invalidateQueries({ queryKey: conferenceQueryKeys.summary }),
+        queryClient.invalidateQueries({ queryKey: conferenceQueryKeys.members }),
+      ]);
+    },
+  });
+};
 
 export const useAttendanceRecords = () =>
   useQuery({
@@ -220,8 +234,4 @@ export const usePromoteConferenceMember = () => {
       ]);
     },
   });
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

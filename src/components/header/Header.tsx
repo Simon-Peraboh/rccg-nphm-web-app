@@ -24,10 +24,6 @@ const primaryNav: NavItem[] = [
   {
     label: "More",
     children: [
-<<<<<<< HEAD
-      { label: "Blog", to: "/Blog" },
-=======
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
       { label: "Contact Us", to: "/Contact" },
       { label: "Report", to: "/Report" },
     ],

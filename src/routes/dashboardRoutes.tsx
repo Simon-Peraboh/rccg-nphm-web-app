@@ -37,11 +37,7 @@ import QuarterlyReportCreate from "../dashboard/quarterlyreport/QuarterlyReportC
 import QuarterlyReportTable from "../dashboard/quarterlyreport/QuarterlyReportTable";
 import QuarterlyReportEdit from "../dashboard/quarterlyreport/QuarterlyReportEdit";
 import QuarterlyReportView from "../dashboard/quarterlyreport/QuarterlyReportView";
-<<<<<<< HEAD
-
-=======
 import QuarterlyReportTable2 from "../dashboard/quarterlyreport/QuarterlyReportTable2";
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 import TodoListTable from "../dashboard/todolist/TodoListTable";
 import TodoListCreate from "../dashboard/todolist/TodoListCreate";
@@ -50,12 +46,8 @@ import TodoListEdit from "../dashboard/todolist/TodoListEdit";
 import LoginUser from "../dashboard/register_login_detail/LoginUser";
 import Unauthorized from "../dashboard/register_login_detail/Unauthorized";
 import RegisterProfileCreate from "../dashboard/userprofile/RegisterProfileCreate";
-<<<<<<< HEAD
-import StateCoordinatorForm from "../dashboard/statecoord/StateCoordinator";
-=======
 import StateCoordinatorForm from "../dashboard/statecoord/StateCoordinatorForm";
 import StateCoordinatorTable from "../dashboard/statecoord/StateCoordinatorTable";
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 import MonthlyReport from "../dashboard/monthlyreport/MonthlyReport";
 import AccountActivation from "../dashboard/register_login_detail/AccountActivation";
 import ForgotPassword from "../dashboard/register_login_detail/ForgetPassword";
@@ -63,12 +55,9 @@ import ResetPassword from "../dashboard/register_login_detail/ResetPassword";
 import TodoViewPage from "../dashboard/todolist/TodoViewPage";
 import MinistryActivityAdminPage from "../dashboard/ministryactivies/MinistryActivityAdminPage";
 import MinistryActivityEdit from "../dashboard/ministryactivies/MinistryActivityEdit";
-<<<<<<< HEAD
-=======
 import InActionPostAdminPage from "../dashboard/inaction/InActionPostAdminPage";
 import UpcomingProgramAdminPage from "../dashboard/upcoming/UpcomingProgramAdminPage";
 import { IN_ACTION_POST_ACCESS_ROLES } from "../dashboard/utils/accessLevels";
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 export const dashboardRoutes: RouteObject[] = [
   {
@@ -116,12 +105,8 @@ export const dashboardRoutes: RouteObject[] = [
       { path: "quarterlyReportTable", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportTable /></ProtectedRoute> },
       { path: "quarterlyReportEdit/:id", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportEdit /></ProtectedRoute> },
       { path: "quarterlyReportView/:id", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportView /></ProtectedRoute> },
-<<<<<<< HEAD
-      
-=======
       { path: "quarterlyReportTable2", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportTable2 /></ProtectedRoute> },
 
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
       { path: "todoListTable", element: <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "TREASURER", "ADMIN", "USER"]}><TodoListTable /></ProtectedRoute> },
       { path: "todoListCreate", element: <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "TREASURER", "ADMIN", "USER"]}><TodoListCreate /></ProtectedRoute> },
       { path: "todoListEdit/:id", element: <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "TREASURER", "ADMIN", "USER"]}><TodoListEdit /></ProtectedRoute> },
@@ -142,8 +127,6 @@ export const dashboardRoutes: RouteObject[] = [
           </ProtectedRoute>
         ),
       },
-<<<<<<< HEAD
-=======
       {
         path: "inActionPosts",
         element: (
@@ -176,7 +159,6 @@ export const dashboardRoutes: RouteObject[] = [
           </ProtectedRoute>
         ),
       },
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     ],
   },
 
@@ -184,17 +166,9 @@ export const dashboardRoutes: RouteObject[] = [
   { path: "/dashboard/loginUser", element: <LoginUser /> },
   { path: "/dashboard/unauthorized", element: <Unauthorized /> },
   { path: "/dashboard/register", element: <RegisterProfileCreate /> },
-<<<<<<< HEAD
-  { path: "/dashboard/stateCoordinators", element: <StateCoordinatorForm /> },
-=======
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   { path: "/dashboard/monthlyReportCreate", element: <MonthlyReportCreate /> },
   { path: "/dashboard/monthlyReport", element: <MonthlyReport /> },
   { path: "/dashboard/accountActivation", element: <AccountActivation /> },
   { path: "/dashboard/forgetPassword", element: <ForgotPassword /> },
   { path: "/dashboard/resetPassword", element: <ResetPassword /> },
-<<<<<<< HEAD
 ];
-=======
-];
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

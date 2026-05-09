@@ -170,19 +170,11 @@ const TodoTablePage: React.FC = () => {
                   </td>
 
                   <td className="px-6 py-5 text-sm text-slate-500">
-<<<<<<< HEAD
                     {formatDisplayDateTime(todo.startDate)}
                   </td>
 
                   <td className="px-6 py-5 text-sm text-slate-500">
                     {formatDisplayDateTime(todo.dueDate)}
-=======
-                    {formatDisplayDateTime(todo.start_date)}
-                  </td>
-
-                  <td className="px-6 py-5 text-sm text-slate-500">
-                    {formatDisplayDateTime(todo.due_date)}
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                   </td>
 
                   <td className="px-6 py-5">

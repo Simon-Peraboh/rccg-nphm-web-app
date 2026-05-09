@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import imageCompression from "browser-image-compression";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { FaArrowLeft, FaComments, FaHeart, FaTrash } from "react-icons/fa";
@@ -23,15 +24,52 @@ const emptyForm: InActionPostFormValues = {
   isPublished: true,
 };
 
+const MAX_IMAGE_SIZE_BYTES = 900 * 1024;
+
+const extractBackendMessages = (value: unknown): string[] => {
+  if (!value) {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap(extractBackendMessages);
+  }
+
+  if (typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).flatMap(extractBackendMessages);
+  }
+
+  return [];
+};
+
 const getApiErrorMessage = (error: unknown) => {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.message || error.response?.data?.error || "Action failed.";
+    const responseData = error.response?.data;
+    const detailMessages = extractBackendMessages(responseData?.message);
+
+    if (detailMessages.length > 0) {
+      return detailMessages[0]
+        .replace(/image one/gi, "first image")
+        .replace(/image two/gi, "second image");
+    }
+
+    return responseData?.error || "Action failed.";
   }
 
   if (error instanceof Error) return error.message;
 
   return "Action failed.";
 };
+
+const toUploadFile = (compressedFile: Blob, originalFile: File): File =>
+  new File([compressedFile], originalFile.name, {
+    type: compressedFile.type || originalFile.type,
+    lastModified: Date.now(),
+  });
 
 const InActionPostAdminPage: React.FC = () => {
   const { data, isLoading } = useInActionPosts();
@@ -41,6 +79,7 @@ const InActionPostAdminPage: React.FC = () => {
 
   const [form, setForm] = useState<InActionPostFormValues>(emptyForm);
   const [previews, setPreviews] = useState<{ imageOne?: string; imageTwo?: string }>({});
+  const [imageProcessingKey, setImageProcessingKey] = useState<"imageOne" | "imageTwo" | null>(null);
 
   const posts = useMemo<InActionPostDTO[]>(() => data ?? [], [data]);
 
@@ -51,16 +90,76 @@ const InActionPostAdminPage: React.FC = () => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleImageChange = (
+  useEffect(() => {
+    return () => {
+      Object.values(previews).forEach((preview) => {
+        if (preview?.startsWith("blob:")) {
+          URL.revokeObjectURL(preview);
+        }
+      });
+    };
+  }, [previews]);
+
+  const handleImageChange = async (
     key: "imageOne" | "imageTwo",
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0] ?? null;
-    updateForm(key, file);
-    setPreviews((prev) => ({
-      ...prev,
-      [key]: file ? URL.createObjectURL(file) : undefined,
-    }));
+
+    if (!file) {
+      updateForm(key, null);
+      setPreviews((prev) => ({ ...prev, [key]: undefined }));
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      event.target.value = "";
+      updateForm(key, null);
+      setPreviews((prev) => ({ ...prev, [key]: undefined }));
+      toast.error("Please upload a valid image file.");
+      return;
+    }
+
+    setImageProcessingKey(key);
+
+    try {
+      const compressedFile = await imageCompression(file, {
+        maxSizeMB: 0.85,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+        initialQuality: 0.78,
+      });
+      const uploadFile = toUploadFile(compressedFile, file);
+
+      if (uploadFile.size > MAX_IMAGE_SIZE_BYTES) {
+        event.target.value = "";
+        updateForm(key, null);
+        setPreviews((prev) => ({ ...prev, [key]: undefined }));
+        toast.error("Image is still too large after compression. Please choose a smaller image.");
+        return;
+      }
+
+      updateForm(key, uploadFile);
+      setPreviews((prev) => {
+        const currentPreview = prev[key];
+
+        if (currentPreview?.startsWith("blob:")) {
+          URL.revokeObjectURL(currentPreview);
+        }
+
+        return {
+          ...prev,
+          [key]: URL.createObjectURL(uploadFile),
+        };
+      });
+    } catch {
+      event.target.value = "";
+      updateForm(key, null);
+      setPreviews((prev) => ({ ...prev, [key]: undefined }));
+      toast.error("Failed to prepare image. Please try another image.");
+    } finally {
+      setImageProcessingKey(null);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -69,6 +168,11 @@ const InActionPostAdminPage: React.FC = () => {
 
     if (!form.title.trim() || !form.details.trim()) {
       toast.error("Title and report details are required.");
+      return;
+    }
+
+    if (imageProcessingKey) {
+      toast.info("Please wait while the image is being prepared.");
       return;
     }
 
@@ -262,8 +366,14 @@ const InActionPostAdminPage: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={(event) => handleImageChange(key, event)}
+                    disabled={imageProcessingKey === key}
                     className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sky-50 file:px-3 file:py-2 file:text-sm file:font-bold file:text-sky-700"
                   />
+                  {imageProcessingKey === key && (
+                    <p className="mt-2 text-xs font-bold text-sky-700">
+                      Preparing image for upload...
+                    </p>
+                  )}
                   {previews[key] && (
                     <img
                       src={previews[key]}
@@ -277,10 +387,14 @@ const InActionPostAdminPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || !!imageProcessingKey}
               className="rounded-lg bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700 disabled:opacity-50"
             >
-              {createMutation.isPending ? "Publishing..." : "Publish In Action Post"}
+              {imageProcessingKey
+                ? "Preparing images..."
+                : createMutation.isPending
+                  ? "Publishing..."
+                  : "Publish In Action Post"}
             </button>
           </form>
         </div>

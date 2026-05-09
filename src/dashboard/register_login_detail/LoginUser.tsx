@@ -1,12 +1,4 @@
 import React, { useEffect, useState } from "react";
-<<<<<<< HEAD
-import { toast, ToastContainer } from "react-toastify";
-import { useNavigate } from "react-router";
-import axios from "axios";
-import { checkNetworkSpeed } from "../services/NetworkSpeedService";
-import { Link } from "react-router-dom";
-import { useDashboardLogin } from "../hooks/useDashboardAuth";
-=======
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router";
@@ -71,7 +63,6 @@ const getBackendErrorMessage = (error: unknown) => {
 
   return "Unable to complete login.";
 };
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 const LoginUser: React.FC = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -97,102 +88,14 @@ const LoginUser: React.FC = () => {
         password,
       });
 
-<<<<<<< HEAD
-      setTimeout(() => navigate("/dashboard"), 1500);
-    } catch (error: unknown) {
-      console.error("Login error:", error);
-
-      if (axios.isAxiosError(error)) {
-        const backendMessage =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Login failed. Please try again.";
-
-        toast.error(backendMessage);
-      } else if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Unexpected error occurred. Please try again.");
-      }
-=======
       setTimeout(() => navigate("/dashboard"), 900);
     } catch (error: unknown) {
       console.error("Login error:", error);
       toast.error(getBackendErrorMessage(error));
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     }
   };
 
   return (
-<<<<<<< HEAD
-    <div className="max-w-md mx-auto mt-10 p-5 bg-blue-200 shadow-md rounded-md">
-      <h2 className="text-2xl font-bold mb-5 text-center">Login</h2>
-
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Username or Email
-          </label>
-          <input
-            type="text"
-            value={usernameOrEmail}
-            onChange={(e) => setUsernameOrEmail(e.target.value)}
-            required
-            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
-            placeholder="Username or Email"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
-            placeholder="Password"
-          />
-
-          <div className="flex items-center mt-2">
-            <input
-              type="checkbox"
-              id="showPassword"
-              className="mr-2"
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-            />
-            <label htmlFor="showPassword" className="text-sm text-gray-700">
-              Show Password
-            </label>
-          </div>
-
-          <div className="text-right mt-2">
-            <Link
-              to="/dashboard/forgetPassword"
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Forgot Password?
-            </Link>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loginMutation.isPending}
-          className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
-        >
-          {loginMutation.isPending ? "Logging in..." : "Login"}
-        </button>
-      </form>
-
-      <ToastContainer position="top-right" />
-    </div>
-  );
-};
-
-export default LoginUser;
-=======
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <ToastContainer position="top-right" theme="colored" />
 
@@ -272,6 +175,23 @@ export default LoginUser;
               >
                 Website
               </Link>
+            </div>
+
+            <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-lg shadow-slate-200/70 lg:hidden">
+              <div className="relative h-44">
+                <img
+                  src={HeroImage}
+                  alt="RCCG NPHM outreach team"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white backdrop-blur">
+                    <FaShieldAlt className="h-3 w-3" />
+                    Secure Access
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70 sm:p-8">
@@ -371,4 +291,3 @@ export default LoginUser;
 };
 
 export default LoginUser;
->>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

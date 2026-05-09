@@ -106,12 +106,20 @@ const buildFormData = (payload: InActionPostFormValues) => {
   formData.append("province", payload.province);
   formData.append("is_published", payload.isPublished ? "1" : "0");
 
-  if (payload.imageOne) {
-    formData.append("image_one", payload.imageOne);
+  if (payload.imageOne instanceof Blob) {
+    formData.append(
+      "image_one",
+      payload.imageOne,
+      payload.imageOne instanceof File ? payload.imageOne.name : "in-action-image-one.jpg"
+    );
   }
 
-  if (payload.imageTwo) {
-    formData.append("image_two", payload.imageTwo);
+  if (payload.imageTwo instanceof Blob) {
+    formData.append(
+      "image_two",
+      payload.imageTwo,
+      payload.imageTwo instanceof File ? payload.imageTwo.name : "in-action-image-two.jpg"
+    );
   }
 
   return formData;
