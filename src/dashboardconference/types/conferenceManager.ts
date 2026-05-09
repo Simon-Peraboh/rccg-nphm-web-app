@@ -68,6 +68,16 @@ export interface ConferenceActivity {
   facilitator?: string | null;
   location?: string | null;
   description?: string | null;
+<<<<<<< HEAD
+=======
+  document?: File | null;
+  documentUrl?: string | null;
+  document_url?: string | null;
+  documentPath?: string | null;
+  document_path?: string | null;
+  documentName?: string | null;
+  document_name?: string | null;
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   sort_order: number;
 }
 
@@ -231,6 +241,10 @@ export interface CreateConferenceActivityDTO {
   facilitator?: string | null;
   location?: string | null;
   description?: string | null;
+<<<<<<< HEAD
+=======
+  document?: File | null;
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   sort_order?: number;
 }
 
@@ -247,6 +261,15 @@ export interface ConferenceActivityResponse {
     facilitator?: string | null;
     location?: string | null;
     description?: string | null;
+<<<<<<< HEAD
+=======
+    documentUrl?: string | null;
+    document_url?: string | null;
+    documentPath?: string | null;
+    document_path?: string | null;
+    documentName?: string | null;
+    document_name?: string | null;
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     sort_order: number;
   };
 }
@@ -312,4 +335,8 @@ export interface RegistrationRecordItem {
     theme: string;
     abbreviation?: string;
   };
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

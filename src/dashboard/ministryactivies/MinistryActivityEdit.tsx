@@ -208,6 +208,7 @@ const MinistryActivityEdit: React.FC = () => {
             </div>
 
             <div className="mt-5">
+<<<<<<< HEAD
               <label
                  htmlFor="image"
                 className="mb-1.5 block text-sm font-medium text-slate-700">
@@ -215,6 +216,12 @@ const MinistryActivityEdit: React.FC = () => {
               </label>
               <input
                 id="image"
+=======
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Replace Image
+              </label>
+              <input
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}

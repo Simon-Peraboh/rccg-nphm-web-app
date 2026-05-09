@@ -1,7 +1,11 @@
 import axios from "axios";
 import { getToken, logout } from "../services/dashboardAuthService";
 
+<<<<<<< HEAD
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "https://app2.rccgphm.org/api";
+=======
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api";
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 export const dashboardApi = axios.create({
   baseURL: API_BASE_URL,

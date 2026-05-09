@@ -1,7 +1,15 @@
+<<<<<<< HEAD
 import React from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { toast } from "react-toastify";
+=======
+import React, { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { FaDownload, FaFileAlt } from "react-icons/fa";
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 import {
   useConferenceEvents,
   useCreateConferenceActivity,
@@ -17,9 +25,74 @@ type ActivityFormInputs = CreateConferenceActivityDTO & {
   conference_event_id: number;
 };
 
+<<<<<<< HEAD
 const ConferenceActivityPage: React.FC = () => {
   const { data, isLoading } = useConferenceEvents();
   const createActivityMutation = useCreateConferenceActivity();
+=======
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+const DEFAULT_ACTIVITY_DOCUMENT_URL =
+  "/documents/RMF_2026_CONVENTION_PROGRAM_OUTLINE.pdf";
+const DEFAULT_ACTIVITY_DOCUMENT_NAME = "RMF 2026 Convention Program Outline";
+
+const normalizeDocumentUrl = (value?: string | null) => {
+  if (!value) return "";
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+
+  const path = value
+    .trim()
+    .replace(/^\/+/, "")
+    .replace(/^public\//, "")
+    .replace(/^storage\//, "");
+
+  return `${API_BASE_URL}/storage/${path}`;
+};
+
+const getActivityDocumentUrl = (activity: ConferenceActivity) =>
+  normalizeDocumentUrl(
+    activity.documentUrl ??
+      activity.document_url ??
+      activity.documentPath ??
+      activity.document_path ??
+      ""
+  ) || DEFAULT_ACTIVITY_DOCUMENT_URL;
+
+const getActivityDocumentName = (activity: ConferenceActivity) =>
+  activity.documentName ??
+  activity.document_name ??
+  DEFAULT_ACTIVITY_DOCUMENT_NAME;
+
+const extractBackendMessages = (value: unknown): string[] => {
+  if (!value) return [];
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(extractBackendMessages);
+  if (typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).flatMap(extractBackendMessages);
+  }
+  return [];
+};
+
+const getApiErrorMessage = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data;
+    const messages = extractBackendMessages(data?.message ?? data?.errors);
+
+    if (messages.length > 0) {
+      return messages[0];
+    }
+
+    return data?.error || "Failed to create conference activity.";
+  }
+
+  return "Unexpected error occurred.";
+};
+
+const ConferenceActivityPage: React.FC = () => {
+  const { data, isLoading, refetch } = useConferenceEvents();
+  const createActivityMutation = useCreateConferenceActivity();
+  const documentInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<File | null>(null);
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
   const events: ActiveConferenceResponse[] = data ?? [];
 
@@ -28,6 +101,10 @@ const ConferenceActivityPage: React.FC = () => {
     handleSubmit,
     reset,
     watch,
+<<<<<<< HEAD
+=======
+    setValue,
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     formState: { errors },
   } = useForm<ActivityFormInputs>({
     defaultValues: {
@@ -40,6 +117,10 @@ const ConferenceActivityPage: React.FC = () => {
       facilitator: "",
       location: "",
       description: "",
+<<<<<<< HEAD
+=======
+      document: null,
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
       sort_order: 0,
     },
   });
@@ -47,6 +128,7 @@ const ConferenceActivityPage: React.FC = () => {
   const selectedEventId = Number(watch("conference_event_id"));
   const selectedEvent = events.find((event) => event.id === selectedEventId);
 
+<<<<<<< HEAD
   const onSubmit = async (data: ActivityFormInputs) => {
     try {
       const { conference_event_id, ...payload } = data;
@@ -56,6 +138,44 @@ const ConferenceActivityPage: React.FC = () => {
         payload,
       });
 
+=======
+  const handleDocumentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+
+    if (file && file.size > 20 * 1024 * 1024) {
+      toast.error("Document must not be larger than 20MB.");
+      event.target.value = "";
+      setSelectedDocument(null);
+      setValue("document", null, { shouldDirty: true });
+      return;
+    }
+
+    setSelectedDocument(file);
+    setValue("document", file, { shouldDirty: true });
+  };
+
+  const onSubmit = async (data: ActivityFormInputs) => {
+    try {
+      const { conference_event_id, ...payload } = data;
+      const eventId = Number(conference_event_id);
+
+      if (!eventId) {
+        toast.error("Please select a conference event.");
+        return;
+      }
+
+      const result = await createActivityMutation.mutateAsync({
+        conferenceEventId: eventId,
+        payload: {
+          ...payload,
+          document: selectedDocument ?? payload.document ?? null,
+        },
+      });
+
+      await refetch();
+      toast.success(result.message || "Conference activity created successfully.");
+
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
       reset({
         conference_event_id,
         day_number: 1,
@@ -66,6 +186,7 @@ const ConferenceActivityPage: React.FC = () => {
         facilitator: "",
         location: "",
         description: "",
+<<<<<<< HEAD
         sort_order: 0,
       });
     } catch (error: unknown) {
@@ -78,13 +199,30 @@ const ConferenceActivityPage: React.FC = () => {
       } else {
         toast.error("Unexpected error occurred.");
       }
+=======
+        document: null,
+        sort_order: 0,
+      });
+      setSelectedDocument(null);
+      if (documentInputRef.current) {
+        documentInputRef.current.value = "";
+      }
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error));
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     }
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-slate-100 px-4 py-8">
       <div className="mx-auto max-w-7xl grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-3xl bg-white border p-8 shadow-sm">
+=======
+    <div className="min-h-screen bg-slate-100 px-3 py-4 sm:px-4 sm:py-8">
+      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="min-w-0 rounded-3xl bg-white border p-5 shadow-sm sm:p-8">
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
           <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
             Conference Manager
           </p>
@@ -97,6 +235,11 @@ const ConferenceActivityPage: React.FC = () => {
                 {...register("conference_event_id", {
                   required: "Conference event is required",
                   valueAsNumber: true,
+<<<<<<< HEAD
+=======
+                  validate: (value) =>
+                    Number(value) > 0 || "Please select a conference event",
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                 })}
                 className="w-full rounded-xl border px-4 py-3"
               >
@@ -207,6 +350,27 @@ const ConferenceActivityPage: React.FC = () => {
               />
             </div>
 
+<<<<<<< HEAD
+=======
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Attach PDF or Word Document
+              </label>
+              <input
+                ref={documentInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleDocumentChange}
+                className="w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
+              />
+              {selectedDocument && (
+                <p className="mt-2 text-xs font-semibold text-slate-500">
+                  Selected: {selectedDocument.name}
+                </p>
+              )}
+            </div>
+
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
             <button
               type="submit"
               disabled={createActivityMutation.isPending}
@@ -217,7 +381,11 @@ const ConferenceActivityPage: React.FC = () => {
           </form>
         </div>
 
+<<<<<<< HEAD
         <div className="rounded-3xl bg-white border p-8 shadow-sm">
+=======
+        <div className="min-w-0 rounded-3xl bg-white border p-5 shadow-sm sm:p-8">
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
           <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
             Event Activities
           </p>
@@ -253,6 +421,22 @@ const ConferenceActivityPage: React.FC = () => {
                       {activity.description && (
                         <p className="text-sm text-slate-600 mt-2">{activity.description}</p>
                       )}
+<<<<<<< HEAD
+=======
+                      {getActivityDocumentUrl(activity) && (
+                        <a
+                          href={getActivityDocumentUrl(activity)}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                        >
+                          <FaFileAlt />
+                          {getActivityDocumentName(activity)}
+                          <FaDownload />
+                        </a>
+                      )}
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                     </div>
 
                     <span className="rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-xs font-semibold">
@@ -273,4 +457,8 @@ const ConferenceActivityPage: React.FC = () => {
   );
 };
 
+<<<<<<< HEAD
 export default ConferenceActivityPage;
+=======
+export default ConferenceActivityPage;
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

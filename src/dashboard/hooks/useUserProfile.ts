@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+=======
+import { useMutation, useQuery } from "@tanstack/react-query";
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 import { toast } from "react-toastify";
 import {
   createUserProfileAPICall,
@@ -72,12 +76,17 @@ export const useUpdateUserProfile = () =>
     },
   });
 
+<<<<<<< HEAD
 export const useUserProfiles = () =>
+=======
+  export const useUserProfiles = () =>
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   useQuery({
     queryKey: userProfileQueryKeys.all,
     queryFn: getAllUserProfilesAPICall,
   });
 
+<<<<<<< HEAD
 export const useDeleteUserProfile = () => {
   const queryClient = useQueryClient();
 
@@ -96,3 +105,12 @@ export const useDeleteUserProfile = () => {
     },
   });
 };
+=======
+export const useDeleteUserProfile = () =>
+  useMutation({
+    mutationFn: (id: number) => deleteUserProfileAPICall(id),
+    onSuccess: (data) => {
+      toast.success(data.message || "Profile deleted successfully");
+    },
+  });
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

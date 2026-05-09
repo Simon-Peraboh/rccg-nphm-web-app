@@ -140,13 +140,45 @@ export const deleteConferenceEventAPICall = async (
   return response.data;
 };
 
+<<<<<<< HEAD
+=======
+const buildConferenceActivityFormData = (payload: CreateConferenceActivityDTO) => {
+  const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (key === "document" && value instanceof Blob) {
+        formData.append(
+          key,
+          value,
+          value instanceof File ? value.name : "conference-activity-document"
+        );
+      } else {
+        formData.append(key, String(value));
+      }
+    }
+  });
+
+  return formData;
+};
+
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 export const createConferenceActivityAPICall = async (
   conferenceEventId: number,
   payload: CreateConferenceActivityDTO
 ): Promise<ConferenceActivityResponse> => {
   const response = await conferenceApi.post<ConferenceActivityResponse>(
     `/admin/events/${conferenceEventId}/activities`,
+<<<<<<< HEAD
     payload
+=======
+    buildConferenceActivityFormData(payload),
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   );
   return response.data;
 };
@@ -178,4 +210,8 @@ export const resetConferencePasswordAPICall = async (
 ): Promise<ConferenceActionResponse> => {
   const response = await conferenceApi.post<ConferenceActionResponse>("/auth/reset-password", payload);
   return response.data;
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

@@ -6,9 +6,13 @@ import { ToastContainer, toast } from "react-toastify";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useSpecialProject, useUpdateSpecialProject } from "../hooks/useSpecialProjects";
+<<<<<<< HEAD
 import type {
   SpecialProjectsReportFormValues,
 } from "../types/specialProjects";
+=======
+import type { SpecialProjectsReportDTO } from "../types/specialProjects";
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 const schema = yup.object({
   projectName: yup.string().required("Project name is required"),
@@ -37,7 +41,11 @@ const SpecialProjectsEdit: React.FC = () => {
     handleSubmit,
     setValue,
     formState: { errors },
+<<<<<<< HEAD
   } = useForm<SpecialProjectsReportFormValues>({
+=======
+  } = useForm<SpecialProjectsReportDTO>({
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     resolver: yupResolver(schema),
   });
 
@@ -57,7 +65,11 @@ const SpecialProjectsEdit: React.FC = () => {
     setValue("projectRemarks", data.projectRemarks || "");
   }, [data, setValue]);
 
+<<<<<<< HEAD
   const onSubmit = async (formData: SpecialProjectsReportFormValues) => {
+=======
+  const onSubmit = async (formData: SpecialProjectsReportDTO) => {
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     try {
       await updateMutation.mutateAsync({
         id: reportId,
@@ -110,12 +122,21 @@ const SpecialProjectsEdit: React.FC = () => {
               <label className="block text-sm font-medium mb-1">{label}</label>
               <input
                 type="text"
+<<<<<<< HEAD
                 {...register(name as keyof SpecialProjectsReportFormValues)}
                 className="w-full rounded-xl border px-3 py-2.5"
               />
               {errors[name as keyof SpecialProjectsReportFormValues] && (
                 <p className="text-red-500 text-xs mt-1">
                   {String(errors[name as keyof SpecialProjectsReportFormValues]?.message ?? "")}
+=======
+                {...register(name as keyof SpecialProjectsReportDTO)}
+                className="w-full rounded-xl border px-3 py-2.5"
+              />
+              {errors[name as keyof SpecialProjectsReportDTO] && (
+                <p className="text-red-500 text-xs mt-1">
+                  {String(errors[name as keyof SpecialProjectsReportDTO]?.message ?? "")}
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
                 </p>
               )}
             </div>

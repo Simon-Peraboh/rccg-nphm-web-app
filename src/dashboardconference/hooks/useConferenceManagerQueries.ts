@@ -155,8 +155,12 @@ export const useCreateConferenceActivity = () => {
       conferenceEventId: number;
       payload: CreateConferenceActivityDTO;
     }) => createConferenceActivityAPICall(conferenceEventId, payload),
+<<<<<<< HEAD
     onSuccess: async (data) => {
       toast.success(data.message || "Conference activity created successfully");
+=======
+    onSuccess: async () => {
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
       await queryClient.invalidateQueries({
         queryKey: conferenceQueryKeys.events,
       });
@@ -216,4 +220,8 @@ export const usePromoteConferenceMember = () => {
       ]);
     },
   });
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

@@ -47,6 +47,7 @@ const Footer: React.FC = () => {
 
   const quickLinks = [
     { label: "Home", to: "/" },
+<<<<<<< HEAD
     { label: "Who We Are", to: "/we-are" },
     { label: "In Action", to: "/in-action" },
     { label: "Conference", to: "/conference" },
@@ -56,6 +57,17 @@ const Footer: React.FC = () => {
     { label: "Connect", to: "/connect" },
     { label: "Report", to: "/report" },
     { label: "Contact Us", to: "/contact" },
+=======
+    { label: "Who We Are", to: "/WeAre" },
+    { label: "In Action", to: "/InAction" },
+    { label: "Conference", to: "/Conference" },
+  ];
+
+  const ministryLinks = [
+    { label: "Connect", to: "/Connect" },
+    { label: "Report", to: "/Report" },
+    { label: "Contact Us", to: "/Contact" },
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
     { label: "HopOnboard", to: "/dashboard/register" },
   ];
 
@@ -190,4 +202,8 @@ const Footer: React.FC = () => {
   );
 };
 
+<<<<<<< HEAD
 export default Footer;
+=======
+export default Footer;
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f

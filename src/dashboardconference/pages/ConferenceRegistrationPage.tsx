@@ -13,7 +13,11 @@ import {
 } from "../hooks/useConferenceManagerAuth";
 import type { RegisterConferenceDTO } from "../types/conferenceManager";
 import { formatDisplayDate } from "../utils/formatters";
+<<<<<<< HEAD
 import confereFlyer from '../../assets/Images/conf26.jpeg'
+=======
+import confereFlyer from '../../assets/Images/nphm conf2026.jpeg'
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 
 const schema: yup.ObjectSchema<RegisterConferenceDTO> = yup.object({
   full_name: yup.string().required("Full name is required"),

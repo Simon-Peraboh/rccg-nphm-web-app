@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
+=======
+import React, { useMemo, useState } from "react";
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
@@ -74,6 +78,31 @@ const MonthlyReportCreate: React.FC = () => {
   const { data: regions = [] } = useMonthlyReportRegions();
   const { data: provinces = [] } = useMonthlyReportProvinces(form.region);
 
+<<<<<<< HEAD
+=======
+  const fieldEntries = useMemo(
+    () =>
+      [
+        ["state", "Enter your state"],
+        ["coordinator_name", "Enter coordinator name"],
+        ["prison_visited", "Enter prison visited"],
+        ["hospital_visited", "Enter hospital visited"],
+        ["police_station_visited", "Enter police station visited"],
+        ["others", "Other places visited"],
+        ["items", "Items e.g. Rice, Garri"],
+        ["amount_budgeted", "Enter budgeted amount"],
+        ["amount_spent", "Enter actual amount spent"],
+        ["team_members", "Total number who went"],
+        ["souls_won", "Souls won e.g. 5"],
+        ["challenges", "Challenges faced if any"],
+        ["suggestion", "Any suggestions?"],
+        ["remarks", "Any remarks"],
+        ["report_created_by", "Enter your name"],
+      ] as const,
+    []
+  );
+
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
   const onInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {

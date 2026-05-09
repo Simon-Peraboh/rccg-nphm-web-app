@@ -91,4 +91,18 @@ body {
 
 .nphm-toast-progress {
   height: 3px;
+<<<<<<< HEAD
 }
+=======
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+>>>>>>> a588daea0a42daf01c94c33cdaa998540773516f
