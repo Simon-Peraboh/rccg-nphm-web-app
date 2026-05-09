@@ -47,15 +47,15 @@ const Footer: React.FC = () => {
 
   const quickLinks = [
     { label: "Home", to: "/" },
-    { label: "Who We Are", to: "/we-are" },
-    { label: "In Action", to: "/in-action" },
-    { label: "Conference", to: "/conference" },
+    { label: "Who We Are", to: "/WeAre" },
+    { label: "In Action", to: "/InAction" },
+    { label: "Conference", to: "/Conference" },
   ];
 
   const ministryLinks = [
-    { label: "Connect", to: "/connect" },
-    { label: "Report", to: "/report" },
-    { label: "Contact Us", to: "/contact" },
+    { label: "Connect", to: "/Connect" },
+    { label: "Report", to: "/Report" },
+    { label: "Contact Us", to: "/Contact" },
     { label: "HopOnboard", to: "/dashboard/register" },
   ];
 

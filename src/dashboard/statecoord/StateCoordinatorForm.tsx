@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import imageCompression from "browser-image-compression";
 import { ToastContainer, toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaFacebookF, FaUser } from "react-icons/fa";
@@ -6,6 +8,7 @@ import { useCreateStateCoordinator, useStateCoordinatorStates } from "../hooks/u
 import type { StateCoordinatorDTO } from "../types/stateCoordinator";
 
 const LOCAL_STORAGE_KEY = "nphm_state_coordinator_form";
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 
 const defaultFormData: StateCoordinatorDTO = {
   full_name: "",
@@ -39,12 +42,67 @@ const saveToLocalStorage = (data: StateCoordinatorDTO) => {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitized));
 };
 
+const extractBackendMessages = (value: unknown): string[] => {
+  if (!value) {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap(extractBackendMessages);
+  }
+
+  if (typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).flatMap(extractBackendMessages);
+  }
+
+  return [];
+};
+
+const humanizeBackendMessage = (message: string): string => {
+  return message
+    .replace(/image path field/gi, "coordinator image")
+    .replace(/2048 kilobytes/gi, "2MB");
+};
+
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+    const detailMessages = extractBackendMessages(responseData?.message);
+
+    if (detailMessages.length > 0) {
+      return humanizeBackendMessage(detailMessages[0]);
+    }
+
+    if (typeof responseData?.error === "string") {
+      return responseData.error;
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Submission failed. Please check the form and try again.";
+};
+
+const toUploadFile = (compressedFile: Blob, originalFile: File): File => {
+  return new File([compressedFile], originalFile.name, {
+    type: compressedFile.type || originalFile.type,
+    lastModified: Date.now(),
+  });
+};
+
 const StateCoordinatorForm: React.FC = () => {
   const navigate = useNavigate();
   const { data: stateOptions = [] } = useStateCoordinatorStates();
   const createMutation = useCreateStateCoordinator();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageProcessing, setImageProcessing] = useState(false);
   const [form, setForm] = useState<StateCoordinatorDTO>(
     () => loadFromLocalStorage() ?? defaultFormData
   );
@@ -62,6 +120,14 @@ const StateCoordinatorForm: React.FC = () => {
     }
   }, [stateOptions, form.state]);
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -69,20 +135,59 @@ const StateCoordinatorForm: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
 
-    setForm((prev) => ({ ...prev, image_path: file }));
-
-    if (file) {
-      setPreviewUrl(URL.createObjectURL(file));
-    } else {
+    if (!file) {
+      setForm((prev) => ({ ...prev, image_path: null }));
       setPreviewUrl(null);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload a valid image file.");
+      e.target.value = "";
+      return;
+    }
+
+    setImageProcessing(true);
+
+    try {
+      const compressedFile = await imageCompression(file, {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        initialQuality: 0.8,
+      });
+      const uploadFile = toUploadFile(compressedFile, file);
+
+      if (uploadFile.size > MAX_IMAGE_SIZE_BYTES) {
+        setForm((prev) => ({ ...prev, image_path: null }));
+        setPreviewUrl(null);
+        e.target.value = "";
+        toast.error("The coordinator image is still larger than 2MB after compression. Please choose a smaller image.");
+        return;
+      }
+
+      setForm((prev) => ({ ...prev, image_path: uploadFile }));
+      setPreviewUrl(URL.createObjectURL(uploadFile));
+    } catch {
+      setForm((prev) => ({ ...prev, image_path: null }));
+      setPreviewUrl(null);
+      e.target.value = "";
+      toast.error("Failed to process image. Please try another image.");
+    } finally {
+      setImageProcessing(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (imageProcessing) {
+      toast.info("Please wait while the image is being prepared.");
+      return;
+    }
 
     try {
       await createMutation.mutateAsync(form);
@@ -92,7 +197,7 @@ const StateCoordinatorForm: React.FC = () => {
         navigate("/Connect");
       }, 1500);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Submission failed");
+      toast.error(getApiErrorMessage(error));
     }
   };
 
@@ -270,12 +375,18 @@ const StateCoordinatorForm: React.FC = () => {
                   name="image_path"
                   accept="image/*"
                   onChange={handleFileChange}
+                  disabled={imageProcessing}
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
                   title="Upload coordinator image"
                 />
                 <p className="mt-2 text-xs text-slate-500">
-                  Use a clear portrait photo. Blurry images weaken the record.
+                  Use a clear portrait photo. Large images are compressed automatically before upload.
                 </p>
+                {imageProcessing && (
+                  <p className="mt-2 text-xs font-semibold text-blue-700">
+                    Preparing image for upload...
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-center">
@@ -299,10 +410,14 @@ const StateCoordinatorForm: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <button
               type="submit"
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || imageProcessing}
               className="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-500 disabled:opacity-50"
             >
-              {createMutation.isPending ? "Submitting..." : "Submit Coordinator"}
+              {imageProcessing
+                ? "Preparing image..."
+                : createMutation.isPending
+                  ? "Submitting..."
+                  : "Submit Coordinator"}
             </button>
 
             <Link

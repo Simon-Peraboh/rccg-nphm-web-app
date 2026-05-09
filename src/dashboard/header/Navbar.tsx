@@ -17,6 +17,7 @@ const Navbar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [userEmail, setUserEmail] = useState("Guest");
   const [firstName, setFirstName] = useState("Guest");
 
@@ -64,38 +65,36 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    const toastId = toast.info(
-      <div className="space-y-3">
-        <p className="text-sm">Are you sure you want to log out?</p>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            title="Confirm logout"
-            onClick={() => {
-              clearSession();
-              toast.dismiss(toastId);
-              navigate("/dashboard/loginUser");
-            }}
-            className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white"
-          >
-            Yes
-          </button>
-          <button
-            type="button"
-            title="Cancel logout"
-            onClick={() => toast.dismiss(toastId)}
-            className="rounded-lg bg-slate-500 px-3 py-1.5 text-sm font-semibold text-white"
-          >
-            No
-          </button>
-        </div>
-      </div>,
-      {
-        autoClose: false,
-        closeOnClick: false,
+  useEffect(() => {
+    if (!isLogoutConfirmOpen) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsLogoutConfirmOpen(false);
       }
-    );
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isLogoutConfirmOpen]);
+
+  const requestLogout = () => {
+    setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+    setIsLogoutConfirmOpen(true);
+  };
+
+  const handleLogout = () => {
+    setIsLogoutConfirmOpen(false);
+    clearSession();
+    toast.dismiss();
+    toast.success("Logged out successfully.");
+    navigate("/dashboard/loginUser", { replace: true });
   };
 
   return (
@@ -192,7 +191,7 @@ const Navbar: React.FC = () => {
                 <button
                   type="button"
                   title="Logout"
-                  onClick={handleLogout}
+                  onClick={requestLogout}
                   className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <FaSignOutAlt />
@@ -246,11 +245,52 @@ const Navbar: React.FC = () => {
             <button
               type="button"
               title="Logout"
-              onClick={handleLogout}
+              onClick={requestLogout}
               className="block w-full rounded-xl px-4 py-2 text-left text-sm text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Logout
             </button>
+          </div>
+        </div>
+      )}
+
+      {isLogoutConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-confirm-title"
+        >
+          <div className="w-full max-w-[320px] rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-950 sm:max-w-sm sm:p-5">
+            <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-300">
+              <FaSignOutAlt />
+            </div>
+            <h2
+              id="logout-confirm-title"
+              className="text-base font-bold text-slate-950 dark:text-white sm:text-lg"
+            >
+              Logout?
+            </h2>
+            <p className="mt-1.5 text-sm leading-5 text-slate-600 dark:text-slate-300">
+              Your dashboard session will end and you will return to the login
+              page.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsLogoutConfirmOpen(false)}
+                className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-xl bg-red-600 px-3 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -140,13 +140,38 @@ export const deleteConferenceEventAPICall = async (
   return response.data;
 };
 
+const buildConferenceActivityFormData = (payload: CreateConferenceActivityDTO) => {
+  const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (key === "document" && value instanceof Blob) {
+        formData.append(
+          key,
+          value,
+          value instanceof File ? value.name : "conference-activity-document"
+        );
+      } else {
+        formData.append(key, String(value));
+      }
+    }
+  });
+
+  return formData;
+};
+
 export const createConferenceActivityAPICall = async (
   conferenceEventId: number,
   payload: CreateConferenceActivityDTO
 ): Promise<ConferenceActivityResponse> => {
   const response = await conferenceApi.post<ConferenceActivityResponse>(
     `/admin/events/${conferenceEventId}/activities`,
-    payload
+    buildConferenceActivityFormData(payload),
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
   return response.data;
 };

@@ -155,8 +155,7 @@ export const useCreateConferenceActivity = () => {
       conferenceEventId: number;
       payload: CreateConferenceActivityDTO;
     }) => createConferenceActivityAPICall(conferenceEventId, payload),
-    onSuccess: async (data) => {
-      toast.success(data.message || "Conference activity created successfully");
+    onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: conferenceQueryKeys.events,
       });

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { FaBars, FaTimes } from "react-icons/fa";
 import { useConferenceLogout } from "../hooks/useConferenceManagerAuth";
 
 const navItems = [
@@ -17,6 +18,11 @@ const AdminSidebarLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const logoutMutation = useConferenceLogout();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -30,13 +36,27 @@ const AdminSidebarLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-8 grid gap-6 lg:grid-cols-[260px_1fr]">
-        <aside className="rounded-3xl bg-white border p-5 shadow-sm h-fit sticky top-6">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
-            Conference Manager
-          </p>
-          <h2 className="text-2xl font-bold mt-2 mb-6">Admin Panel</h2>
+        <aside className="rounded-3xl bg-white border p-5 shadow-sm h-fit lg:sticky lg:top-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
+                Conference Manager
+              </p>
+              <h2 className="text-2xl font-bold mt-2 lg:mb-6">Admin Panel</h2>
+            </div>
 
-          <nav className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((isOpen) => !isOpen)}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-700 lg:hidden"
+              aria-label={mobileMenuOpen ? "Close admin menu" : "Open admin menu"}
+              title={mobileMenuOpen ? "Close admin menu" : "Open admin menu"}
+            >
+              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+            </button>
+          </div>
+
+          <nav className={`${mobileMenuOpen ? "mt-6 block" : "hidden"} space-y-2 lg:mt-0 lg:block`}>
             {navItems.map((item) => {
               const active = location.pathname === item.to;
               return (
@@ -58,13 +78,13 @@ const AdminSidebarLayout: React.FC = () => {
           <button
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
-            className="mt-6 w-full rounded-xl border px-4 py-3 text-sm font-medium"
+            className={`${mobileMenuOpen ? "block" : "hidden"} mt-6 w-full rounded-xl border px-4 py-3 text-sm font-medium lg:block`}
           >
             {logoutMutation.isPending ? "Logging out..." : "Logout"}
           </button>
         </aside>
 
-        <main>
+        <main className="min-w-0">
           <Outlet />
         </main>
       </div>

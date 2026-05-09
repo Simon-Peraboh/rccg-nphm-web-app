@@ -6,6 +6,8 @@ import Leadership from '../leadership/Leadership';
 import Header from '../header/Header';
 import Footer from '../footer/Footer'
 import SpecialProjectsCarousel from '../carousel/Carousel';
+import CoreActivityRealities from './CoreActivityRealities';
+import UpcomingProgram from '../upcoming/UpcomingProgram';
 
 
 const HomePage: React.FC = () => {
@@ -13,6 +15,8 @@ const HomePage: React.FC = () => {
     <div>
       <Header />
       <Banner />
+      <CoreActivityRealities />
+      <UpcomingProgram />
       <SpecialProjectsCarousel />
       <Visitation />
       <Conference />

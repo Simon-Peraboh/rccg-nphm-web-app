@@ -68,6 +68,13 @@ export interface ConferenceActivity {
   facilitator?: string | null;
   location?: string | null;
   description?: string | null;
+  document?: File | null;
+  documentUrl?: string | null;
+  document_url?: string | null;
+  documentPath?: string | null;
+  document_path?: string | null;
+  documentName?: string | null;
+  document_name?: string | null;
   sort_order: number;
 }
 
@@ -231,6 +238,7 @@ export interface CreateConferenceActivityDTO {
   facilitator?: string | null;
   location?: string | null;
   description?: string | null;
+  document?: File | null;
   sort_order?: number;
 }
 
@@ -247,6 +255,12 @@ export interface ConferenceActivityResponse {
     facilitator?: string | null;
     location?: string | null;
     description?: string | null;
+    documentUrl?: string | null;
+    document_url?: string | null;
+    documentPath?: string | null;
+    document_path?: string | null;
+    documentName?: string | null;
+    document_name?: string | null;
     sort_order: number;
   };
 }

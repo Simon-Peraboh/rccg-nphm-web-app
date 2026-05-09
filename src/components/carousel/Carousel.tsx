@@ -127,7 +127,7 @@ const SpecialProjectsCarousel: React.FC = () => {
     <section className="bg-white py-14 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
             Special Projects
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -165,7 +165,7 @@ const SpecialProjectsCarousel: React.FC = () => {
 
               <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto sm:max-w-xl">
                 <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-xl sm:p-5">
-                  <div className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+                  <div className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
                     <MapPin className="h-3.5 w-3.5" />
                     <span>
                       {project.projectLocation}, {project.state}
@@ -256,7 +256,7 @@ const SpecialProjectsCarousel: React.FC = () => {
                       type="button"
                       aria-label={`Go to project ${index + 1}`}
                       onClick={() => setCurrentIndex(index)}
-                      className={`h-2.5 rounded-full transition-all ${currentIndex === index ? "w-8 bg-blue-600" : "w-2.5 bg-slate-300"
+                      className={`h-2.5 rounded-full transition-all ${currentIndex === index ? "w-8 bg-sky-500" : "w-2.5 bg-slate-300"
                         }`}
                     />
                   ))}
