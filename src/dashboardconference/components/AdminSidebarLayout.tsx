@@ -8,6 +8,7 @@ const navItems = [
   { label: "Pending Attendance", to: "/dashboardconference/admin-attendance" },
   { label: "Attendance Records", to: "/dashboardconference/admin-attendance-records" },
   { label: "Conference Registrations", to: "/dashboardconference/admin-registrations" },
+  { label: "Bulk User Upload", to: "/dashboardconference/admin-registrations#bulk-upload" },
   { label: "Create Admin", to: "/dashboardconference/create-admin" },
   { label: "Conference Events", to: "/dashboardconference/events" },
   { label: "Activities", to: "/dashboardconference/activities" },
@@ -58,7 +59,10 @@ const AdminSidebarLayout: React.FC = () => {
 
           <nav className={`${mobileMenuOpen ? "mt-6 block" : "hidden"} space-y-2 lg:mt-0 lg:block`}>
             {navItems.map((item) => {
-              const active = location.pathname === item.to;
+              const [itemPath, itemHash] = item.to.split("#");
+              const active =
+                location.pathname === itemPath &&
+                (itemHash ? location.hash === `#${itemHash}` : location.hash === "");
               return (
                 <Link
                   key={item.to}

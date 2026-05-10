@@ -313,6 +313,13 @@ const RegistrationRecordsPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <a
+            href="#bulk-upload"
+            className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100"
+          >
+            Bulk User Upload
+          </a>
+
           <div className="relative">
             <FaSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -333,14 +340,14 @@ const RegistrationRecordsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="mb-6 border-y border-slate-200 py-5">
+      <div id="bulk-upload" className="mb-6 scroll-mt-6 border-y border-slate-200 py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
               Assisted Registration
             </p>
             <h2 className="mt-1 text-xl font-bold text-slate-950">
-              Excel upload for members without email
+              Bulk user upload for members without email
             </h2>
             <p className="mt-1 text-sm text-slate-500">
               Required columns: Full Name, Phone Number, State, Region, Province.
