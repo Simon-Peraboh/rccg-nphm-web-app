@@ -31,6 +31,9 @@ export const useRegisterConference = () =>
 export const useMemberLogin = () =>
   useMutation({
     mutationFn: (payload: MemberLoginDTO) => memberLoginAPICall(payload),
+    onMutate: () => {
+      clearConferenceSession();
+    },
     onSuccess: (data) => {
       storeConferenceToken(data.token);
       saveConferenceUser(data.user);
@@ -40,6 +43,9 @@ export const useMemberLogin = () =>
 export const useAssistedMemberLogin = () =>
   useMutation({
     mutationFn: (payload: AssistedMemberLoginDTO) => assistedMemberLoginAPICall(payload),
+    onMutate: () => {
+      clearConferenceSession();
+    },
     onSuccess: (data) => {
       storeConferenceToken(data.token);
       saveConferenceUser(data.user);
@@ -49,6 +55,9 @@ export const useAssistedMemberLogin = () =>
 export const useAdminLogin = () =>
   useMutation({
     mutationFn: (payload: AdminLoginDTO) => adminLoginAPICall(payload),
+    onMutate: () => {
+      clearConferenceSession();
+    },
     onSuccess: (data) => {
       storeConferenceToken(data.token);
       saveConferenceUser(data.user);
