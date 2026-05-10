@@ -9,7 +9,7 @@ import type { ConferenceActivity } from "../types/conferenceManager";
 import { useConferenceLogout } from '../hooks/useConferenceManagerAuth';
 import { Link, useNavigate } from "react-router-dom";
 import { formatDisplayDate } from "../utils/formatters";
-import { FaArrowLeft, FaDownload, FaFileAlt, FaHome } from "react-icons/fa";
+import { FaArrowLeft, FaDownload, FaFileAlt } from "react-icons/fa";
 
 const statusBadge = (status?: string) => {
   switch (status) {
@@ -158,21 +158,13 @@ const MemberDashboardPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/40 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white hover:text-slate-900"
-              >
-                <FaHome className="h-4 w-4" />
-                Back to Dashboard
-              </Link>
-
               {data.user.role === "admin" && (
                 <Link
                   to="/dashboardconference/admin"
                   className="inline-flex items-center gap-2 rounded-2xl border border-white/40 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white hover:text-slate-900"
                 >
                   <FaArrowLeft className="h-4 w-4" />
-                  Conference Admin
+                  Back to Dashboard
                 </Link>
               )}
 
