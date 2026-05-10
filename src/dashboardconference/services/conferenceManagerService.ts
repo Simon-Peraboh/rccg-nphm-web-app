@@ -100,8 +100,14 @@ export const getConferenceApiErrorMessage = (
   fallback = "Action failed. Please try again."
 ): string => {
   if ("isAxiosError" in Object(error) && error && typeof error === "object") {
+    const axiosError = error as { message?: string; response?: { data?: unknown } };
+
+    if (!axiosError.response) {
+      return axiosError.message || fallback;
+    }
+
     const responseData = parseJsonFromMixedResponse(
-      (error as { response?: { data?: unknown } }).response?.data
+      axiosError.response.data
     );
     const data = toRecord(responseData);
     const validationMessage =
