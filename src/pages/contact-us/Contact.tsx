@@ -154,7 +154,7 @@ const Contact: React.FC = () => {
               Contact RCCG NPHM
             </p>
             <h1 className="mt-5 max-w-4xl text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
-              Reach the ministry team for support, partnership, and field coordination.
+              Reach The Ministry Team For Support, Partnership, And Field Coordination.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-100 sm:text-lg">
               Connect with the national office for prison, hospital, police station,
@@ -201,7 +201,7 @@ const Contact: React.FC = () => {
                   Send A Message
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
-                  Tell us how we can help.
+                  Tell Us How We Can Help.
                 </h2>
               </div>
 

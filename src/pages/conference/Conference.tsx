@@ -21,7 +21,7 @@ function Conference() {
                 </p>
 
                 <h1 className="mt-3 text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
-                  One place for conference registration and access
+                  One Place For Conference Registration And Access
                 </h1>
 
                 <p className="mt-4 text-lg text-slate-600 max-w-2xl">
@@ -98,7 +98,7 @@ function Conference() {
                 Conference Highlights
               </p>
               <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                Explore conference information
+                Explore Conference Information
               </h2>
             </div>
 

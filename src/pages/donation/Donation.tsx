@@ -76,7 +76,7 @@ function Donation() {
                 Giving With Purpose
               </p>
               <h1 className="text-4xl font-black leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                Fund urgent care, restoration, and second chances.
+                Fund Urgent Care, Restoration, And Second Chances.
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-700 sm:text-lg">
                 Partner with RCCG Prison and Hospital Ministry to reach inmates,
@@ -138,7 +138,7 @@ function Donation() {
                 Priority Projects
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                Projects that urgently need kind donations
+                Projects That Urgently Need Kind Donations
               </h2>
               <p className="mt-4 text-base leading-8 text-slate-600">
                 These are active support channels for welfare, education,
@@ -178,7 +178,7 @@ function Donation() {
                   Secure Giving Channels
                 </p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                  Verified ministry giving accounts
+                  Verified Ministry Giving Accounts
                 </h2>
               </div>
               <p className="text-base leading-8 text-slate-600">

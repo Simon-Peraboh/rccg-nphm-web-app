@@ -15,7 +15,7 @@ const sectionData = [
     images: [pic4, pic5, pic1],
   },
   {
-    title: "Health Section in Nigeria ",
+    title: "Health Section In Nigeria",
     message: "Providing comfort and care to patients in need.",
     images: [pic1, pic2, pic3],
   },
@@ -37,7 +37,7 @@ export default function HopOnboard() {
         </div>
         <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
           <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">
-            Help Us Restore Hope and Dignity
+            Help Us Restore Hope And Dignity
           </h1>
           <p className="text-sm md:text-lg text-white">
             Empowering Lives in Nigeria's Prisons, Hospitals, and Police
@@ -88,7 +88,7 @@ export default function HopOnboard() {
                 />
                 <div className="absolute bottom-4 left-4 p-4 bg-black bg-opacity-50 text-white rounded-md">
                   <h3 className="text-xl font-bold mb-2">
-                    Make a Difference
+                    Make A Difference
                   </h3>
                   <p>Your kindness and support can transform lives.</p>
                 </div>
@@ -115,8 +115,8 @@ export default function HopOnboard() {
                   {boxIndex === 0
                     ? "Volunteer Your Time"
                     : boxIndex === 1
-                      ? "Donate to the Cause"
-                      : "Spread the Word"}
+                      ? "Donate To The Cause"
+                      : "Spread The Word"}
                 </h3>
                 <p className="text-gray-600 mb-4">
                   {boxIndex === 0
