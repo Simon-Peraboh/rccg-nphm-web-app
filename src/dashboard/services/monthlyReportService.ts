@@ -69,10 +69,12 @@ export const getMonthlyReportProvincesAPICall = async (
   region: string
 ): Promise<string[]> => {
   const response = await dashboardApi.get<ProvinceListResponse | string[]>(
-    `${BASE_PATH}/provinces/${region}`
+    `${BASE_PATH}/provinces/${encodeURIComponent(region)}`
   );
 
-  return Array.isArray(response.data) ? response.data : response.data.provinces;
+  const provinces = Array.isArray(response.data) ? response.data : response.data.provinces;
+
+  return provinces.includes(region) ? provinces : [region, ...provinces];
 };
 
 export const fetchTotalMembersAPICall = async (): Promise<number> => {

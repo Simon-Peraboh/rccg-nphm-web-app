@@ -64,6 +64,9 @@ const fieldLabels: Record<keyof MonthlyReportDTO, string> = {
 
 const textareaFields = ["challenges", "suggestion", "remarks", "others", "items"];
 
+const getProvinceLabel = (province: string, region: string) =>
+  province === region ? `${region} (Regional HQ)` : province;
+
 const MonthlyReportCreate: React.FC = () => {
   const [form, setForm] = useState<MonthlyReportDTO>(initialForm);
   const [reviewMode, setReviewMode] = useState(false);
@@ -294,7 +297,7 @@ const MonthlyReportCreate: React.FC = () => {
 
                   <div>
                     <label htmlFor="province" className="mb-1.5 block text-sm font-medium text-slate-700">
-                      Province
+                      Province / Regional HQ
                     </label>
                     <select
                       id="province"
@@ -308,7 +311,7 @@ const MonthlyReportCreate: React.FC = () => {
                       <option value="">Select Province</option>
                       {provinces.map((province) => (
                         <option key={province} value={province}>
-                          {province}
+                          {getProvinceLabel(province, form.region)}
                         </option>
                       ))}
                     </select>
