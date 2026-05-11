@@ -8,7 +8,6 @@ const navItems = [
   { label: "Pending Attendance", to: "/dashboardconference/admin-attendance" },
   { label: "Attendance Records", to: "/dashboardconference/admin-attendance-records" },
   { label: "Conference Registrations", to: "/dashboardconference/admin-registrations" },
-  { label: "Bulk User Upload", to: "/dashboardconference/admin-registrations#bulk-upload" },
   { label: "Create Admin", to: "/dashboardconference/create-admin" },
   { label: "Conference Events", to: "/dashboardconference/events" },
   { label: "Activities", to: "/dashboardconference/activities" },
