@@ -41,6 +41,11 @@ export interface MemberLoginDTO {
   password: string;
 }
 
+export interface AssistedMemberLoginDTO {
+  first_name: string;
+  passcode: string;
+}
+
 export interface AdminLoginDTO {
   email: string;
   password: string;
@@ -68,6 +73,13 @@ export interface ConferenceActivity {
   facilitator?: string | null;
   location?: string | null;
   description?: string | null;
+  document?: File | null;
+  documentUrl?: string | null;
+  document_url?: string | null;
+  documentPath?: string | null;
+  document_path?: string | null;
+  documentName?: string | null;
+  document_name?: string | null;
   sort_order: number;
 }
 
@@ -231,6 +243,7 @@ export interface CreateConferenceActivityDTO {
   facilitator?: string | null;
   location?: string | null;
   description?: string | null;
+  document?: File | null;
   sort_order?: number;
 }
 
@@ -247,6 +260,12 @@ export interface ConferenceActivityResponse {
     facilitator?: string | null;
     location?: string | null;
     description?: string | null;
+    documentUrl?: string | null;
+    document_url?: string | null;
+    documentPath?: string | null;
+    document_path?: string | null;
+    documentName?: string | null;
+    document_name?: string | null;
     sort_order: number;
   };
 }
@@ -264,6 +283,42 @@ export interface ResetConferencePasswordDTO {
 
 export interface ConferenceActionResponse {
   message: string;
+}
+
+export interface BulkAssistedRegistrationRow {
+  full_name: string;
+  phone_number: string;
+  state: string;
+  region: string;
+  province: string;
+  position?: string | null;
+  accommodation?: boolean;
+  arrival_date?: string | null;
+  departure_date?: string | null;
+  first_timer?: boolean;
+}
+
+export interface BulkAssistedRegistrationResult {
+  row: number;
+  status: string;
+  full_name: string;
+  first_name?: string | null;
+  phone_number?: string | null;
+  passcode?: string | null;
+  registration_code?: string | null;
+  message: string;
+}
+
+export interface BulkAssistedRegistrationResponse {
+  message: string;
+  summary: {
+    total: number;
+    created: number;
+    registered: number;
+    existing: number;
+    failed: number;
+  };
+  data: BulkAssistedRegistrationResult[];
 }
 
 export interface ConferenceSummaryResponse {

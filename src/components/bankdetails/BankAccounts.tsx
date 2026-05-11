@@ -3,7 +3,7 @@ import { bankAccounts } from "./BankData";
 const BankAccounts = () => {
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow">
-      <h2 className="text-2xl font-bold text-center mb-6 text-blue-700">
+      <h2 className="text-2xl font-bold text-center mb-6 text-sky-700">
         Naira Accounts
       </h2>
 

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useAdminLogin } from "../hooks/useConferenceManagerAuth";
+import { getConferenceApiErrorMessage } from "../services/conferenceManagerService";
 
 const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -24,16 +24,9 @@ const AdminLoginPage: React.FC = () => {
       toast.success(response.message || "Admin login successful");
       navigate("/dashboardconference/admin");
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const backendMessage =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Admin login failed. Please try again.";
-
-        toast.error(backendMessage);
-      } else {
-        toast.error("Unexpected error occurred. Please try again.");
-      }
+      toast.error(
+        getConferenceApiErrorMessage(error, "Admin login failed. Please try again.")
+      );
     }
   };
 

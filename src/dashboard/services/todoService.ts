@@ -1,4 +1,4 @@
-import { dashboardApi } from "../lib/axios";
+import { dashboardApi } from "../../dashboard/lib/axios";
 import type { TodoDTO, TodoPriority, TodoResponse, TodoStatus } from "../types/todo";
 
 const BASE_PATH = "/todoList";

@@ -37,7 +37,7 @@ import QuarterlyReportCreate from "../dashboard/quarterlyreport/QuarterlyReportC
 import QuarterlyReportTable from "../dashboard/quarterlyreport/QuarterlyReportTable";
 import QuarterlyReportEdit from "../dashboard/quarterlyreport/QuarterlyReportEdit";
 import QuarterlyReportView from "../dashboard/quarterlyreport/QuarterlyReportView";
-
+import QuarterlyReportTable2 from "../dashboard/quarterlyreport/QuarterlyReportTable2";
 
 import TodoListTable from "../dashboard/todolist/TodoListTable";
 import TodoListCreate from "../dashboard/todolist/TodoListCreate";
@@ -46,7 +46,8 @@ import TodoListEdit from "../dashboard/todolist/TodoListEdit";
 import LoginUser from "../dashboard/register_login_detail/LoginUser";
 import Unauthorized from "../dashboard/register_login_detail/Unauthorized";
 import RegisterProfileCreate from "../dashboard/userprofile/RegisterProfileCreate";
-import StateCoordinatorForm from "../dashboard/statecoord/StateCoordinator";
+import StateCoordinatorForm from "../dashboard/statecoord/StateCoordinatorForm";
+import StateCoordinatorTable from "../dashboard/statecoord/StateCoordinatorTable";
 import MonthlyReport from "../dashboard/monthlyreport/MonthlyReport";
 import AccountActivation from "../dashboard/register_login_detail/AccountActivation";
 import ForgotPassword from "../dashboard/register_login_detail/ForgetPassword";
@@ -54,6 +55,9 @@ import ResetPassword from "../dashboard/register_login_detail/ResetPassword";
 import TodoViewPage from "../dashboard/todolist/TodoViewPage";
 import MinistryActivityAdminPage from "../dashboard/ministryactivies/MinistryActivityAdminPage";
 import MinistryActivityEdit from "../dashboard/ministryactivies/MinistryActivityEdit";
+import InActionPostAdminPage from "../dashboard/inaction/InActionPostAdminPage";
+import UpcomingProgramAdminPage from "../dashboard/upcoming/UpcomingProgramAdminPage";
+import { IN_ACTION_POST_ACCESS_ROLES } from "../dashboard/utils/accessLevels";
 
 export const dashboardRoutes: RouteObject[] = [
   {
@@ -101,7 +105,8 @@ export const dashboardRoutes: RouteObject[] = [
       { path: "quarterlyReportTable", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportTable /></ProtectedRoute> },
       { path: "quarterlyReportEdit/:id", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportEdit /></ProtectedRoute> },
       { path: "quarterlyReportView/:id", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportView /></ProtectedRoute> },
-      
+      { path: "quarterlyReportTable2", element: <ProtectedRoute roles={["SUPER_ADMIN", "ADMIN"]}><QuarterlyReportTable2 /></ProtectedRoute> },
+
       { path: "todoListTable", element: <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "TREASURER", "ADMIN", "USER"]}><TodoListTable /></ProtectedRoute> },
       { path: "todoListCreate", element: <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "TREASURER", "ADMIN", "USER"]}><TodoListCreate /></ProtectedRoute> },
       { path: "todoListEdit/:id", element: <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "TREASURER", "ADMIN", "USER"]}><TodoListEdit /></ProtectedRoute> },
@@ -122,6 +127,38 @@ export const dashboardRoutes: RouteObject[] = [
           </ProtectedRoute>
         ),
       },
+      {
+        path: "inActionPosts",
+        element: (
+          <ProtectedRoute roles={IN_ACTION_POST_ACCESS_ROLES}>
+            <InActionPostAdminPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "upcomingPrograms",
+        element: (
+          <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "ADMIN"]}>
+            <UpcomingProgramAdminPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "stateCoordinators",
+        element: (
+          <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"]}>
+            <StateCoordinatorTable />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "stateCoordinatorsCreate",
+        element: (
+          <ProtectedRoute roles={["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"]}>
+            <StateCoordinatorForm />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 
@@ -129,7 +166,6 @@ export const dashboardRoutes: RouteObject[] = [
   { path: "/dashboard/loginUser", element: <LoginUser /> },
   { path: "/dashboard/unauthorized", element: <Unauthorized /> },
   { path: "/dashboard/register", element: <RegisterProfileCreate /> },
-  { path: "/dashboard/stateCoordinators", element: <StateCoordinatorForm /> },
   { path: "/dashboard/monthlyReportCreate", element: <MonthlyReportCreate /> },
   { path: "/dashboard/monthlyReport", element: <MonthlyReport /> },
   { path: "/dashboard/accountActivation", element: <AccountActivation /> },

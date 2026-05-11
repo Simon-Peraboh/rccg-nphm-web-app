@@ -13,7 +13,7 @@ import {
 } from "../hooks/useConferenceManagerAuth";
 import type { RegisterConferenceDTO } from "../types/conferenceManager";
 import { formatDisplayDate } from "../utils/formatters";
-import confereFlyer from '../../assets/Images/conf26.jpeg'
+import confereFlyer from '../../assets/Images/nphm conf2026.jpeg'
 
 const schema: yup.ObjectSchema<RegisterConferenceDTO> = yup.object({
   full_name: yup.string().required("Full name is required"),
@@ -264,11 +264,11 @@ const ConferenceRegistrationPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Region/Continent/Others</label>
+                <label className="block text-sm font-medium mb-1">Region</label>
                 <input
                   {...register("region")}
                   className="w-full rounded-xl border px-4 py-3"
-                  placeholder="Enter region,continent & others"
+                  placeholder="Enter region"
                 />
                 {errors.region && (
                   <p className="text-sm text-red-500 mt-1">{errors.region.message}</p>
@@ -278,11 +278,11 @@ const ConferenceRegistrationPage: React.FC = () => {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium mb-1">Province/Continental/Others</label>
+                <label className="block text-sm font-medium mb-1">Province</label>
                 <input
                   {...register("province")}
                   className="w-full rounded-xl border px-4 py-3"
-                  placeholder="Enter province,continental & others"
+                  placeholder="Enter province"
                 />
                 {errors.province && (
                   <p className="text-sm text-red-500 mt-1">{errors.province.message}</p>

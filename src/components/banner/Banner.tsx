@@ -41,7 +41,7 @@ export default function Banner() {
               </Link>
 
               <Link
-                to="/dashboard/register"
+                to="/hop-onboard"
                 className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
               >
                 Join the Ministry

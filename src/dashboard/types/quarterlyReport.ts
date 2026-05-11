@@ -12,4 +12,6 @@ export interface QuarterlyReportResponse {
   quarterlyReportDTO?: QuarterlyReportDTO;
 }
 
-export type QuarterlyReportListResponse = QuarterlyReportDTO[];
+export type QuarterlyReportListResponse =
+  | QuarterlyReportDTO[]
+  | { data: QuarterlyReportDTO[] };

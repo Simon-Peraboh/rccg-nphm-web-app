@@ -8,13 +8,12 @@ import WeAre from "../pages/we-are/WeAre";
 import Conference from "../pages/conference/Conference";
 import Connect from "../pages/connect/Connect";
 import Report from "../pages/report/Report";
-import Blog from "../pages/blog/Blog";
-import Contact from "../pages/connect/Connect";
+import Contact from "../pages/contact-us/Contact";
 import Donation from "../pages/donation/Donation";
 import ConferenceRegistrationPage from "../dashboardconference/pages/ConferenceRegistrationPage";
 import MemberLoginPage from "../dashboardconference/pages/MemberLoginPage";
 import AdminLoginPage from "../dashboardconference/pages/AdminLoginPage";
-import ConferenceForgotPasswordPage from "../dashboardconference/pages/ConferenceForgotPasswordPage";
+import ConferenceForgotPasswordPage from "../dashboardconference/pages/ConferenceForgotPasswordPage  ConferenceResetPasswordPage";
 import ConferenceResetPasswordPage from "../dashboardconference/pages/ConferenceResetPasswordPage";
 
 export const websiteRoutes: RouteObject[] = [
@@ -29,8 +28,8 @@ export const websiteRoutes: RouteObject[] = [
       { path: "Conference", element: <Conference /> },
       { path: "Connect", element: <Connect /> },
       { path: "Report", element: <Report /> },
-      { path: "Blog", element: <Blog /> },
       { path: "Contact", element: <Contact /> },
+      { path: "contact", element: <Contact /> },
       { path: "Donation", element: <Donation /> },
 
       // Public conference entry points

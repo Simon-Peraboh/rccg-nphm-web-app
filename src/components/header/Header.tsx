@@ -24,7 +24,6 @@ const primaryNav: NavItem[] = [
   {
     label: "More",
     children: [
-      { label: "Blog", to: "/Blog" },
       { label: "Contact Us", to: "/Contact" },
       { label: "Report", to: "/Report" },
     ],

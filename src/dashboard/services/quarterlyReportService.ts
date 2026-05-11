@@ -1,3 +1,4 @@
+import axios from "axios";
 import { dashboardApi } from "../lib/axios";
 import type {
   QuarterlyReportDTO,
@@ -6,6 +7,7 @@ import type {
 } from "../types/quarterlyReport";
 
 const BASE_PATH = "/quarterlyReport";
+const PUBLIC_BASE_PATH = "/public/quarterly-reports";
 
 export const createQuarterlyReportAPICall = async (
   payload: QuarterlyReportDTO
@@ -26,11 +28,19 @@ export const getQuarterlyReportAPICall = async (
   return response.data;
 };
 
-export const getAllQuarterlyReportsAPICall = async (): Promise<QuarterlyReportListResponse> => {
-  const response = await dashboardApi.get<QuarterlyReportListResponse>(
-    `${BASE_PATH}/getAllReport`
-  );
-  return response.data;
+export const getAllQuarterlyReportsAPICall = async (): Promise<QuarterlyReportDTO[]> => {
+  const response = await dashboardApi
+    .get<QuarterlyReportListResponse>(PUBLIC_BASE_PATH)
+    .catch((error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return dashboardApi.get<QuarterlyReportListResponse>(`${BASE_PATH}/getAllReport`);
+      }
+
+      throw error;
+    });
+  const payload = response.data;
+
+  return Array.isArray(payload) ? payload : payload.data ?? [];
 };
 
 export const updateQuarterlyReportAPICall = async (

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import {
   createUserProfileAPICall,
@@ -72,27 +72,16 @@ export const useUpdateUserProfile = () =>
     },
   });
 
-export const useUserProfiles = () =>
+  export const useUserProfiles = () =>
   useQuery({
     queryKey: userProfileQueryKeys.all,
     queryFn: getAllUserProfilesAPICall,
   });
 
-export const useDeleteUserProfile = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+export const useDeleteUserProfile = () =>
+  useMutation({
     mutationFn: (id: number) => deleteUserProfileAPICall(id),
-    onSuccess: async (data, id) => {
+    onSuccess: (data) => {
       toast.success(data.message || "Profile deleted successfully");
-
-      await queryClient.invalidateQueries({
-        queryKey: userProfileQueryKeys.all,
-      });
-
-      queryClient.removeQueries({
-        queryKey: userProfileQueryKeys.detail(String(id)),
-      });
     },
   });
-};

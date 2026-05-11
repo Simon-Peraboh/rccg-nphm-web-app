@@ -1,4 +1,4 @@
-import { dashboardApi } from "../lib/axios";
+import { dashboardApi } from "../../dashboard/lib/axios";
 import type { UserProfileDTO, UserProfileResponse } from "../types/userProfile";
 
 const BASE_PATH = "/userProfile";

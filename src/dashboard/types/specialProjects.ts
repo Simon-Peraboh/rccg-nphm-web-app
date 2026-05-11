@@ -47,7 +47,7 @@ export interface SpecialProjectsReportFormValues {
   projectCompletedDate: string;
   projectManager: string;
   projectAid: string;
-  projectRemarks?: string;
+  projectRemarks?: string | null;
    projectBeforeImage?: File | null;
   projectInProgressImage?: File | null;
   projectCompletedImage?: File | null;

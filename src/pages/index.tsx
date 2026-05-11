@@ -1,4 +1,3 @@
-export {default as Blog} from "./blog/Blog";
 export {default as Connect} from "./connect/Connect";
 export {default as Contact} from "./contact-us/Contact";
 export {default as HopOnboard} from "./hop-onboard/HopOnboard";

@@ -7,8 +7,9 @@ import {
 } from "../hooks/useConferenceManagerQueries";
 import type { ConferenceActivity } from "../types/conferenceManager";
 import { useConferenceLogout } from '../hooks/useConferenceManagerAuth';
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { formatDisplayDate } from "../utils/formatters";
+import { FaArrowLeft, FaDownload, FaFileAlt } from "react-icons/fa";
 
 const statusBadge = (status?: string) => {
   switch (status) {
@@ -23,13 +24,43 @@ const statusBadge = (status?: string) => {
   }
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+const DEFAULT_ACTIVITY_DOCUMENT_URL =
+  "/documents/RMF_2026_CONVENTION_PROGRAM_OUTLINE.pdf";
+const DEFAULT_ACTIVITY_DOCUMENT_NAME = "RMF 2026 Convention Program Outline";
+
+const normalizeDocumentUrl = (value?: string | null) => {
+  if (!value) return "";
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+
+  const path = value
+    .trim()
+    .replace(/^\/+/, "")
+    .replace(/^public\//, "")
+    .replace(/^storage\//, "");
+
+  return `${API_BASE_URL}/storage/${path}`;
+};
+
+const getActivityDocumentUrl = (activity: ConferenceActivity) =>
+  normalizeDocumentUrl(
+    activity.documentUrl ??
+      activity.document_url ??
+      activity.documentPath ??
+      activity.document_path ??
+      ""
+  ) || DEFAULT_ACTIVITY_DOCUMENT_URL;
+
+const getActivityDocumentName = (activity: ConferenceActivity) =>
+  activity.documentName ??
+  activity.document_name ??
+  DEFAULT_ACTIVITY_DOCUMENT_NAME;
+
 const MemberDashboardPage: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
-  const ATTENDANCE_OPEN_AT = new Date("2026-06-12T08:00:00+01:00");
 
   const { data, isLoading, isError, error } = useDashboard();
   const markAttendanceMutation = useMarkAttendance();
-
 
   const activitiesByDay = useMemo(() => {
     const grouped = new Map<number, ConferenceActivity[]>();
@@ -58,18 +89,8 @@ const MemberDashboardPage: React.FC = () => {
   };
 
   const dayTabs = Array.from(activitiesByDay.keys()).sort((a, b) => a - b);
-  const now = new Date();
-  const attendanceIsOpen = now >= ATTENDANCE_OPEN_AT;
-  const attendanceOpensText = "8:00 AM, 12 June 2026";
-
-
 
   const handleMarkAttendance = async () => {
-    if (!attendanceIsOpen) {
-      toast.error(`Attendance opens by ${attendanceOpensText}.`);
-      return;
-    }
-
     try {
       const today = new Date().toISOString().split("T")[0];
 
@@ -137,25 +158,22 @@ const MemberDashboardPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              {!attendanceIsOpen && (
-                <p className="text-sm text-blue-100">
-                  Attendance marking will be enabled at {attendanceOpensText}.
-                </p>
+              {data.user.role === "admin" && (
+                <Link
+                  to="/dashboardconference/admin"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/40 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white hover:text-slate-900"
+                >
+                  <FaArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
+                </Link>
               )}
+
               <button
                 onClick={handleMarkAttendance}
-                disabled={
-                  markAttendanceMutation.isPending ||
-                  !data.current_registration ||
-                  !attendanceIsOpen
-                }
+                disabled={markAttendanceMutation.isPending || !data.current_registration}
                 className="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold disabled:opacity-50"
               >
-                {markAttendanceMutation.isPending
-                  ? "Submitting..."
-                  : attendanceIsOpen
-                    ? "Mark Attendance"
-                    : "Attendance Opens 8AM 12 Jun 2026"}
+                {markAttendanceMutation.isPending ? "Submitting..." : "Mark Attendance"}
               </button>
 
               <button
@@ -279,6 +297,20 @@ const MemberDashboardPage: React.FC = () => {
                         <p className="text-sm text-slate-600 mt-3">
                           {activity.description}
                         </p>
+                      )}
+
+                      {getActivityDocumentUrl(activity) && (
+                        <a
+                          href={getActivityDocumentUrl(activity)}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                        >
+                          <FaFileAlt />
+                          {getActivityDocumentName(activity)}
+                          <FaDownload />
+                        </a>
                       )}
                     </div>
 

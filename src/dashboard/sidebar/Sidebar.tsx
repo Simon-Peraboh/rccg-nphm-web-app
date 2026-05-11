@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaAngleLeft, FaAngleRight } from "react-icons/fa";
+import { FaBullhorn, FaHome, FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { MdLeaderboard } from "react-icons/md";
 import { GiDatabase } from "react-icons/gi";
 import { FcTodoList } from "react-icons/fc";
@@ -8,6 +8,8 @@ import { SiLibreofficewriter } from "react-icons/si";
 import { TbReport, TbFileReport, TbReportMoney, TbMessageReport } from "react-icons/tb";
 import { getSessionUser, hasRequiredRole } from "../utils/authSession";
 import { HiOutlinePhotograph } from "react-icons/hi";
+import { RiArticleLine } from "react-icons/ri";
+import { IN_ACTION_POST_ACCESS_ROLES } from "../utils/accessLevels";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -42,6 +44,12 @@ const sidebarItems: SidebarItem[] = [
     roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"],
   },
   {
+    to: "/dashboard/quarterlyReportTable",
+    label: "Quarterly Report",
+    icon: <TbReport />,
+    roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
     to: "/dashboard/specialProjectsTable",
     label: "Special Projects",
     icon: <TbReport />,
@@ -52,6 +60,18 @@ const sidebarItems: SidebarItem[] = [
     label: "Ministry Activities",
     icon: <HiOutlinePhotograph />,
     roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN", "TREASURER", "USER"],
+  },
+  {
+    to: "/dashboard/inActionPosts",
+    label: "In Action Posts",
+    icon: <RiArticleLine />,
+    roles: IN_ACTION_POST_ACCESS_ROLES,
+  },
+  {
+    to: "/dashboard/upcomingPrograms",
+    label: "Upcoming Program",
+    icon: <FaBullhorn />,
+    roles: ["SUPER_ADMIN", "SECRETARY", "ADMIN"],
   },
   {
     to: "/dashboard/monthlyDueTable",
@@ -102,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
           {!isCollapsed ? (
             <>
               <h1 className="text-xl font-bold tracking-tight">RCCG NPHM</h1>
-              <p className="text-xs text-slate-400">Flagship Admin Console</p>
+              {/* <p className="text-xs text-slate-400">Flagship Admin Console</p> */}
             </>
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 text-lg font-black">

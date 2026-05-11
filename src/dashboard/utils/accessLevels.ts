@@ -1,0 +1,8 @@
+export const IN_ACTION_POST_ACCESS_ROLES = [
+  "SUPER_ADMIN",
+  "ADMIN",
+  "SECRETARY",
+  "TREASURER",
+  "USER",
+];
+

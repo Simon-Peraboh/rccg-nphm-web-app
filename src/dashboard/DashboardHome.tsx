@@ -1,7 +1,7 @@
 import React from "react";
 import DashboardShell from "../components/dash/DashboardShell";
 import DashboardHeader from "../components/dash/DashboardHeader";
-import DashboardOverview from "./widget/DashboardOverview";
+import DashboardOverview from "../dashboard/widget/DashboardOverview";
 
 const DashboardHome: React.FC = () => {
   return (

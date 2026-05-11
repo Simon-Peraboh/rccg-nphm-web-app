@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Footer, Header } from "../../components";
 import ConferenceCard from "./ConferenceCards";
 import { cardData } from "./data";
-import confereFlyer from "../../assets/Images/conf26.jpeg";
+import confereFlyer from "../../assets/Images/nphm conf2026.jpeg";
 
 function Conference() {
   return (

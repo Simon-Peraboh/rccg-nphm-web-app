@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
-import { conf1, conf2, conf3, conf4, conf5, conf6 } from "./index";
+import { conf1, conf2, conf3, conf4, conf5, conf6 } from "../conference/index";
 
 interface ConferenceEdition {
   id: string;

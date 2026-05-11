@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
@@ -95,6 +95,14 @@ const QuarterlyReportTable: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back to Dashboard</span>
+            </Link>
+
             <Link
               to="/dashboard/quarterlyReportCreate"
               className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm font-medium"
