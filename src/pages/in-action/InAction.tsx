@@ -198,7 +198,7 @@ const InAction: React.FC = () => {
                   In Action Reports
                 </p>
                 <h1 className="mt-3 text-4xl font-black leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                  Field reports, testimonies, and outreach updates.
+                  Field Reports, Testimonies, And Outreach Updates.
                 </h1>
               </div>
               <p className="text-base leading-8 text-slate-600 sm:text-lg">
@@ -223,7 +223,7 @@ const InAction: React.FC = () => {
             ) : isError ? (
               <div className="rounded-lg border border-red-100 bg-white p-10 text-center shadow-sm">
                 <h2 className="text-2xl font-black text-slate-950">
-                  Activity reports could not be loaded.
+                  Activity Reports Could Not Be Loaded.
                 </h2>
                 <p className="mt-3 text-sm text-slate-600">
                   Please try again when the server is available.
@@ -232,7 +232,7 @@ const InAction: React.FC = () => {
             ) : posts.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
                 <h2 className="text-2xl font-black text-slate-950">
-                  No activity reports have been posted yet.
+                  No Activity Reports Have Been Posted Yet.
                 </h2>
                 <p className="mt-3 text-sm text-slate-600">
                   Regional and provincial updates will appear here after they
