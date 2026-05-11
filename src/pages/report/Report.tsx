@@ -90,7 +90,7 @@ export default function Report() {
                   Quarterly Reports
                 </p>
                 <h1 className="mt-3 text-4xl font-black leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                  Ministry impact, quarter by quarter.
+                  Ministry Impact, Quarter By Quarter.
                 </h1>
               </div>
               <p className="text-base leading-8 text-slate-600 sm:text-lg">
@@ -116,7 +116,7 @@ export default function Report() {
             ) : isError ? (
               <div className="rounded-lg border border-red-100 bg-white p-10 text-center shadow-sm">
                 <h2 className="text-2xl font-black text-slate-950">
-                  Quarterly reports could not be loaded.
+                  Quarterly Reports Could Not Be Loaded.
                 </h2>
                 <p className="mt-3 text-sm text-slate-600">
                   Please check the server connection and try again.
@@ -217,7 +217,7 @@ export default function Report() {
                               colSpan={6}
                               className="px-5 py-12 text-center text-slate-500"
                             >
-                              No quarterly reports are available yet.
+                              No Quarterly Reports Are Available Yet.
                             </td>
                           </tr>
                         )}

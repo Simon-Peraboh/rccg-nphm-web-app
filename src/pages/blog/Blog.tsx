@@ -5,7 +5,7 @@ export default function Blog() {
   return (
     <div>
         <Header />
-        <h1 className="text-center">UNDER DEVELOPMENT</h1>
+        <h1 className="text-center">Under Development</h1>
         <Footer />
     </div>
   )

@@ -127,7 +127,7 @@ export default function Connect() {
                 National Network
               </p>
               <h1 className="text-4xl font-black leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                Connect with RCCG NPHM in every state.
+                Connect With RCCG NPHM In Every State.
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-700 sm:text-lg">
                 Find ministry coordinators across Nigeria and stay connected
@@ -165,7 +165,7 @@ export default function Connect() {
                   Ministry Presence
                 </p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                  A coordinated ministry presence across Nigeria
+                  A Coordinated Ministry Presence Across Nigeria
                 </h2>
               </div>
               <p className="text-base leading-8 text-slate-600">
@@ -197,7 +197,7 @@ export default function Connect() {
               <div className="rounded-lg border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
                 <FaUsers className="mx-auto h-10 w-10 text-slate-400" />
                 <h2 className="mt-5 text-2xl font-black text-slate-950">
-                  No coordinators are available yet.
+                  No Coordinators Are Available Yet.
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600">
                   Coordinator records will appear here once the server provides

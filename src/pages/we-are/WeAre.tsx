@@ -99,7 +99,7 @@ export default function WeAre() {
                 Who We Are
               </p>
               <h1 className="text-4xl font-black leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                A ministry of care, outreach, and restoration.
+                A Ministry Of Care, Outreach, And Restoration.
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-700 sm:text-lg">
                 The Prison and Hospital Ministry of RCCG reaches inmates in
@@ -131,7 +131,7 @@ export default function WeAre() {
                 About The Ministry
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                Built to harmonize compassion across RCCG
+                Built To Harmonize Compassion Across RCCG
               </h2>
               <p className="mt-5 text-base leading-8 text-slate-600">
                 The ministry exists to heal the sick, spiritually rehabilitate
@@ -168,7 +168,7 @@ export default function WeAre() {
                   Our History
                 </p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                  From scattered exploits to a national ministry face
+                  From Scattered Exploits To A National Ministry Face
                 </h2>
                 <p className="mt-5 text-base leading-8 text-slate-600">
                   RCCG Prison and Hospital Ministry had been active in many
@@ -235,7 +235,7 @@ export default function WeAre() {
                 Vision, Mission, Values
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                The convictions that shape the work
+                The Convictions That Shape The Work
               </h2>
             </div>
 
@@ -243,7 +243,7 @@ export default function WeAre() {
               <article className="rounded-lg border border-slate-200 bg-slate-50 p-6 shadow-sm">
                 <FaBullseye className="mb-5 h-8 w-8 text-sky-700" />
                 <h3 className="text-xl font-black text-slate-950">
-                  Vision and Mission
+                  Vision And Mission
                 </h3>
                 <p className="mt-4 text-sm leading-7 text-slate-600">
                   To be a major channel of blessing to those who are sick and in
@@ -276,7 +276,7 @@ export default function WeAre() {
                 Ministry Structure
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                National leadership, regional alignment, provincial action
+                National Leadership, Regional Alignment, Provincial Action
               </h2>
               <p className="mt-4 text-base leading-8 text-slate-600">
                 At national level, the structure focuses on the leadership
