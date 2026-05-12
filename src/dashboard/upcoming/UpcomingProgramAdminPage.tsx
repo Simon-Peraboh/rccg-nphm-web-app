@@ -13,6 +13,7 @@ import type {
   UpcomingProgramDTO,
   UpcomingProgramFormValues,
 } from "../types/upcomingProgram";
+import fallbackProgramImage from "../../assets/Images/nphm conf2026.jpeg";
 
 const emptyForm: UpcomingProgramFormValues = {
   title: "",
@@ -22,6 +23,17 @@ const emptyForm: UpcomingProgramFormValues = {
   alertMessage: "",
   image: null,
   isPublished: true,
+};
+
+const handleProgramImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+  const image = event.currentTarget;
+
+  if (image.dataset.fallbackApplied === "true") {
+    return;
+  }
+
+  image.dataset.fallbackApplied = "true";
+  image.src = fallbackProgramImage;
 };
 
 const getApiErrorMessage = (error: unknown) => {
@@ -350,6 +362,7 @@ const UpcomingProgramAdminPage: React.FC = () => {
                         src={program.imageUrl}
                         alt={program.title}
                         className="h-full w-full object-cover"
+                        onError={handleProgramImageError}
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-sm font-bold text-slate-400">

@@ -2,6 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt } from "react-icons/fa";
 import { dashboardApi } from "../../dashboard/lib/axios";
+import fallbackProgramImage from "../../assets/Images/nphm conf2026.jpeg";
 
 type UpcomingProgramItem = {
   id: string | number;
@@ -23,7 +24,18 @@ type RawUpcomingProgram = Partial<UpcomingProgramItem> & {
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
-const DEFAULT_PROGRAM_IMAGE = "/assets/upcoming/nphm-conf-2026.jpeg";
+const DEFAULT_PROGRAM_IMAGE = fallbackProgramImage;
+
+const handleProgramImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+  const image = event.currentTarget;
+
+  if (image.dataset.fallbackApplied === "true") {
+    return;
+  }
+
+  image.dataset.fallbackApplied = "true";
+  image.src = DEFAULT_PROGRAM_IMAGE;
+};
 
 const normalizeAssetUrl = (value?: string | null) => {
   if (!value) return null;
@@ -107,6 +119,7 @@ const UpcomingProgram: React.FC = () => {
                 src={program.imageUrl || DEFAULT_PROGRAM_IMAGE}
                 alt={program.title}
                 className="h-full min-h-72 w-full object-cover"
+                onError={handleProgramImageError}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
             </div>

@@ -40,7 +40,7 @@ const normalizeProgram = (program: RawUpcomingProgram): UpcomingProgramDTO => ({
   eventTime: program.eventTime ?? program.event_time ?? program.time ?? "",
   location: program.location ?? "",
   image: program.image ?? "",
-  imageUrl: program.imageUrl ?? program.image_url ?? normalizeFileUrl(program.image ?? ""),
+  imageUrl: normalizeFileUrl(program.imageUrl ?? program.image_url ?? program.image ?? ""),
   alertMessage: program.alertMessage ?? program.alert_message ?? "",
   isPublished:
     typeof program.isPublished === "boolean"

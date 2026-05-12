@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { usePublicSpecialProjects } from "../../dashboard/hooks/useSpecialProjects";
 import type { PublicSpecialProject } from "../../dashboard/types/specialProjects";
+import fallbackProjectImage from "../../assets/Images/borstal_water_project.jpg";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "https://app2.rccgphm.org";
-const PLACEHOLDER_IMAGE = "/placeholder.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "https://app.rccgphm.org";
+const PLACEHOLDER_IMAGE = fallbackProjectImage;
 
 const normalizeImageUrl = (imagePath?: string | File | null): string | null => {
   if (!imagePath || typeof imagePath !== "string") {
