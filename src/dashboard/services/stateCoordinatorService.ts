@@ -6,6 +6,10 @@ import type {
 
 const BASE_PATH = "/stateCoordinators";
 
+type StateCoordinatorListResponse =
+  | StateCoordinatorDTO[]
+  | { data?: StateCoordinatorDTO[] };
+
 const toFormData = (payload: StateCoordinatorDTO): FormData => {
   const formData = new FormData();
 
@@ -34,11 +38,13 @@ export const getStateCoordinatorStatesAPICall = async (): Promise<string[]> => {
 };
 
 export const getStateCoordinatorsAPICall = async (): Promise<StateCoordinatorDTO[]> => {
-  const response = await dashboardApi.get<StateCoordinatorDTO[]>(
+  const response = await dashboardApi.get<StateCoordinatorListResponse>(
     `${BASE_PATH}/admin/all`
   );
 
-  return Array.isArray(response.data) ? response.data : [];
+  if (Array.isArray(response.data)) return response.data;
+  if (response.data && Array.isArray(response.data.data)) return response.data.data;
+  return [];
 };
 
 export const createStateCoordinatorAPICall = async (

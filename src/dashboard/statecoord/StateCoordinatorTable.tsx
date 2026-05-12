@@ -17,11 +17,7 @@ import {
   useStateCoordinators,
 } from "../hooks/useStateCoordinator";
 import type { StateCoordinatorDTO } from "../types/stateCoordinator";
-
-const apiBaseUrl = (import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api").replace(
-  /\/api\/?$/,
-  ""
-);
+import { getStorageImageUrl } from "../../utils/getStorageImageUrl";
 
 const getApiErrorMessage = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
@@ -51,13 +47,7 @@ const coordinatorImage = (coordinator: StateCoordinatorDTO) => {
     return imagePath;
   }
 
-  const normalizedPath = imagePath
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "")
-    .replace(/^public\//, "")
-    .replace(/^storage\//, "");
-
-  return `${apiBaseUrl}/storage/${normalizedPath}`;
+  return getStorageImageUrl(imagePath) ?? "";
 };
 
 const initialsFor = (name: string) =>

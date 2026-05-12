@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import {
   FaChurch,
   FaFacebook,
@@ -11,6 +10,8 @@ import {
 } from "react-icons/fa";
 import { Footer, Header } from "../../components";
 import { pic6, pic5 } from "./index";
+import { dashboardApi } from "../../dashboard/lib/axios";
+import { getStorageImageUrl } from "../../utils/getStorageImageUrl";
 
 interface Coordinator {
   id: number;
@@ -25,18 +26,22 @@ interface Coordinator {
 }
 
 const fallbackCoordinatorImage = pic5;
-const apiBaseUrl = (import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api").replace(/\/api\/?$/, "");
-const stateCoordinatorsUrl = `${apiBaseUrl}/api/stateCoordinators/getAll`;
+
+const normalizeCoordinatorList = (payload: Coordinator[] | { data?: Coordinator[] }) => {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  return [];
+};
 
 export default function Connect() {
   const [coordinators, setCoordinators] = useState<Coordinator[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    axios
-      .get(stateCoordinatorsUrl)
+    dashboardApi
+      .get<Coordinator[] | { data?: Coordinator[] }>("/stateCoordinators/getAll")
       .then((res) => {
-        setCoordinators(res.data);
+        setCoordinators(normalizeCoordinatorList(res.data));
         setLoading(false);
       })
       .catch((err) => {
@@ -98,13 +103,7 @@ export default function Connect() {
       return imagePath;
     }
 
-    const normalizedPath = imagePath
-      .replace(/\\/g, "/")
-      .replace(/^\/+/, "")
-      .replace(/^public\//, "")
-      .replace(/^storage\//, "");
-
-    return `${apiBaseUrl}/storage/${normalizedPath}`;
+    return getStorageImageUrl(imagePath) ?? fallbackCoordinatorImage;
   };
 
   return (
