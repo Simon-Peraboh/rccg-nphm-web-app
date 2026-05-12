@@ -173,8 +173,8 @@ const Footer: React.FC = () => {
                   <HiOutlinePhone className="h-5 w-5" />
                 </span>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>+234 803 491 4638</p>
-                  <p>WhatsApp: +234 708 422 2323</p>
+                  <p>+234 8034886673</p>
+                  <p>WhatsApp: +234 8034886673</p>
                 </div>
               </div>
             </div>
