@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import axios from "axios";
+import { FaSearch } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import {
   useAdminSummary,
@@ -9,6 +10,7 @@ import {
 import { formatDisplayDate } from "../utils/formatters";
 
 const AdminSummaryPage: React.FC = () => {
+  const [memberSearchTerm, setMemberSearchTerm] = useState("");
   const { data, isLoading, isError, error } = useAdminSummary();
   const {
     data: members = [],
@@ -17,6 +19,18 @@ const AdminSummaryPage: React.FC = () => {
     error: membersFetchError,
   } = useConferenceMembers();
   const promoteMutation = usePromoteConferenceMember();
+
+  const filteredMembers = useMemo(() => {
+    const query = memberSearchTerm.trim().toLowerCase();
+
+    if (!query) return members;
+
+    return members.filter((member) =>
+      [member.full_name, member.first_name]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(query))
+    );
+  }, [members, memberSearchTerm]);
 
   const handlePromote = async (id: number, fullName: string) => {
     try {
@@ -107,14 +121,27 @@ const AdminSummaryPage: React.FC = () => {
       </div>
 
       <div className="rounded-3xl bg-white border p-8 shadow-sm">
-        <div className="mb-6">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
-            Member Administration
-          </p>
-          <h2 className="text-2xl font-bold mt-2">Promote Members to Admin</h2>
-          <p className="text-slate-500 mt-2">
-            Select trusted registered members and elevate them to admin access.
-          </p>
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
+              Member Administration
+            </p>
+            <h2 className="text-2xl font-bold mt-2">Promote Members to Admin</h2>
+            <p className="text-slate-500 mt-2">
+              Select trusted registered members and elevate them to admin access.
+            </p>
+          </div>
+
+          <div className="relative w-full lg:max-w-sm">
+            <FaSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              value={memberSearchTerm}
+              onChange={(event) => setMemberSearchTerm(event.target.value)}
+              placeholder="Search member name"
+              className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
         </div>
 
         {membersLoading ? (
@@ -128,6 +155,10 @@ const AdminSummaryPage: React.FC = () => {
         ) : members.length === 0 ? (
           <div className="rounded-2xl border border-dashed p-6 text-center text-slate-500">
             No members available for promotion.
+          </div>
+        ) : filteredMembers.length === 0 ? (
+          <div className="rounded-2xl border border-dashed p-6 text-center text-slate-500">
+            No member name matches your search.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -143,7 +174,7 @@ const AdminSummaryPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {members.map((member) => (
+                {filteredMembers.map((member) => (
                   <tr key={member.id} className="border-b border-slate-100">
                     <td className="py-4 pr-4 font-medium text-slate-900">
                       {member.full_name}
