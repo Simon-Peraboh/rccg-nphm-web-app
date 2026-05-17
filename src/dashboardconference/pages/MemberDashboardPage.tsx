@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import {
@@ -28,6 +28,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000
 const DEFAULT_ACTIVITY_DOCUMENT_URL =
   "/documents/RMF_2026_CONVENTION_PROGRAM_OUTLINE.pdf";
 const DEFAULT_ACTIVITY_DOCUMENT_NAME = "RMF 2026 Convention Program Outline";
+const ATTENDANCE_OPENS_AT = new Date("2026-06-12T06:00:00+01:00");
+const ATTENDANCE_OPEN_MESSAGE =
+  "Attendance marking opens at 6:00 AM on 12 June 2026.";
 
 const normalizeDocumentUrl = (value?: string | null) => {
   if (!value) return "";
@@ -58,9 +61,16 @@ const getActivityDocumentName = (activity: ConferenceActivity) =>
 
 const MemberDashboardPage: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
   const { data, isLoading, isError, error } = useDashboard();
   const markAttendanceMutation = useMarkAttendance();
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(new Date()), 60_000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   const activitiesByDay = useMemo(() => {
     const grouped = new Map<number, ConferenceActivity[]>();
@@ -135,6 +145,11 @@ const MemberDashboardPage: React.FC = () => {
   }
 
   const latestAttendance = data.current_attendance?.[0];
+  const attendanceIsLocked = currentTime < ATTENDANCE_OPENS_AT;
+  const markAttendanceDisabled =
+    attendanceIsLocked ||
+    markAttendanceMutation.isPending ||
+    !data.current_registration;
 
   return (
     <div className="min-h-screen bg-slate-100 px-4 py-8">
@@ -168,13 +183,26 @@ const MemberDashboardPage: React.FC = () => {
                 </Link>
               )}
 
-              <button
-                onClick={handleMarkAttendance}
-                disabled={markAttendanceMutation.isPending || !data.current_registration}
-                className="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold disabled:opacity-50"
-              >
-                {markAttendanceMutation.isPending ? "Submitting..." : "Mark Attendance"}
-              </button>
+              <div className="flex max-w-xs flex-col gap-2">
+                <button
+                  onClick={handleMarkAttendance}
+                  disabled={markAttendanceDisabled}
+                  title={attendanceIsLocked ? ATTENDANCE_OPEN_MESSAGE : undefined}
+                  className="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {markAttendanceMutation.isPending
+                    ? "Submitting..."
+                    : attendanceIsLocked
+                      ? "Opens 6:00 AM"
+                      : "Mark Attendance"}
+                </button>
+
+                {attendanceIsLocked && (
+                  <p className="text-xs font-semibold leading-5 text-blue-100">
+                    {ATTENDANCE_OPEN_MESSAGE}
+                  </p>
+                )}
+              </div>
 
               <button
                 onClick={handleLogout}
