@@ -213,6 +213,20 @@ const RegistrationRecordsPage: React.FC = () => {
     exportToCsv(exportRows, "conference-registrations-selected");
   };
 
+  const handleExportCsv = () => {
+    if (filteredRecords.length === 0) {
+      toast.warning("No registration records are available to export.");
+      return;
+    }
+
+    exportToCsv(
+      filteredRecords.map(toExportRow),
+      searchTerm.trim()
+        ? "conference-registrations-filtered"
+        : "conference-registrations"
+    );
+  };
+
   const handleBulkFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -331,6 +345,16 @@ const RegistrationRecordsPage: React.FC = () => {
           </div>
 
           <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={filteredRecords.length === 0}
+            className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Export CSV
+          </button>
+
+          <button
+            type="button"
             onClick={handleExportSelected}
             disabled={selectedRecords.length === 0}
             className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
